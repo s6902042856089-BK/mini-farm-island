@@ -20,9 +20,23 @@
     <link rel="stylesheet" href="style.css">
     <style>
         #title-screen { z-index: 100; }
-        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt {
+        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout {
             cursor: pointer !important;
             touch-action: manipulation;
+        }
+        .btn-logout {
+            background: #ff7675;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-family: var(--font-family);
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-logout:hover {
+            background: #d63031;
         }
     </style>
 </head>
@@ -46,8 +60,13 @@
             
             <button class="btn-google" id="btn-google-login" onclick="window.startGoogleLogin()">
                 <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.59.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
-                เข้าสู่ระบบด้วย Google (Cloud Save)
+                <span id="google-btn-text">เข้าสู่ระบบด้วย Google (Cloud Save)</span>
             </button>
+            
+            <div id="title-logged-in-info" style="display: none; margin-top: 10px; font-size: 0.85rem; color: #2c3e50;">
+                <span>เข้าสู่ระบบแล้ว: <strong id="title-user-name">User</strong></span>
+                <a href="javascript:void(0)" onclick="window.signOutUser()" style="color: #e74c3c; margin-left: 8px; font-weight: 600; text-decoration: underline;">ออกจากระบบ</a>
+            </div>
         </div>
     </div>
 
@@ -68,10 +87,12 @@
                     </div>
                 </div>
 
-                <div class="hud-pill" id="hud-auth-status" style="display: none; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.95);">
+                <!-- User Profile Pill with Logout Button -->
+                <div class="hud-pill" id="hud-auth-status" style="display: none; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.95); gap: 8px;">
                     <span>👤</span>
                     <span id="hud-player-name" style="font-weight: 600; color: #2c3e50;">Explorer</span>
-                    <span style="color: #27ae60; font-size: 0.75rem; background: #e8f8f5; padding: 2px 6px; border-radius: 8px;">☁️ Cloud Save</span>
+                    <span style="color: #27ae60; font-size: 0.75rem; background: #e8f8f5; padding: 2px 6px; border-radius: 8px;">☁️ Cloud</span>
+                    <button class="btn-logout" onclick="window.signOutUser()">🚪 ออกจากระบบ</button>
                 </div>
             </div>
 
@@ -543,28 +564,49 @@
 
         // Check Supabase Auth Session
         let supabaseClient = null;
+        let currentUser = null;
+
         if (window.supabase) {
             try {
                 supabaseClient = window.supabase.createClient('https://acwtvjyavxpuuhkeqlln.supabase.co', 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA');
                 supabaseClient.auth.getSession().then(({ data: { session } }) => {
                     if (session?.user) {
-                        const name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
-                        const nameEl = document.getElementById('hud-player-name');
-                        if (nameEl) nameEl.innerText = name;
-                        const authStatus = document.getElementById('hud-auth-status');
-                        if (authStatus) authStatus.style.display = 'flex';
-                        const googleBtn = document.getElementById('btn-google-login');
-                        if (googleBtn) {
-                            googleBtn.innerText = `เข้าสู่ระบบในชื่อ: ${name} ✓`;
-                            googleBtn.style.background = '#e8f8f5';
-                            googleBtn.style.borderColor = '#2ecc71';
-                        }
+                        onLoggedIn(session.user);
+                    }
+                });
+
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (session?.user) {
+                        onLoggedIn(session.user);
                     }
                 });
             } catch(e) {}
         }
 
-        // GLOBAL START GAME HANDLER (Instant execution, zero failure point)
+        function onLoggedIn(user) {
+            currentUser = user;
+            const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Explorer';
+            gameState.player.name = name;
+
+            const nameEl = document.getElementById('hud-player-name');
+            if (nameEl) nameEl.innerText = name;
+            const authStatus = document.getElementById('hud-auth-status');
+            if (authStatus) authStatus.style.display = 'flex';
+
+            const titleInfo = document.getElementById('title-logged-in-info');
+            const titleName = document.getElementById('title-user-name');
+            if (titleInfo && titleName) {
+                titleName.innerText = name;
+                titleInfo.style.display = 'block';
+            }
+
+            const googleBtn = document.getElementById('btn-google-login');
+            if (googleBtn) {
+                googleBtn.style.display = 'none'; // ซ่อนปุ่มล็อกอินเมื่อล็อกอินแล้ว
+            }
+        }
+
+        // GLOBAL START GAME HANDLER
         window.startGame = function() {
             try { initAudio(); } catch(e){}
             try { sfx.click(); } catch(e){}
@@ -591,6 +633,19 @@
                     });
                 } catch(e) { alert('Google Login: ' + e.message); }
             }
+        };
+
+        // SIGN OUT FUNCTION
+        window.signOutUser = async function() {
+            try { initAudio(); sfx.click(); } catch(e){}
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.auth.signOut();
+                } catch(e){}
+            }
+            // ล้าง hash บน url แล้ว reload
+            window.location.hash = '';
+            window.location.href = window.location.origin + window.location.pathname;
         };
 
         window.openMarket = function() {
