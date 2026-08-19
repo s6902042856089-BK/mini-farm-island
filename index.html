@@ -55,18 +55,18 @@
             gap: 6px;
         }
         .wasd-btn {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.85);
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(8px);
             border: 2px solid rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: #2c3e50;
             transition: all 0.1s ease;
         }
@@ -77,12 +77,12 @@
             box-shadow: 0 2px 6px rgba(46, 204, 113, 0.4);
         }
 
-        /* Camera Hint Badge */
+        /* Camera Rotate Hint */
         #camera-hint {
             position: absolute;
             bottom: 25px;
             right: 25px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
             color: white;
             padding: 8px 16px;
@@ -160,18 +160,18 @@
         <!-- On-Screen WASD Controller -->
         <div id="wasd-controller">
             <div class="wasd-row">
-                <div class="wasd-btn" id="btn-wasd-w" data-key="w">W</div>
+                <div class="wasd-btn" id="btn-wasd-w">W</div>
             </div>
             <div class="wasd-row">
-                <div class="wasd-btn" id="btn-wasd-a" data-key="a">A</div>
-                <div class="wasd-btn" id="btn-wasd-s" data-key="s">S</div>
-                <div class="wasd-btn" id="btn-wasd-d" data-key="d">D</div>
+                <div class="wasd-btn" id="btn-wasd-a">A</div>
+                <div class="wasd-btn" id="btn-wasd-s">S</div>
+                <div class="wasd-btn" id="btn-wasd-d">D</div>
             </div>
         </div>
 
         <!-- Camera Rotate Hint -->
         <div id="camera-hint">
-            <span>🖱️ ลากเมาส์ / รูดนิ้ว เพื่อหมุนมุมกล้อง 360°</span>
+            <span>🖱️ ลากเมาส์ / รูดนิ้ว เพื่อหมุนกล้อง 360°</span>
         </div>
 
         <div class="hud-bottom-bar">
@@ -208,38 +208,74 @@
 
     <!-- GAME ENGINE SCRIPT -->
     <script>
+    // ==========================================================================
+    // GLOBAL HANDLERS (DEFINED IMMEDIATELY BEFORE ANY SUB-SYSTEM RUNS)
+    // ==========================================================================
+    const SEED_TYPES = {
+        tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 6 },
+        carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 10 },
+        cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 220, growTime: 16 },
+        corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 22 }
+    };
+
+    const gameState = {
+        mode: 'intro',
+        player: { name: 'Explorer', money: 100, harvestCount: 0 },
+        inventory: { tomato: 0, carrot: 0, cabbage: 0, corn: 0 },
+        selectedSeed: 'tomato',
+        unlockedPlots: 6,
+        robot: { buffActive: false, buffTimer: 0, broken: false, brokenTimer: 0, currentAnswer: 0 },
+        quests: [
+            { id: 'harvest_3', title: 'เก็บเกี่ยวผลผลิต 3 ชิ้น', target: 3, current: 0, reward: 50, done: false },
+            { id: 'visit_island2', title: 'ข้ามสะพานไม้ไปเกาะประภาคารโบราณ', target: 1, current: 0, reward: 100, done: false },
+            { id: 'quiz_1', title: 'ช่วยหุ่นยนต์ตอบคำถาม 1 ครั้ง', target: 1, current: 0, reward: 80, done: false }
+        ]
+    };
+
+    let transitionProg = 0;
+    let activeTarget = null;
+    let supabaseClient = null;
+
+    // Direct Window Functions
+    window.startGame = function() {
+        try { if(window.initAudio) window.initAudio(); } catch(e){}
+        try { if(window.sfx) window.sfx.click(); } catch(e){}
+        const ts = document.getElementById('title-screen');
+        if (ts) ts.style.display = 'none';
+        const hud = document.getElementById('hud');
+        if (hud) hud.style.display = 'flex';
+        gameState.mode = 'transitioning';
+        transitionProg = 0;
+    };
+
+    window.startGoogleLogin = async function() {
+        try { if(window.initAudio) window.initAudio(); } catch(e){}
+        if (supabaseClient) {
+            try {
+                await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + window.location.pathname }
+                });
+            } catch(e) { alert('Google Login: ' + e.message); }
+        }
+    };
+
+    window.signOutUser = async function() {
+        try { if(window.initAudio) window.initAudio(); } catch(e){}
+        if (supabaseClient) { try { await supabaseClient.auth.signOut(); } catch(e){} }
+        window.location.hash = '';
+        window.location.href = window.location.origin + window.location.pathname;
+    };
+
+    // ==========================================================================
+    // THREE.JS SCENE, WORLD BUILDER, & CONTROLS
+    // ==========================================================================
     (function() {
-        // ==========================================
-        // 1. CONFIG & GAME STATE
-        // ==========================================
-        const SEED_TYPES = {
-            tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 6 },
-            carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 10 },
-            cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 220, growTime: 16 },
-            corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 22 }
-        };
-
-        const gameState = {
-            mode: 'intro',
-            player: { name: 'Explorer', money: 100, harvestCount: 0, currentIsland: 'farm_island' },
-            inventory: { tomato: 0, carrot: 0, cabbage: 0, corn: 0 },
-            selectedSeed: 'tomato',
-            unlockedPlots: 6,
-            robot: { buffActive: false, buffTimer: 0, broken: false, brokenTimer: 0, currentAnswer: 0 },
-            quests: [
-                { id: 'harvest_3', title: 'เก็บเกี่ยวผลผลิต 3 ชิ้น', target: 3, current: 0, reward: 50, done: false },
-                { id: 'visit_island2', title: 'ข้ามสะพานไม้ไปเกาะประภาคารโบราณ', target: 1, current: 0, reward: 100, done: false },
-                { id: 'quiz_1', title: 'ช่วยหุ่นยนต์ตอบคำถาม 1 ครั้ง', target: 1, current: 0, reward: 80, done: false }
-            ]
-        };
-
-        // ==========================================
-        // 2. AUDIO SYSTEM (Tone.js Safe)
-        // ==========================================
+        // 1. Audio Setup
         let audioInit = false;
         let synthPlant, synthHarvest, synthCoin, synthError, synthClick, synthCorrect;
 
-        async function initAudio() {
+        window.initAudio = async function() {
             if (audioInit || !window.Tone) return;
             try {
                 await Tone.start();
@@ -252,9 +288,9 @@
                 synthCorrect = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" } }).toDestination();
                 audioInit = true;
             } catch(e) {}
-        }
+        };
 
-        const sfx = {
+        window.sfx = {
             plant: () => { try { if(synthPlant) synthPlant.triggerAttackRelease("C4", "8n"); } catch(e){} },
             harvest: () => { try { if(synthHarvest) synthHarvest.triggerAttackRelease(["C5", "E5", "G5"], "8n"); } catch(e){} },
             coin: () => { try { if(synthCoin) synthCoin.triggerAttackRelease(["E6", "G6", "C7"], "16n"); } catch(e){} },
@@ -263,9 +299,7 @@
             correct: () => { try { if(synthCorrect) synthCorrect.triggerAttackRelease(["E5", "G5", "C6", "E6"], "4n"); } catch(e){} }
         };
 
-        // ==========================================
-        // 3. THREE.JS SCENE SETUP
-        // ==========================================
+        // 2. Three.js Scene Setup
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x7ed6df);
@@ -273,10 +307,9 @@
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        // Camera Orbit Controls State
         let cameraRadius = 8.5;
-        let cameraTheta = 0;       // Horizontal orbit angle (radians)
-        let cameraPhi = 0.55;      // Vertical pitch angle (radians)
+        let cameraTheta = 0;
+        let cameraPhi = 0.55;
         let isDraggingCam = false;
         let prevMousePos = { x: 0, y: 0 };
 
@@ -303,7 +336,7 @@
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Water
+        // Ocean Water
         const waterGeo = new THREE.PlaneGeometry(240, 240, 48, 48);
         const waterMat = new THREE.MeshStandardMaterial({
             color: 0x22a6b3, roughness: 0.15, metalness: 0.2, flatShading: true, transparent: true, opacity: 0.85
@@ -319,9 +352,7 @@
             waveVertices.push({ ang: Math.random() * Math.PI * 2, amp: 0.12 + Math.random() * 0.1, speed: 0.02 });
         }
 
-        // ==========================================
-        // 4. PARTICLES
-        // ==========================================
+        // 3. Particles
         const particles = [];
         const matDust = new THREE.MeshBasicMaterial({ color: 0xf6e58d, transparent: true, opacity: 0.8 });
         const matWater = new THREE.MeshBasicMaterial({ color: 0x7ed6df, transparent: true, opacity: 0.85 });
@@ -359,9 +390,7 @@
             }
         }
 
-        // ==========================================
-        // 5. ARCHIPELAGO ISLANDS & PHYSICS COLLIDERS
-        // ==========================================
+        // 4. World Group & Materials
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
@@ -375,17 +404,15 @@
         const matRoofBlue = new THREE.MeshStandardMaterial({ color: 0x4834d4, roughness: 0.6 });
         const matWhiteWall = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.5 });
         const matFoliage = new THREE.MeshStandardMaterial({ color: 0x218c74, roughness: 0.75, flatShading: true });
-        const matFlowerPink = new THREE.MeshStandardMaterial({ color: 0xff7979 });
-        const matFlowerYellow = new THREE.MeshStandardMaterial({ color: 0xf6e58d });
 
-        // --- ISLAND 1: FARM ISLAND (ศูนย์กลางฟาร์ม) ---
+        // Island 1: Farm
         const is1Beach = new THREE.Mesh(new THREE.CylinderGeometry(14, 15.5, 1.8, 28), matSand);
         is1Beach.position.set(0, -0.1, 0); is1Beach.receiveShadow = true; is1Beach.castShadow = true;
         const is1Grass = new THREE.Mesh(new THREE.CylinderGeometry(12.8, 13.6, 1.4, 28), matGrass);
         is1Grass.position.set(0, 0.8, 0); is1Grass.receiveShadow = true; is1Grass.castShadow = true;
         worldGroup.add(is1Beach, is1Grass);
 
-        // ทางเดินหินปูเกาะ 1
+        // Paths
         function createPath(x, z, sx, sz, rot=0) {
             const p = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.05, sz), matPath);
             p.position.set(x, 1.52, z); p.rotation.y = rot; p.receiveShadow = true;
@@ -396,9 +423,9 @@
         createPath(0, 1.5, 2.0, 3.2);
         createPath(1.5, -0.5, 3.2, 1.8, 0.4);
         createPath(-1.5, -0.5, 3.0, 1.8, -0.4);
-        createPath(5.5, -0.5, 5.0, 2.0, 0.1); // ทางเชื่อมไปสะพานไม้
+        createPath(5.5, -0.5, 5.0, 2.0, 0.1);
 
-        // --- LONG WOODEN SUSPENSION BRIDGE (สะพานไม้เชื่อมไปยังเกาะ 2) ---
+        // Bridge to Island 2
         const bridgeGroup = new THREE.Group();
         bridgeGroup.position.set(15.5, 1.3, -1.0);
         for (let i = 0; i < 14; i++) {
@@ -413,14 +440,13 @@
                 bridgeGroup.add(poleL, poleR);
             }
         }
-        // เชือกสะพานแขวน
         const ropeGeo = new THREE.CylinderGeometry(0.04, 0.04, 18, 8);
         const ropeL = new THREE.Mesh(ropeGeo, matWood); ropeL.rotation.z = Math.PI / 2; ropeL.position.set(0, 0.6, 1.3);
         const ropeR = ropeL.clone(); ropeR.position.z = -1.3;
         bridgeGroup.add(ropeL, ropeR);
         worldGroup.add(bridgeGroup);
 
-        // --- ISLAND 2: ANCIENT LIGHTHOUSE & ADVENTURE ISLE (เกาะประภาคารโบราณ) ---
+        // Island 2: Ancient Lighthouse Isle
         const is2Group = new THREE.Group();
         is2Group.position.set(32, 0, -2);
         const is2Beach = new THREE.Mesh(new THREE.CylinderGeometry(12, 13.5, 1.8, 24), matSand);
@@ -431,7 +457,6 @@
         is2Cliff.position.set(0, 2.2, 0); is2Cliff.receiveShadow = true; is2Cliff.castShadow = true;
         is2Group.add(is2Beach, is2Grass, is2Cliff);
 
-        // ประภาคารใหญ่บนเกาะ 2
         const tower = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.6, 7.0, 12), matWhiteWall);
         tower.position.set(0, 6.5, 0); tower.castShadow = true;
         const stripe = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.45, 1.5, 12), matRoofRed);
@@ -445,14 +470,12 @@
         beamLight.position.set(0, 10.0, 9.5); beamLight.rotation.x = Math.PI / 2;
         is2Group.add(tower, stripe, topRoof, beamLight);
 
-        // แท่นหีบสมบัติโบราณบนเกาะ 2
         const chest = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), matWood);
         chest.position.set(-4.5, 1.9, 2.0); chest.castShadow = true;
         is2Group.add(chest);
         worldGroup.add(is2Group);
 
-        // --- LANDMARKS ON FARM ISLAND ---
-        // ท่าเรือ & เรือไม้
+        // Pier & Market
         const pierGroup = new THREE.Group();
         pierGroup.position.set(0, 0.35, 11.5);
         for (let i = 0; i < 6; i++) {
@@ -466,7 +489,6 @@
         pierGroup.add(boat);
         worldGroup.add(pierGroup);
 
-        // ตลาดริมน้ำ
         const stall = new THREE.Group();
         stall.position.set(2.8, 1.5, 7.5);
         const counter = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.2), matWood);
@@ -478,9 +500,9 @@
         stall.add(counter, awning, crate1);
         worldGroup.add(stall);
 
-        // กังหันลม
+        // Windmill
         const windmillGroup = new THREE.Group();
-        windmillGroup.position.set(LANDMARK_COORDS.windmill.x, 1.5, LANDMARK_COORDS.windmill.z);
+        windmillGroup.position.set(-8.5, 1.5, 0);
         const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.8, 4.2, 8), matWhiteWall);
         millTower.position.y = 2.1; millTower.castShadow = true;
         const millDome = new THREE.Mesh(new THREE.SphereGeometry(1.4, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2), matRoofBlue);
@@ -498,9 +520,9 @@
         windmillGroup.add(millTower, millDome, bladesGroup);
         worldGroup.add(windmillGroup);
 
-        // โรงนาสีแดง
+        // Barn
         const barnGroup = new THREE.Group();
-        barnGroup.position.set(LANDMARK_COORDS.barn.x, 1.5, LANDMARK_COORDS.barn.z);
+        barnGroup.position.set(-4.5, 1.5, -8.0);
         const barnBody = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 3.2), matRoofRed);
         barnBody.position.y = 1.2; barnBody.castShadow = true; barnBody.receiveShadow = true;
         const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.0, 1.8, 4), matWhiteWall);
@@ -510,7 +532,7 @@
         barnGroup.add(barnBody, barnRoof, chimney);
         worldGroup.add(barnGroup);
 
-        // ต้นไม้ & พุ่มดอกไม้
+        // Trees
         function createCozyTree(x, z, s=1) {
             const tree = new THREE.Group();
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 2.2, 6), matWood);
@@ -528,7 +550,7 @@
         createCozyTree(30, 6, 1.2);
         createCozyTree(35, -8, 1.1);
 
-        // เมฆลอยฟ้า
+        // Clouds
         const clouds = [];
         for (let i = 0; i < 6; i++) {
             const cloud = new THREE.Mesh(new THREE.DodecahedronGeometry(2.0, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, flatShading: true }));
@@ -537,47 +559,36 @@
             clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
 
-        // ==========================================
-        // 6. TERRAIN HEIGHTMAP & PHYSICS COLLISION
-        // ==========================================
-        // ฟังก์ชันคำนวณระดับความสูงของพื้นตามพิกัด (X, Z)
+        // 5. Terrain Elevation Physics & Obstacles
         function getTerrainElevation(x, z) {
-            // 1. เกาะหลัก (Farm Island)
             const d1 = Math.sqrt(x * x + z * z);
             if (d1 <= 12.8) return 1.5;
             if (d1 <= 14.5) return 1.5 - ((d1 - 12.8) / 1.7) * 0.8;
 
-            // 2. ทางเดินบนสะพานไม้ (Bridge)
-            if (x >= 6.0 && x <= 25.0 && Math.abs(z - (-1.0)) <= 1.4) {
+            if (x >= 6.0 && x <= 25.0 && Math.abs(z - (-1.0)) <= 1.5) {
                 return 1.4 - Math.sin(((x - 6.0) / 19.0) * Math.PI) * 0.25;
             }
 
-            // 3. ท่าเรือไม้ (Pier)
             if (Math.abs(x) <= 1.8 && z >= 8.5 && z <= 15.0) return 0.9;
 
-            // 4. เกาะประภาคาร (Island 2)
             const dx2 = x - 32, dz2 = z - (-2);
             const d2 = Math.sqrt(dx2 * dx2 + dz2 * dz2);
-            if (d2 <= 5.0) return 3.6; // หน้าผาประภาคาร
+            if (d2 <= 5.0) return 3.6;
             if (d2 <= 10.8) return 1.5;
             if (d2 <= 12.5) return 1.5 - ((d2 - 10.8) / 1.7) * 0.8;
 
-            // ตกน้ำ (ต่ำกว่าระดับน้ำ)
             return -0.2;
         }
 
-        // สิ่งกีดขวาง (Obstacles Collision List)
         const obstacles = [
-            { x: LANDMARK_COORDS.barn.x, z: LANDMARK_COORDS.barn.z, radius: 2.2 },
-            { x: LANDMARK_COORDS.windmill.x, z: LANDMARK_COORDS.windmill.z, radius: 1.8 },
-            { x: 32, z: -2, radius: 2.0 }, // ประภาคารเกาะ 2
-            { x: 2.8, z: 7.5, radius: 1.4 }, // ตลาด
-            { x: LANDMARK_COORDS.robotWell.x, z: LANDMARK_COORDS.robotWell.z, radius: 1.2 }
+            { x: -4.5, z: -8.0, radius: 2.2 },
+            { x: -8.5, z: 0, radius: 1.8 },
+            { x: 32, z: -2, radius: 2.0 },
+            { x: 2.8, z: 7.5, radius: 1.4 },
+            { x: -2.5, z: 2.5, radius: 1.2 }
         ];
 
-        // ==========================================
-        // 7. PLAYABLE 3D CHARACTER (Cozy Explorer)
-        // ==========================================
+        // 6. Character
         const charGroup = new THREE.Group();
         charGroup.position.set(0, 1.5, 8.5);
         scene.add(charGroup);
@@ -611,18 +622,21 @@
         modelGroup.add(torso, head, eyeL, eyeR, hatBrim, hatTop, legL, legR, armL, armR);
         charGroup.add(modelGroup);
 
-        // ==========================================
-        // 8. ROBOT & WELL
-        // ==========================================
+        // 7. Robot & Well
         const wellRobotGroup = new THREE.Group();
-        wellRobotGroup.position.set(LANDMARK_COORDS.robotWell.x, 1.5, LANDMARK_COORDS.robotWell.z);
+        wellRobotGroup.position.set(-2.5, 1.5, 2.5);
         scene.add(wellRobotGroup);
 
         const well = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.1, 0.7, 16), matRock);
         well.position.y = 0.35; well.castShadow = true; well.receiveShadow = true;
+        const waterWell = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.71, 16), new THREE.MeshBasicMaterial({ color: 0x0984e3 }));
+        waterWell.position.y = 0.35;
+        const postW1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.15), matWood);
+        postW1.position.set(0.75, 0.9, 0); postW1.castShadow = true;
+        const postW2 = postW1.clone(); postW2.position.x = -0.75;
         const wellRoof = new THREE.Mesh(new THREE.ConeGeometry(1.3, 0.7, 4), matRoofRed);
         wellRoof.position.y = 2.0; wellRoof.rotation.y = Math.PI / 4; wellRoof.castShadow = true;
-        wellRobotGroup.add(well, wellRoof);
+        wellRobotGroup.add(well, waterWell, postW1, postW2, wellRoof);
 
         const robotMesh = new THREE.Group();
         robotMesh.position.set(1.5, 0, 0.6);
@@ -635,11 +649,9 @@
         robotMesh.add(rBody, rHead, rWheel);
         wellRobotGroup.add(robotMesh);
 
-        // ==========================================
-        // 9. FARM PLOTS
-        // ==========================================
+        // 8. Farm Plots
         const gridGroup = new THREE.Group();
-        gridGroup.position.set(LANDMARK_COORDS.farmCenter.x, 1.5, LANDMARK_COORDS.farmCenter.y);
+        gridGroup.position.set(3.5, 1.5, -1.5);
         scene.add(gridGroup);
 
         const plots = [];
@@ -702,9 +714,7 @@
             return grp;
         }
 
-        // ==========================================
-        // 10. UI & 360° ORBIT CAMERA LISTENERS
-        // ==========================================
+        // 9. UI Functions
         const actionPrompt = document.getElementById('action-prompt');
         const actionText = document.getElementById('action-prompt-text');
         const moneyDisplay = document.getElementById('money-display');
@@ -749,14 +759,14 @@
                 const btn = document.createElement('div');
                 btn.className = `seed-chip ${gameState.selectedSeed === k ? 'active' : ''}`;
                 btn.innerHTML = `<span class="seed-emoji">${s.emoji}</span><span class="seed-label">${s.name.split(' ')[0]}</span><span class="seed-price">${s.cost}🪙</span>`;
-                btn.onclick = () => { try { initAudio(); sfx.click(); } catch(e){} gameState.selectedSeed = k; renderSeedSelector(); };
+                btn.onclick = () => { try { window.initAudio(); window.sfx.click(); } catch(e){} gameState.selectedSeed = k; renderSeedSelector(); };
                 seedSelector.appendChild(btn);
             });
         }
         renderSeedSelector();
         updateUI();
 
-        // 360° Mouse & Touch Drag Camera Orbit
+        // 360 Camera Drag Handlers
         window.addEventListener('mousedown', (e) => {
             if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen')) return;
             isDraggingCam = true;
@@ -775,10 +785,10 @@
             cameraRadius = Math.max(5.0, Math.min(18.0, cameraRadius + e.deltaY * 0.01));
         });
 
-        // Touch Drag Camera
+        // Touch Camera Drag
         let touchStartCam = { x: 0, y: 0 };
         window.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#wasd-controller')) return;
             if (e.touches.length === 1) {
                 isDraggingCam = true;
                 touchStartCam = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -794,8 +804,7 @@
         });
         window.addEventListener('touchend', () => { isDraggingCam = false; });
 
-        // Supabase Auth
-        let supabaseClient = null;
+        // Supabase Init
         if (window.supabase) {
             try {
                 supabaseClient = window.supabase.createClient('https://acwtvjyavxpuuhkeqlln.supabase.co', 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA');
@@ -822,39 +831,8 @@
             if (googleBtn) googleBtn.style.display = 'none';
         }
 
-        // GLOBAL START GAME HANDLER
-        window.startGame = function() {
-            try { initAudio(); } catch(e){}
-            try { sfx.click(); } catch(e){}
-            const ts = document.getElementById('title-screen');
-            if (ts) ts.style.display = 'none';
-            const hud = document.getElementById('hud');
-            if (hud) hud.style.display = 'flex';
-            gameState.mode = 'transitioning';
-            transitionProg = 0;
-        };
-
-        window.startGoogleLogin = async function() {
-            try { initAudio(); } catch(e){}
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.auth.signInWithOAuth({
-                        provider: 'google',
-                        options: { redirectTo: window.location.origin + window.location.pathname }
-                    });
-                } catch(e) { alert('Google Login: ' + e.message); }
-            }
-        };
-
-        window.signOutUser = async function() {
-            try { initAudio(); sfx.click(); } catch(e){}
-            if (supabaseClient) { try { await supabaseClient.auth.signOut(); } catch(e){} }
-            window.location.hash = '';
-            window.location.href = window.location.origin + window.location.pathname;
-        };
-
         window.openMarket = function() {
-            try { sfx.click(); } catch(e){}
+            try { window.sfx.click(); } catch(e){}
             marketList.innerHTML = '';
             let totalVal = 0, totalItems = 0;
             Object.keys(gameState.inventory).forEach(k => {
@@ -887,7 +865,7 @@
             });
             if (total > 0) {
                 gameState.player.money += total;
-                try { sfx.coin(); } catch(e){}
+                try { window.sfx.coin(); } catch(e){}
                 showToast(`ขายผลผลิตได้รับ +${total} 🪙 ✨`);
                 updateUI();
                 marketModal.style.display = 'none';
@@ -895,7 +873,7 @@
         };
 
         window.openQuiz = function() {
-            try { sfx.click(); } catch(e){}
+            try { window.sfx.click(); } catch(e){}
             const ops = ['+', '-', '*'];
             const op = ops[Math.floor(Math.random() * ops.length)];
             let n1 = Math.floor(Math.random()*20)+5, n2 = Math.floor(Math.random()*15)+3, ans = op==='+'?n1+n2:(op==='-'?n1+20-n2:n1*n2);
@@ -920,13 +898,13 @@
                         b.classList.add('correct');
                         gameState.robot.buffActive = true;
                         gameState.robot.buffTimer = 12;
-                        try { sfx.correct(); } catch(e){}
+                        try { window.sfx.correct(); } catch(e){}
                         showToast('ถูกต้อง! บัฟรดน้ำทำงาน 💧');
                     } else {
                         b.classList.add('wrong');
                         gameState.robot.broken = true;
                         gameState.robot.brokenTimer = 10;
-                        try { sfx.error(); } catch(e){}
+                        try { window.sfx.error(); } catch(e){}
                         showToast('ตอบผิด! หุ่นยนต์รวนเลย 💥');
                     }
                     setTimeout(() => { quizModal.style.display = 'none'; updateUI(); }, 700);
@@ -944,12 +922,10 @@
             setTimeout(() => t.remove(), 1900);
         }
 
-        // ==========================================
-        // 11. CONTROLS (WASD KEYBOARD & ON-SCREEN BUTTONS)
-        // ==========================================
+        // 10. Key & Button Listeners
         const keys = {};
         window.addEventListener('keydown', (e) => {
-            try { initAudio(); } catch(e){}
+            try { window.initAudio(); } catch(e){}
             const k = e.key.toLowerCase();
             keys[k] = true;
             const btn = document.getElementById(`btn-wasd-${k}`);
@@ -963,21 +939,19 @@
             if (btn) btn.classList.remove('active');
         });
 
-        // On-Screen WASD Button Event Handlers
         ['w', 'a', 's', 'd'].forEach(k => {
             const btn = document.getElementById(`btn-wasd-${k}`);
             if (btn) {
-                const press = (e) => { e.preventDefault(); try { initAudio(); } catch(e){} keys[k] = true; btn.classList.add('active'); };
-                const release = (e) => { e.preventDefault(); keys[k] = false; btn.classList.remove('active'); };
+                const press = (e) => { try { window.initAudio(); } catch(e){} keys[k] = true; btn.classList.add('active'); };
+                const release = (e) => { keys[k] = false; btn.classList.remove('active'); };
                 btn.addEventListener('mousedown', press);
                 btn.addEventListener('mouseup', release);
                 btn.addEventListener('mouseleave', release);
-                btn.addEventListener('touchstart', press);
-                btn.addEventListener('touchend', release);
+                btn.addEventListener('touchstart', press, { passive: true });
+                btn.addEventListener('touchend', release, { passive: true });
             }
         });
 
-        let activeTarget = null;
         window.triggerAction = function() {
             if (!activeTarget) return;
             if (activeTarget.type === 'plant') {
@@ -990,14 +964,14 @@
                     p.cropMesh = generateCropMesh(p.seedType); p.cropMesh.scale.set(0.1, 0.1, 0.1);
                     p.group.add(p.cropMesh);
                     p.progressBar = createProgressBar(); p.group.add(p.progressBar.group);
-                    try { sfx.plant(); } catch(e){} showToast('ปลูกเมล็ดเรียบร้อย! 🌱'); updateUI();
-                } else { try { sfx.error(); } catch(e){} showToast('เหรียญไม่พอ!'); }
+                    try { window.sfx.plant(); } catch(e){} showToast('ปลูกเมล็ดเรียบร้อย! 🌱'); updateUI();
+                } else { try { window.sfx.error(); } catch(e){} showToast('เหรียญไม่พอ!'); }
             } else if (activeTarget.type === 'harvest') {
                 const p = activeTarget.plot;
                 gameState.inventory[p.seedType]++;
                 p.group.remove(p.cropMesh); p.cropMesh = null; p.state = 'empty'; p.seedType = null;
                 p.mesh.material = matSoilDry;
-                try { sfx.harvest(); } catch(e){} showToast('เก็บเกี่ยวผลผลิตสำเร็จ! ✨'); updateUI();
+                try { window.sfx.harvest(); } catch(e){} showToast('เก็บเกี่ยวผลผลิตสำเร็จ! ✨'); updateUI();
             } else if (activeTarget.type === 'robot') {
                 window.openQuiz();
             } else if (activeTarget.type === 'market') {
@@ -1005,11 +979,9 @@
             }
         };
 
-        // ==========================================
-        // 12. GAME LOOP & PHYSICS ENGINE
-        // ==========================================
+        // 11. Main Loop & Engine
         const clock = new THREE.Clock();
-        let transitionProg = 0, introAngle = 0;
+        let introAngle = 0;
         const tempVec = new THREE.Vector3();
 
         function animate() {
@@ -1017,20 +989,18 @@
             const delta = Math.min(clock.getDelta(), 0.1);
             const elapsed = clock.getElapsedTime();
 
-            // Waves & Foam
             for (let i = 0; i < waveVertices.length; i++) {
                 const v = waveVertices[i];
                 posAttr.setZ(i, Math.sin(v.ang + elapsed * v.speed * 80) * v.amp);
             }
             posAttr.needsUpdate = true;
 
-            // Environmental animations
             bladesGroup.rotation.z += delta * 1.5;
             beamLight.rotation.z += delta * 1.0;
             clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 50) c.mesh.position.x = -50; });
-            emitChimneySmoke(new THREE.Vector3(LANDMARK_COORDS.barn.x - 1.2, 4.8, LANDMARK_COORDS.barn.z - 0.8));
+            emitChimneySmoke(new THREE.Vector3(-4.5 - 1.2, 4.8, -8.0 - 0.8));
 
-            // Camera-Relative Character Movement
+            // Move Character
             const moveInput = new THREE.Vector2();
             if (keys['w'] || keys['arrowup']) moveInput.y += 1;
             if (keys['s'] || keys['arrowdown']) moveInput.y -= 1;
@@ -1041,17 +1011,14 @@
             if (gameState.mode === 'exploring' && isMoving) {
                 moveInput.normalize();
 
-                // คำนวณทิศทางการเดินให้ตรงกับมุมมองกล้อง 360° (Camera-Relative Vector)
                 const forward = new THREE.Vector3(-Math.sin(cameraTheta), 0, -Math.cos(cameraTheta));
                 const right = new THREE.Vector3(Math.cos(cameraTheta), 0, -Math.sin(cameraTheta));
                 const moveDir = forward.clone().multiplyScalar(moveInput.y).add(right.clone().multiplyScalar(moveInput.x)).normalize();
 
                 const nextPos = charGroup.position.clone().addScaledVector(moveDir, 8.5 * delta);
 
-                // ตรวจจับความสูงและป้องกันการตกน้ำ (Terrain Elevation & Boundaries)
                 const targetElevation = getTerrainElevation(nextPos.x, nextPos.z);
-                if (targetElevation > 0.2) { // เดินได้เฉพาะบนพื้นดิน/สะพาน
-                    // ตรวจจับชนสิ่งกีดขวาง (Obstacle Collisions)
+                if (targetElevation > 0.2) {
                     let collides = false;
                     for (let obs of obstacles) {
                         const dist = Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z);
@@ -1064,25 +1031,21 @@
                     }
                 }
 
-                // ปรับระดับความสูงตามฟิสิกส์พื้นดินแบบสมูท (Smooth Ground Snapping)
                 const groundY = getTerrainElevation(charGroup.position.x, charGroup.position.z);
                 charGroup.position.y = THREE.MathUtils.lerp(charGroup.position.y, groundY, 0.25);
 
-                // หันหน้าตัวละครตามทิศที่เดิน
                 const targetRot = Math.atan2(moveDir.x, moveDir.z);
                 modelGroup.rotation.y = THREE.MathUtils.lerp(modelGroup.rotation.y, targetRot, 0.25);
 
-                // แอนิเมชันแกว่งแขนขา
                 const t = elapsed * 15;
                 legL.rotation.x = Math.sin(t) * 0.75; legR.rotation.x = -Math.sin(t) * 0.75;
                 armL.rotation.x = -Math.sin(t) * 0.75; armR.rotation.x = Math.sin(t) * 0.75;
                 emitDust(charGroup.position);
 
-                // เควสต์ข้ามไปเกาะ 2
                 if (charGroup.position.x > 25 && !gameState.quests[1].done) {
                     gameState.quests[1].done = true;
                     gameState.player.money += gameState.quests[1].reward;
-                    try { sfx.coin(); } catch(e){}
+                    try { window.sfx.coin(); } catch(e){}
                     showToast('🎉 สำรวจเกาะประภาคารโบราณสำเร็จ! (+100 🪙)');
                     updateUI();
                 }
@@ -1120,7 +1083,7 @@
             } else if (gameState.robot.buffActive) {
                 gameState.robot.buffTimer -= delta;
                 robotMesh.rotation.y += delta * 6;
-                emitWaterDrop(new THREE.Vector3(LANDMARK_COORDS.farmCenter.x, 1.5, LANDMARK_COORDS.farmCenter.y));
+                emitWaterDrop(new THREE.Vector3(3.5, 1.5, -1.5));
                 if (gameState.robot.buffTimer <= 0) { gameState.robot.buffActive = false; robotMesh.rotation.y = 0; updateUI(); }
             }
 
@@ -1144,9 +1107,9 @@
                     nearest = { type: 'robot', text: 'คุยกับหุ่นยนต์ 🤖', pos: wellRobotGroup.position };
                 }
 
-                const dMkt = pPos.distanceTo(new THREE.Vector3(LANDMARK_COORDS.marketPier.x + 2.8, 1.5, LANDMARK_COORDS.marketPier.z - 3.0));
+                const dMkt = pPos.distanceTo(new THREE.Vector3(2.8, 1.5, 7.5));
                 if (dMkt < minDist + 0.8) {
-                    nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(LANDMARK_COORDS.marketPier.x + 2.8, 1.5, LANDMARK_COORDS.marketPier.z - 3.0) };
+                    nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(2.8, 1.5, 7.5) };
                 }
 
                 activeTarget = nearest;
@@ -1163,7 +1126,7 @@
                 } else if (actionPrompt) actionPrompt.style.display = 'none';
             }
 
-            // Particles
+            // Particles update
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.life -= delta;
