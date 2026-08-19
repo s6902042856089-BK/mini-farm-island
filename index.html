@@ -30,14 +30,19 @@
             height: 100vh;
             background: #372d68; /* Deep Indigo / Purple */
             z-index: 9999;
-            display: flex;
+            display: none;
+            opacity: 0;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             padding: 50px 20px 35px 20px;
             box-sizing: border-box;
             user-select: none;
-            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+        }
+        #loading-screen.active {
+            display: flex;
+            opacity: 1;
         }
         #loading-screen.loaded {
             opacity: 0;
@@ -278,29 +283,6 @@
     <!-- GAME ENGINE SCRIPT -->
     <script>
     // ==========================================================================
-    // 0. LOADING SCREEN CONTROLLER
-    // ==========================================================================
-    (function() {
-        const loadingScreen = document.getElementById('loading-screen');
-        const loadingNumber = document.getElementById('loading-number');
-        let currentProgress = 0;
-
-        const loadInterval = setInterval(() => {
-            currentProgress += Math.floor(Math.random() * 12) + 6;
-            if (currentProgress >= 100) {
-                currentProgress = 100;
-                clearInterval(loadInterval);
-                if (loadingNumber) loadingNumber.innerText = '100';
-                setTimeout(() => {
-                    if (loadingScreen) loadingScreen.classList.add('loaded');
-                }, 400);
-            } else {
-                if (loadingNumber) loadingNumber.innerText = currentProgress;
-            }
-        }, 120);
-    })();
-
-    // ==========================================================================
     // GLOBAL DEFINITIONS & GAME STATE
     // ==========================================================================
     const ISLAND_CONFIGS = {
@@ -361,12 +343,46 @@
     window.startGame = function() {
         try { if(window.initAudio) window.initAudio(); } catch(e){}
         try { if(window.sfx) window.sfx.click(); } catch(e){}
+        
         const ts = document.getElementById('title-screen');
         if (ts) ts.style.display = 'none';
-        const hud = document.getElementById('hud');
-        if (hud) hud.style.display = 'flex';
-        gameState.mode = 'transitioning';
-        transitionProg = 0;
+
+        // Trigger Coastal World Loading Screen
+        const ls = document.getElementById('loading-screen');
+        const ln = document.getElementById('loading-number');
+        if (ls) {
+            ls.classList.remove('loaded');
+            ls.classList.add('active');
+            let prog = 0;
+            if (ln) ln.innerText = '0';
+            
+            const loadTimer = setInterval(() => {
+                prog += Math.floor(Math.random() * 15) + 8;
+                if (prog >= 100) {
+                    prog = 100;
+                    if (ln) ln.innerText = '100';
+                    clearInterval(loadTimer);
+                    
+                    setTimeout(() => {
+                        ls.classList.add('loaded');
+                        const hud = document.getElementById('hud');
+                        if (hud) hud.style.display = 'flex';
+                        gameState.mode = 'transitioning';
+                        transitionProg = 0;
+                        setTimeout(() => {
+                            ls.classList.remove('active');
+                        }, 700);
+                    }, 400);
+                } else {
+                    if (ln) ln.innerText = prog;
+                }
+            }, 80);
+        } else {
+            const hud = document.getElementById('hud');
+            if (hud) hud.style.display = 'flex';
+            gameState.mode = 'transitioning';
+            transitionProg = 0;
+        }
     };
 
     window.startGoogleLogin = async function() {
