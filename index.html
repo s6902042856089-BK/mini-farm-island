@@ -181,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>Stylized Models & PCFSoftShadow</span>
+                3D Mini Farm Island Archipelago • <span>High-Definition Stylized 3D Models</span>
             </div>
         </div>
     </div>
@@ -376,7 +376,7 @@
                 } else {
                     if (ln) ln.innerText = prog;
                 }
-            }, 80);
+            }, 75);
         } else {
             const hud = document.getElementById('hud');
             if (hud) hud.style.display = 'flex';
@@ -456,7 +456,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // EXACT Tone Mapping & Soft Shadows requested by user:
+        // EXACT Tone Mapping & Soft Shadows:
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -503,7 +503,7 @@
             waveVertices.push({ ang: Math.random() * Math.PI * 2, amp: 0.14 + Math.random() * 0.1, speed: 0.022 });
         }
 
-        // Shore Foam Outline Rings (Stylized Cartoon Water Edges)
+        // Shore Foam Outline Rings
         const matFoam = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.65, side: THREE.DoubleSide });
         const foamRing1 = new THREE.Mesh(new THREE.RingGeometry(13.8, 15.6, 32), matFoam);
         foamRing1.rotation.x = -Math.PI / 2; foamRing1.position.y = -0.32; scene.add(foamRing1);
@@ -558,14 +558,13 @@
             }
         }
 
-        // 3. STYLIZED PALETTE & MODEL GENERATOR (Assembling Stylized Low-Poly Models)
+        // 3. STYLIZED PALETTE & MODEL GENERATOR
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
-        // Stylized Pastel Materials
-        const matGrassPastel1 = new THREE.MeshStandardMaterial({ color: 0x55efc4, roughness: 0.65, flatShading: true }); // Mint Green
-        const matSandPastel1 = new THREE.MeshStandardMaterial({ color: 0xffeaa7, roughness: 0.8, flatShading: true });  // Warm Sand Gold
-        const matGrassPastel2 = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.65, flatShading: true }); // Tropical Emerald
+        const matGrassPastel1 = new THREE.MeshStandardMaterial({ color: 0x55efc4, roughness: 0.65, flatShading: true });
+        const matSandPastel1 = new THREE.MeshStandardMaterial({ color: 0xffeaa7, roughness: 0.8, flatShading: true });
+        const matGrassPastel2 = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.65, flatShading: true });
         const matSandPastel2 = new THREE.MeshStandardMaterial({ color: 0xfdcb6e, roughness: 0.8, flatShading: true });
         
         const matCobble = new THREE.MeshStandardMaterial({ color: 0xdfe6e9, roughness: 0.85, flatShading: true });
@@ -584,7 +583,6 @@
         const matFlowerRed = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.4 });
         const matFlowerWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
 
-        // Helper: Stylized Low-Poly Rock Cluster
         function createStylizedRock(x, y, z, s=1, mat=matRockStylized) {
             const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8 * s, 1), mat);
             rock.position.set(x, y, z);
@@ -593,7 +591,6 @@
             return rock;
         }
 
-        // Helper: Stylized Stepped Pine Tree
         function createStylizedPine(x, z, s=1, tintMat=matFoliagePine1) {
             const tree = new THREE.Group();
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 1.4, 6), matNordicWood);
@@ -611,7 +608,6 @@
             return tree;
         }
 
-        // Helper: Flower Patch
         function createFlowerPatch(parent, x, z, count=6) {
             const flowerColors = [matFlowerYellow, matFlowerRed, matFlowerWhite];
             for (let i = 0; i < count; i++) {
@@ -625,7 +621,6 @@
             }
         }
 
-        // Helper: White Country Fence
         function createFence(parent, x, z, rot=0) {
             const fence = new THREE.Group();
             const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.7, 0.1), matNordicWall); p1.position.set(-0.6, 0.35, 0);
@@ -638,23 +633,20 @@
             parent.add(fence);
         }
 
-        // --- 1. ASSEMBLE ISLAND 1: STARTER VEGGIE ISLAND ---
+        // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
         is1Group.position.set(0, 0, 0);
 
-        // Stepped Island Terrain (Sand beach + Lush Grass top + Stepped Hill for Windmill)
         const is1Beach = new THREE.Mesh(new THREE.CylinderGeometry(14.5, 16.0, 1.8, 32), matSandPastel1);
         is1Beach.position.set(0, -0.1, 0); is1Beach.receiveShadow = true; is1Beach.castShadow = true;
         
         const is1Grass = new THREE.Mesh(new THREE.CylinderGeometry(13.2, 14.0, 1.4, 32), matGrassPastel1);
         is1Grass.position.set(0, 0.8, 0); is1Grass.receiveShadow = true; is1Grass.castShadow = true;
 
-        // Hill plateau for Windmill
         const is1Hill = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 5.2, 1.2, 20), matGrassPastel1);
         is1Hill.position.set(-8.5, 2.0, 0); is1Hill.receiveShadow = true; is1Hill.castShadow = true;
         is1Group.add(is1Beach, is1Grass, is1Hill);
 
-        // Cobblestone Pathways Connecting Zones
         function createCobbleRoad(x, z, sx, sz, rot=0) {
             const p = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.04, sz), matCobble);
             p.position.set(x, 1.52, z); p.rotation.y = rot; p.receiveShadow = true;
@@ -667,7 +659,6 @@
         createCobbleRoad(-1.8, -0.5, 3.2, 1.8, -0.35);
         createCobbleRoad(-5.5, 0.8, 4.0, 1.8, -0.4);
 
-        // Pier & Dock
         const pier1 = new THREE.Group();
         pier1.position.set(0, 0.35, 11.8);
         for (let i = 0; i < 7; i++) {
@@ -678,7 +669,6 @@
         }
         is1Group.add(pier1);
 
-        // Stylized Nordic Barn House
         const barnGroup = new THREE.Group();
         barnGroup.position.set(-4.5, 1.5, -8.0);
         const barnBody = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.6, 3.4), matNordicWall);
@@ -690,7 +680,6 @@
         barnGroup.add(barnBody, barnRoof, chimney);
         is1Group.add(barnGroup);
 
-        // Stylized Windmill on Hill
         const windmillGroup = new THREE.Group();
         windmillGroup.position.set(-8.5, 2.6, 0);
         const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.9, 4.5, 12), matNordicWall);
@@ -710,7 +699,6 @@
         windmillGroup.add(millTower, millDome, bladesGroup);
         is1Group.add(windmillGroup);
 
-        // Market Stall at Pier
         const stall1 = new THREE.Group();
         stall1.position.set(2.8, 1.5, 7.5);
         const counter1 = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.95, 1.3), matNordicWood);
@@ -720,20 +708,17 @@
         stall1.add(counter1, awning1);
         is1Group.add(stall1);
 
-        // Dense Environment Props on Island 1
         is1Group.add(createStylizedPine(-2.0, -10.5, 1.2, matFoliagePine1));
         is1Group.add(createStylizedPine(-8.0, -7.5, 1.1, matFoliagePine2));
         is1Group.add(createStylizedPine(-11.5, 2.5, 1.0, matFoliagePine1));
         is1Group.add(createStylizedPine(9.5, -4.5, 1.15, matFoliagePine2));
         is1Group.add(createStylizedPine(8.5, 4.5, 0.9, matFoliagePine1));
 
-        // Rocks around coast
         is1Group.add(createStylizedRock(12.5, 0.3, 2.5, 1.2));
         is1Group.add(createStylizedRock(11.0, 0.2, -6.0, 1.4));
         is1Group.add(createStylizedRock(-12.5, 0.4, -4.0, 1.5));
         is1Group.add(createStylizedRock(-3.5, 0.2, 12.5, 0.9));
 
-        // Flowers & Fences
         createFlowerPatch(is1Group, 6.0, 3.0, 8);
         createFlowerPatch(is1Group, -4.0, 5.0, 7);
         createFlowerPatch(is1Group, 1.5, -5.5, 9);
@@ -742,7 +727,7 @@
 
         worldGroup.add(is1Group);
 
-        // --- 2. ASSEMBLE ISLAND 2: TROPICAL FRUIT ISLE ---
+        // --- 2. ASSEMBLE ISLAND 2 ---
         const is2Group = new THREE.Group();
         is2Group.position.set(55, 0, -10);
 
@@ -755,7 +740,6 @@
         is2Cliff.position.set(-6.0, 2.3, -6.0); is2Cliff.receiveShadow = true; is2Cliff.castShadow = true;
         is2Group.add(is2Beach, is2Grass, is2Cliff);
 
-        // Return Pier
         const pier2 = new THREE.Group();
         pier2.position.set(-11.5, 0.35, 9.2);
         pier2.rotation.y = -Math.PI / 3;
@@ -767,7 +751,6 @@
         }
         is2Group.add(pier2);
 
-        // Tropical Juice Bar
         const juiceBar = new THREE.Group();
         juiceBar.position.set(3, 1.5, -2);
         const jCounter = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.0, 1.5), matNordicWood);
@@ -777,7 +760,6 @@
         juiceBar.add(jCounter, jRoof);
         is2Group.add(juiceBar);
 
-        // Tropical Palms with Curved Trunks
         function createTropicalPalm(x, z, s=1) {
             const palm = new THREE.Group();
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.32, 4.0, 7), matNordicWood);
@@ -798,7 +780,6 @@
         createTropicalPalm(8, -8, 1.05);
         createTropicalPalm(-2, -10, 1.2);
 
-        // Rocks on Island 2
         is2Group.add(createStylizedRock(11.5, 0.3, -3.0, 1.3, matCoralPink));
         is2Group.add(createStylizedRock(-12.0, 0.3, -2.0, 1.5, matCoralPink));
 
@@ -1337,7 +1318,7 @@
                 window.openMarket();
             } else if (activeTarget.type === 'boat_is1') {
                 const q1 = gameState.quests[1][0].done;
-                const q2 = gameState.quests[1][1].done;
+                const q2 = gameState.quests[1][0].done;
                 if (!gameState.unlockedIslands.includes(2)) {
                     if (!q1 || !q2) {
                         showToast('⚠️ ต้องทำเควสต์เก็บผัก 6 ชิ้น และตอบ Quiz ให้ผ่านก่อน!');
