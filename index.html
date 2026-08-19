@@ -94,6 +94,20 @@
             align-items: center;
             gap: 8px;
         }
+
+        /* Island Badge */
+        #island-badge {
+            background: linear-gradient(135deg, #0984e3, #00cec9);
+            color: white;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 </head>
 <body>
@@ -106,7 +120,7 @@
         <div class="title-card">
             <span class="brand-badge">🌴 COASTAL WORLD 3D ARCHIPELAGO</span>
             <h1 class="game-title">Mini Farm Island</h1>
-            <p class="game-subtitle">สำรวจหมู่เกาะชายฝั่ง ข้ามสะพานไม้ ปลูกพืชผล และสร้างฟาร์มในฝัน</p>
+            <p class="game-subtitle">สำรวจหมู่เกาะชายฝั่ง ปลูกผักผลไม้ ล่องเรือข้ามฟาก และสร้างฟาร์มในฝัน</p>
             
             <button class="btn-primary" id="btn-start-game" onclick="window.startGame()">
                 🚀 เริ่มต้นสำรวจเกาะ (START)
@@ -128,7 +142,11 @@
     <div id="hud">
         <div class="hud-top-bar">
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div id="island-badge">
+                        <span>🏝️</span>
+                        <span id="island-name">เกาะที่ 1: เกาะผักสวนครัว</span>
+                    </div>
                     <div class="hud-pill">
                         <span class="hud-icon">🪙</span>
                         <span id="money-display">100 🪙</span>
@@ -148,7 +166,7 @@
             </div>
 
             <div class="quest-card">
-                <div class="quest-header">🎯 ภารกิจประจำหมู่เกาะ</div>
+                <div class="quest-header">🎯 ภารกิจประจำเกาะ</div>
                 <div id="quest-list"></div>
             </div>
         </div>
@@ -188,8 +206,8 @@
     <!-- 3. MODALS -->
     <div class="modal-overlay" id="market-modal">
         <div class="modal-content">
-            <h2 class="modal-title">⛵ ตลาดริมท่าเรือ</h2>
-            <p style="color: #7f8c8d; font-size: 0.9rem;">นำผลผลิตจากการทำฟาร์มมาขายเพื่อรับเหรียญทอง</p>
+            <h2 class="modal-title" id="market-title">⛵ ตลาดริมท่าเรือ</h2>
+            <p style="color: #7f8c8d; font-size: 0.9rem;" id="market-desc">นำผลผลิตจากการทำฟาร์มมาขายเพื่อรับเหรียญทอง</p>
             <div class="market-list" id="market-list"></div>
             <button class="btn-primary" id="btn-sell-all" onclick="window.sellAllCrops()">ขายทั้งหมด</button>
             <button class="btn-close" onclick="document.getElementById('market-modal').style.display='none'">ปิด</button>
@@ -209,34 +227,71 @@
     <!-- GAME ENGINE SCRIPT -->
     <script>
     // ==========================================================================
-    // GLOBAL HANDLERS (DEFINED IMMEDIATELY BEFORE ANY SUB-SYSTEM RUNS)
+    // GLOBAL DEFINITIONS & GAME STATE
     // ==========================================================================
-    const SEED_TYPES = {
-        tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 6 },
-        carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 10 },
-        cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 220, growTime: 16 },
-        corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 22 }
+    const ISLAND_CONFIGS = {
+        1: {
+            id: 1,
+            name: 'เกาะที่ 1: เกาะผักสวนครัว 🥬',
+            spawnPos: { x: 0, y: 1.5, z: 8.5 },
+            boatDockPos: { x: 0, y: 0.5, z: 12.5 },
+            marketPos: { x: 2.8, y: 1.5, z: 7.5 },
+            marketTitle: '⛵ ตลาดริมท่าเรือ (เกาะที่ 1)',
+            marketDesc: 'ขายผักสดเพื่อสะสมเหรียญทองและปลดล็อกเรือข้ามฟาก',
+            seeds: {
+                tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 5, island: 1 },
+                carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 8, island: 1 },
+                cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 200, growTime: 14, island: 1 },
+                corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 20, island: 1 }
+            }
+        },
+        2: {
+            id: 2,
+            name: 'เกาะที่ 2: เกาะผลไม้เมืองร้อน 🍍',
+            spawnPos: { x: 55, y: 1.5, z: -5 },
+            boatDockPos: { x: 44, y: 0.5, z: -1 },
+            marketPos: { x: 58, y: 1.5, z: -12 },
+            marketTitle: '🥤 ซุ้มน้ำผลไม้ปั่น (เกาะที่ 2)',
+            marketDesc: 'แปรรูปผลไม้เมืองร้อนเป็นเครื่องดื่มทำกำไรมหาศาล!',
+            seeds: {
+                strawberry: { id: 'strawberry', name: 'สตรอว์เบอร์รี 🍓', emoji: '🍓', cost: 50, earn: 150, growTime: 7, island: 2 },
+                watermelon: { id: 'watermelon', name: 'แตงโม 🍉', emoji: '🍉', cost: 120, earn: 380, growTime: 12, island: 2 },
+                pineapple: { id: 'pineapple', name: 'สับปะรด 🍍', emoji: '🍍', cost: 250, earn: 850, growTime: 18, island: 2 },
+                dragonfruit: { id: 'dragonfruit', name: 'แก้วมังกร 🌺', emoji: '🌺', cost: 500, earn: 1800, growTime: 25, island: 2 }
+            }
+        }
     };
 
     const gameState = {
         mode: 'intro',
-        player: { name: 'Explorer', money: 100, harvestCount: 0 },
-        inventory: { tomato: 0, carrot: 0, cabbage: 0, corn: 0 },
+        currentIsland: 1,
+        unlockedIslands: [1],
+        player: { name: 'Explorer', money: 100, is1HarvestCount: 0, is2HarvestCount: 0 },
+        inventory: { tomato: 0, carrot: 0, cabbage: 0, corn: 0, strawberry: 0, watermelon: 0, pineapple: 0, dragonfruit: 0 },
         selectedSeed: 'tomato',
-        unlockedPlots: 6,
         robot: { buffActive: false, buffTimer: 0, broken: false, brokenTimer: 0, currentAnswer: 0 },
-        quests: [
-            { id: 'harvest_3', title: 'เก็บเกี่ยวผลผลิต 3 ชิ้น', target: 3, current: 0, reward: 50, done: false },
-            { id: 'visit_island2', title: 'ข้ามสะพานไม้ไปเกาะประภาคารโบราณ', target: 1, current: 0, reward: 100, done: false },
-            { id: 'quiz_1', title: 'ช่วยหุ่นยนต์ตอบคำถาม 1 ครั้ง', target: 1, current: 0, reward: 80, done: false }
-        ]
+        quests: {
+            1: [
+                { id: 'harvest_6', title: 'เก็บเกี่ยวผักให้ครบ 6 ชิ้น', target: 6, current: 0, reward: 80, done: false },
+                { id: 'quiz_1', title: 'ช่วยหุ่นยนต์ตอบคำถาม 1 ครั้ง', target: 1, current: 0, reward: 70, done: false },
+                { id: 'unlock_boat', title: 'สะสมเงิน 250 🪙 เพื่อปลดล็อกเรือข้ามฟาก', target: 250, current: 100, reward: 0, done: false }
+            ],
+            2: [
+                { id: 'harvest_is2_4', title: 'เก็บเกี่ยวผลไม้เมืองร้อน 4 ชิ้น', target: 4, current: 0, reward: 200, done: false },
+                { id: 'earn_is2_1000', title: 'ขายน้ำผลไม้สะสมเงิน 1,000 🪙', target: 1000, current: 0, reward: 300, done: false }
+            ]
+        }
     };
 
     let transitionProg = 0;
+    let sailingProg = 0;
+    let sailingStartPos = new THREE.Vector3();
+    let sailingTargetPos = new THREE.Vector3();
+    let targetIslandId = 2;
     let activeTarget = null;
     let supabaseClient = null;
 
-    // Direct Window Functions
+    // Window Functions
     window.startGame = function() {
         try { if(window.initAudio) window.initAudio(); } catch(e){}
         try { if(window.sfx) window.sfx.click(); } catch(e){}
@@ -268,12 +323,12 @@
     };
 
     // ==========================================================================
-    // THREE.JS SCENE, WORLD BUILDER, & CONTROLS
+    // THREE.JS SCENE, WORLD ENGINE, & MULTI-ISLAND PROGRESSION
     // ==========================================================================
     (function() {
         // 1. Audio Setup
         let audioInit = false;
-        let synthPlant, synthHarvest, synthCoin, synthError, synthClick, synthCorrect;
+        let synthPlant, synthHarvest, synthCoin, synthError, synthClick, synthCorrect, synthSail;
 
         window.initAudio = async function() {
             if (audioInit || !window.Tone) return;
@@ -286,6 +341,7 @@
                 synthError = new Tone.Synth({ oscillator: { type: "sawtooth" } }).toDestination();
                 synthClick = new Tone.Synth({ oscillator: { type: "sine" } }).toDestination();
                 synthCorrect = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" } }).toDestination();
+                synthSail = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" } }).toDestination();
                 audioInit = true;
             } catch(e) {}
         };
@@ -296,14 +352,15 @@
             coin: () => { try { if(synthCoin) synthCoin.triggerAttackRelease(["E6", "G6", "C7"], "16n"); } catch(e){} },
             click: () => { try { if(synthClick) synthClick.triggerAttackRelease("F5", "32n"); } catch(e){} },
             error: () => { try { if(synthError) synthError.triggerAttackRelease("D3", "8n"); } catch(e){} },
-            correct: () => { try { if(synthCorrect) synthCorrect.triggerAttackRelease(["E5", "G5", "C6", "E6"], "4n"); } catch(e){} }
+            correct: () => { try { if(synthCorrect) synthCorrect.triggerAttackRelease(["E5", "G5", "C6", "E6"], "4n"); } catch(e){} },
+            sail: () => { try { if(synthSail) synthSail.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n"); } catch(e){} }
         };
 
         // 2. Three.js Scene Setup
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x7ed6df);
-        scene.fog = new THREE.FogExp2(0x81ecec, 0.008);
+        scene.fog = new THREE.FogExp2(0x81ecec, 0.007);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -327,17 +384,17 @@
         scene.add(hemiLight);
 
         const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.35);
-        sunLight.position.set(25, 40, 20);
+        sunLight.position.set(35, 50, 25);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
-        const d = 35;
+        const d = 55;
         sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Ocean Water
-        const waterGeo = new THREE.PlaneGeometry(240, 240, 48, 48);
+        // Ocean
+        const waterGeo = new THREE.PlaneGeometry(320, 320, 48, 48);
         const waterMat = new THREE.MeshStandardMaterial({
             color: 0x22a6b3, roughness: 0.15, metalness: 0.2, flatShading: true, transparent: true, opacity: 0.85
         });
@@ -358,6 +415,7 @@
         const matWater = new THREE.MeshBasicMaterial({ color: 0x7ed6df, transparent: true, opacity: 0.85 });
         const matSmoke = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
         const matSpark = new THREE.MeshBasicMaterial({ color: 0xeb4d4b });
+        const matWake = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
         const geoSphere = new THREE.SphereGeometry(0.12, 6, 6);
         const geoBox = new THREE.BoxGeometry(0.08, 0.08, 0.08);
 
@@ -366,6 +424,14 @@
             const p = new THREE.Mesh(geoSphere, matDust.clone());
             p.position.copy(pos); p.position.y += 0.08; scene.add(p);
             particles.push({ mesh: p, vel: new THREE.Vector3((Math.random()-0.5)*0.4, 0.4, (Math.random()-0.5)*0.4), life: 0.35, maxLife: 0.35 });
+        }
+
+        function emitWake(pos) {
+            const p = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.6), matWake.clone());
+            p.rotation.x = -Math.PI / 2;
+            p.position.set(pos.x + (Math.random()-0.5)*0.5, -0.3, pos.z + (Math.random()-0.5)*0.5);
+            scene.add(p);
+            particles.push({ mesh: p, vel: new THREE.Vector3(0, 0, 0), life: 0.8, maxLife: 0.8, scaleUp: true });
         }
 
         function emitWaterDrop(centerPos) {
@@ -390,12 +456,12 @@
             }
         }
 
-        // 4. World Group & Materials
+        // 4. World Groups & Materials
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
-        const matGrass = new THREE.MeshStandardMaterial({ color: 0x6ab04c, roughness: 0.7, flatShading: true });
-        const matSand = new THREE.MeshStandardMaterial({ color: 0xf9ca24, roughness: 0.85, flatShading: true });
+        const matGrass1 = new THREE.MeshStandardMaterial({ color: 0x6ab04c, roughness: 0.7, flatShading: true });
+        const matSand1 = new THREE.MeshStandardMaterial({ color: 0xf9ca24, roughness: 0.85, flatShading: true });
         const matPath = new THREE.MeshStandardMaterial({ color: 0xdfe6e9, roughness: 0.9, flatShading: true });
         const matRock = new THREE.MeshStandardMaterial({ color: 0x95afc0, roughness: 0.8, flatShading: true });
         const matWood = new THREE.MeshStandardMaterial({ color: 0x8b572a, roughness: 0.7 });
@@ -403,104 +469,59 @@
         const matRoofRed = new THREE.MeshStandardMaterial({ color: 0xeb4d4b, roughness: 0.6 });
         const matRoofBlue = new THREE.MeshStandardMaterial({ color: 0x4834d4, roughness: 0.6 });
         const matWhiteWall = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.5 });
-        const matFoliage = new THREE.MeshStandardMaterial({ color: 0x218c74, roughness: 0.75, flatShading: true });
+        const matFoliage1 = new THREE.MeshStandardMaterial({ color: 0x218c74, roughness: 0.75, flatShading: true });
+        
+        // Island 2 Tropical Materials
+        const matSand2 = new THREE.MeshStandardMaterial({ color: 0xf6e58d, roughness: 0.8, flatShading: true });
+        const matGrass2 = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.7, flatShading: true });
+        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.75, flatShading: true });
+        const matBamboo = new THREE.MeshStandardMaterial({ color: 0xc8d6e5, roughness: 0.6 });
+        const matJuiceRoof = new THREE.MeshStandardMaterial({ color: 0xff9f43, roughness: 0.5 });
+        const matPalmFoliage = new THREE.MeshStandardMaterial({ color: 0x1dd1a1, roughness: 0.7, flatShading: true });
 
-        // Island 1: Farm
-        const is1Beach = new THREE.Mesh(new THREE.CylinderGeometry(14, 15.5, 1.8, 28), matSand);
+        // --- ISLAND 1: STARTER VEGGIE FARM (เกาะผักสวนครัว) ---
+        const is1Group = new THREE.Group();
+        is1Group.position.set(0, 0, 0);
+
+        const is1Beach = new THREE.Mesh(new THREE.CylinderGeometry(14, 15.5, 1.8, 28), matSand1);
         is1Beach.position.set(0, -0.1, 0); is1Beach.receiveShadow = true; is1Beach.castShadow = true;
-        const is1Grass = new THREE.Mesh(new THREE.CylinderGeometry(12.8, 13.6, 1.4, 28), matGrass);
+        const is1Grass = new THREE.Mesh(new THREE.CylinderGeometry(12.8, 13.6, 1.4, 28), matGrass1);
         is1Grass.position.set(0, 0.8, 0); is1Grass.receiveShadow = true; is1Grass.castShadow = true;
-        worldGroup.add(is1Beach, is1Grass);
+        is1Group.add(is1Beach, is1Grass);
 
-        // Paths
         function createPath(x, z, sx, sz, rot=0) {
             const p = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.05, sz), matPath);
             p.position.set(x, 1.52, z); p.rotation.y = rot; p.receiveShadow = true;
-            worldGroup.add(p);
+            is1Group.add(p);
         }
         createPath(0, 8.5, 2.2, 3.2);
         createPath(0, 5.0, 2.0, 3.8);
         createPath(0, 1.5, 2.0, 3.2);
         createPath(1.5, -0.5, 3.2, 1.8, 0.4);
         createPath(-1.5, -0.5, 3.0, 1.8, -0.4);
-        createPath(5.5, -0.5, 5.0, 2.0, 0.1);
 
-        // Bridge to Island 2
-        const bridgeGroup = new THREE.Group();
-        bridgeGroup.position.set(15.5, 1.3, -1.0);
-        for (let i = 0; i < 14; i++) {
-            const plank = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.15, 2.8), matWoodLight);
-            plank.position.set((i - 6.5) * 1.3, Math.sin((i / 13) * Math.PI) * -0.25, 0);
-            plank.receiveShadow = true; plank.castShadow = true;
-            bridgeGroup.add(plank);
-            if (i % 3 === 0) {
-                const poleL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2), matWood);
-                poleL.position.set((i - 6.5) * 1.3, -0.8, 1.3);
-                const poleR = poleL.clone(); poleR.position.z = -1.3;
-                bridgeGroup.add(poleL, poleR);
-            }
-        }
-        const ropeGeo = new THREE.CylinderGeometry(0.04, 0.04, 18, 8);
-        const ropeL = new THREE.Mesh(ropeGeo, matWood); ropeL.rotation.z = Math.PI / 2; ropeL.position.set(0, 0.6, 1.3);
-        const ropeR = ropeL.clone(); ropeR.position.z = -1.3;
-        bridgeGroup.add(ropeL, ropeR);
-        worldGroup.add(bridgeGroup);
-
-        // Island 2: Ancient Lighthouse Isle
-        const is2Group = new THREE.Group();
-        is2Group.position.set(32, 0, -2);
-        const is2Beach = new THREE.Mesh(new THREE.CylinderGeometry(12, 13.5, 1.8, 24), matSand);
-        is2Beach.position.set(0, -0.1, 0); is2Beach.receiveShadow = true; is2Beach.castShadow = true;
-        const is2Grass = new THREE.Mesh(new THREE.CylinderGeometry(10.8, 11.8, 1.4, 24), matGrass);
-        is2Grass.position.set(0, 0.8, 0); is2Grass.receiveShadow = true; is2Grass.castShadow = true;
-        const is2Cliff = new THREE.Mesh(new THREE.CylinderGeometry(5.0, 6.0, 2.0, 16), matRock);
-        is2Cliff.position.set(0, 2.2, 0); is2Cliff.receiveShadow = true; is2Cliff.castShadow = true;
-        is2Group.add(is2Beach, is2Grass, is2Cliff);
-
-        const tower = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.6, 7.0, 12), matWhiteWall);
-        tower.position.set(0, 6.5, 0); tower.castShadow = true;
-        const stripe = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.45, 1.5, 12), matRoofRed);
-        stripe.position.set(0, 6.5, 0);
-        const topRoof = new THREE.Mesh(new THREE.ConeGeometry(1.4, 1.4, 12), matRoofRed);
-        topRoof.position.set(0, 10.7, 0); topRoof.castShadow = true;
-        const beamLight = new THREE.Mesh(
-            new THREE.ConeGeometry(3.5, 20.0, 12, 1, true),
-            new THREE.MeshBasicMaterial({ color: 0xfffae0, transparent: true, opacity: 0.28, side: THREE.DoubleSide })
-        );
-        beamLight.position.set(0, 10.0, 9.5); beamLight.rotation.x = Math.PI / 2;
-        is2Group.add(tower, stripe, topRoof, beamLight);
-
-        const chest = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), matWood);
-        chest.position.set(-4.5, 1.9, 2.0); chest.castShadow = true;
-        is2Group.add(chest);
-        worldGroup.add(is2Group);
-
-        // Pier & Market
-        const pierGroup = new THREE.Group();
-        pierGroup.position.set(0, 0.35, 11.5);
+        // ท่าเรือเกาะ 1 (Ferry Pier)
+        const pier1 = new THREE.Group();
+        pier1.position.set(0, 0.35, 11.5);
         for (let i = 0; i < 6; i++) {
             const plank = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.18, 1.0), matWoodLight);
             plank.position.set(0, 0, (i - 2.5) * 1.15);
             plank.receiveShadow = true; plank.castShadow = true;
-            pierGroup.add(plank);
+            pier1.add(plank);
         }
-        const boat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 3.0), matWood);
-        boat.position.set(2.6, -0.1, 1.5); boat.rotation.y = 0.2;
-        pierGroup.add(boat);
-        worldGroup.add(pierGroup);
+        is1Group.add(pier1);
 
-        const stall = new THREE.Group();
-        stall.position.set(2.8, 1.5, 7.5);
-        const counter = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.2), matWood);
-        counter.position.y = 0.45; counter.castShadow = true; counter.receiveShadow = true;
-        const awning = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 1.6), matRoofRed);
-        awning.position.set(0, 1.7, 0); awning.rotation.x = 0.2; awning.castShadow = true;
-        const crate1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.6), matWoodLight);
-        crate1.position.set(-0.6, 0.95, 0);
-        stall.add(counter, awning, crate1);
-        worldGroup.add(stall);
+        // ตลาดเกาะ 1
+        const stall1 = new THREE.Group();
+        stall1.position.set(2.8, 1.5, 7.5);
+        const counter1 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.2), matWood);
+        counter1.position.y = 0.45; counter1.castShadow = true;
+        const awning1 = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 1.6), matRoofRed);
+        awning1.position.set(0, 1.7, 0); awning1.rotation.x = 0.2; awning1.castShadow = true;
+        stall1.add(counter1, awning1);
+        is1Group.add(stall1);
 
-        // Windmill
+        // กังหันลม
         const windmillGroup = new THREE.Group();
         windmillGroup.position.set(-8.5, 1.5, 0);
         const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.8, 4.2, 8), matWhiteWall);
@@ -518,74 +539,132 @@
             bladesGroup.add(holder);
         }
         windmillGroup.add(millTower, millDome, bladesGroup);
-        worldGroup.add(windmillGroup);
+        is1Group.add(windmillGroup);
 
-        // Barn
+        // โรงนา
         const barnGroup = new THREE.Group();
         barnGroup.position.set(-4.5, 1.5, -8.0);
         const barnBody = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 3.2), matRoofRed);
-        barnBody.position.y = 1.2; barnBody.castShadow = true; barnBody.receiveShadow = true;
+        barnBody.position.y = 1.2; barnBody.castShadow = true;
         const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.0, 1.8, 4), matWhiteWall);
         barnRoof.rotation.y = Math.PI / 4; barnRoof.position.y = 3.2; barnRoof.castShadow = true;
         const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), matRock);
         chimney.position.set(-1.2, 3.2, -0.8); chimney.castShadow = true;
         barnGroup.add(barnBody, barnRoof, chimney);
-        worldGroup.add(barnGroup);
+        is1Group.add(barnGroup);
 
-        // Trees
-        function createCozyTree(x, z, s=1) {
-            const tree = new THREE.Group();
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 2.2, 6), matWood);
-            trunk.position.y = 1.1; trunk.castShadow = true;
-            const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 1), matFoliage);
-            leaves.position.y = 2.4; leaves.castShadow = true;
-            tree.add(trunk, leaves);
-            tree.position.set(x, 1.5, z); tree.scale.setScalar(s);
-            worldGroup.add(tree);
+        worldGroup.add(is1Group);
+
+        // --- ISLAND 2: TROPICAL FRUIT ISLE (เกาะผลไม้เขตร้อน) ---
+        const is2Group = new THREE.Group();
+        is2Group.position.set(55, 0, -10);
+
+        const is2Beach = new THREE.Mesh(new THREE.CylinderGeometry(15, 16.5, 1.8, 28), matSand2);
+        is2Beach.position.set(0, -0.1, 0); is2Beach.receiveShadow = true; is2Beach.castShadow = true;
+        const is2Grass = new THREE.Mesh(new THREE.CylinderGeometry(13.5, 14.2, 1.4, 28), matGrass2);
+        is2Grass.position.set(0, 0.8, 0); is2Grass.receiveShadow = true; is2Grass.castShadow = true;
+        
+        // หน้าผาปะการังสีชมพู (Coral Cliffs)
+        const is2Cliff = new THREE.Mesh(new THREE.CylinderGeometry(6.0, 7.2, 2.4, 16), matCoralPink);
+        is2Cliff.position.set(-6.0, 2.2, -6.0); is2Cliff.receiveShadow = true; is2Cliff.castShadow = true;
+        is2Group.add(is2Beach, is2Grass, is2Cliff);
+
+        // ท่าเรือเกาะ 2 (Return Pier)
+        const pier2 = new THREE.Group();
+        pier2.position.set(-11, 0.35, 9);
+        pier2.rotation.y = -Math.PI / 3;
+        for (let i = 0; i < 6; i++) {
+            const plank = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.18, 1.0), matBamboo);
+            plank.position.set(0, 0, (i - 2.5) * 1.15);
+            plank.receiveShadow = true; plank.castShadow = true;
+            pier2.add(plank);
         }
-        createCozyTree(6.5, -6.5, 1.2);
-        createCozyTree(7.5, 4.5, 1.0);
-        createCozyTree(-8.5, 4.5, 1.1);
-        createCozyTree(-4.5, 6.5, 0.9);
-        createCozyTree(30, 6, 1.2);
-        createCozyTree(35, -8, 1.1);
+        is2Group.add(pier2);
+
+        // ซุ้มน้ำผลไม้ปั่น (Tropical Juice Bar)
+        const juiceBar = new THREE.Group();
+        juiceBar.position.set(3, 1.5, -2);
+        const jCounter = new THREE.Mesh(new THREE.BoxGeometry(3.0, 1.0, 1.4), matBamboo);
+        jCounter.position.y = 0.5; jCounter.castShadow = true;
+        const jRoof = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.2, 2.0), matJuiceRoof);
+        jRoof.position.set(0, 2.0, 0); jRoof.rotation.x = 0.2; jRoof.castShadow = true;
+        const jPost1 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.0), matBamboo);
+        jPost1.position.set(-1.4, 1.0, 0.8);
+        const jPost2 = jPost1.clone(); jPost2.position.x = 1.4;
+        juiceBar.add(jCounter, jRoof, jPost1, jPost2);
+        is2Group.add(juiceBar);
+
+        // ต้นมะพร้าวเขตร้อนเกาะ 2 (Tropical Palms)
+        function createTropicalPalm(x, z, s=1) {
+            const palm = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 3.8, 6), matWood);
+            trunk.position.y = 1.9; trunk.rotation.z = 0.15; trunk.castShadow = true;
+            for (let i = 0; i < 5; i++) {
+                const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.7, 2.4, 5), matPalmFoliage);
+                leaf.rotation.x = Math.PI / 2 + 0.35;
+                leaf.rotation.z = (i * Math.PI * 2) / 5;
+                leaf.position.set(0.3, 3.8, 0);
+                palm.add(leaf);
+            }
+            palm.position.set(x, 1.5, z); palm.scale.setScalar(s);
+            is2Group.add(palm);
+        }
+        createTropicalPalm(-6, 6, 1.1);
+        createTropicalPalm(8, 5, 1.2);
+        createTropicalPalm(7, -8, 1.0);
+        createTropicalPalm(-2, -10, 1.15);
+
+        worldGroup.add(is2Group);
+
+        // --- SHARED FERRY BOAT (เรือข้ามฟาก) ---
+        const ferryBoat = new THREE.Group();
+        const bHull = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 4.0), matWood);
+        bHull.position.y = 0.2; bHull.castShadow = true;
+        const bCabin = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.0, 1.6), matWhiteWall);
+        bCabin.position.set(0, 0.9, -0.6); bCabin.castShadow = true;
+        const bRoof = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.15, 1.8), matRoofRed);
+        bRoof.position.set(0, 1.45, -0.6);
+        const bFlag = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.9), matJuiceRoof);
+        bFlag.position.set(0, 1.8, 1.2);
+        ferryBoat.add(bHull, bCabin, bRoof, bFlag);
+        ferryBoat.position.set(0, 0.4, 14.5);
+        scene.add(ferryBoat);
 
         // Clouds
         const clouds = [];
-        for (let i = 0; i < 6; i++) {
-            const cloud = new THREE.Mesh(new THREE.DodecahedronGeometry(2.0, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, flatShading: true }));
-            cloud.position.set((Math.random() - 0.5) * 80, 14 + Math.random() * 5, (Math.random() - 0.5) * 80);
+        for (let i = 0; i < 8; i++) {
+            const cloud = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, flatShading: true }));
+            cloud.position.set((Math.random() - 0.5) * 120, 16 + Math.random() * 6, (Math.random() - 0.5) * 100);
             scene.add(cloud);
             clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
 
         // 5. Terrain Elevation Physics & Obstacles
         function getTerrainElevation(x, z) {
-            const d1 = Math.sqrt(x * x + z * z);
+            // เกาะ 1
+            const d1 = Math.hypot(x, z);
             if (d1 <= 12.8) return 1.5;
             if (d1 <= 14.5) return 1.5 - ((d1 - 12.8) / 1.7) * 0.8;
-
-            if (x >= 6.0 && x <= 25.0 && Math.abs(z - (-1.0)) <= 1.5) {
-                return 1.4 - Math.sin(((x - 6.0) / 19.0) * Math.PI) * 0.25;
-            }
-
             if (Math.abs(x) <= 1.8 && z >= 8.5 && z <= 15.0) return 0.9;
 
-            const dx2 = x - 32, dz2 = z - (-2);
-            const d2 = Math.sqrt(dx2 * dx2 + dz2 * dz2);
-            if (d2 <= 5.0) return 3.6;
-            if (d2 <= 10.8) return 1.5;
-            if (d2 <= 12.5) return 1.5 - ((d2 - 10.8) / 1.7) * 0.8;
+            // เกาะ 2
+            const dx2 = x - 55, dz2 = z - (-10);
+            const d2 = Math.hypot(dx2, dz2);
+            if (d2 <= 13.5) return 1.5;
+            if (d2 <= 15.2) return 1.5 - ((d2 - 13.5) / 1.7) * 0.8;
+            // ท่าเรือเกาะ 2
+            const dDock2 = Math.hypot(x - 44, z - (-1));
+            if (dDock2 <= 3.5) return 0.9;
 
-            return -0.2;
+            return -0.2; // ตกน้ำ
         }
 
         const obstacles = [
             { x: -4.5, z: -8.0, radius: 2.2 },
             { x: -8.5, z: 0, radius: 1.8 },
-            { x: 32, z: -2, radius: 2.0 },
             { x: 2.8, z: 7.5, radius: 1.4 },
-            { x: -2.5, z: 2.5, radius: 1.2 }
+            { x: -2.5, z: 2.5, radius: 1.2 },
+            { x: 58, z: -12, radius: 1.8 } // ร้านน้ำผลไม้เกาะ 2
         ];
 
         // 6. Character
@@ -622,13 +701,13 @@
         modelGroup.add(torso, head, eyeL, eyeR, hatBrim, hatTop, legL, legR, armL, armR);
         charGroup.add(modelGroup);
 
-        // 7. Robot & Well
+        // 7. Robot & Well (Island 1)
         const wellRobotGroup = new THREE.Group();
         wellRobotGroup.position.set(-2.5, 1.5, 2.5);
         scene.add(wellRobotGroup);
 
         const well = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.1, 0.7, 16), matRock);
-        well.position.y = 0.35; well.castShadow = true; well.receiveShadow = true;
+        well.position.y = 0.35; well.castShadow = true;
         const waterWell = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.71, 16), new THREE.MeshBasicMaterial({ color: 0x0984e3 }));
         waterWell.position.y = 0.35;
         const postW1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.15), matWood);
@@ -649,40 +728,42 @@
         robotMesh.add(rBody, rHead, rWheel);
         wellRobotGroup.add(robotMesh);
 
-        // 8. Farm Plots
-        const gridGroup = new THREE.Group();
-        gridGroup.position.set(3.5, 1.5, -1.5);
-        scene.add(gridGroup);
-
-        const plots = [];
-        const plotSize = 2.0, gap = 0.25;
+        // 8. Farm Plots on Both Islands
+        const allPlots = [];
         const matSoilDry = new THREE.MeshStandardMaterial({ color: 0x53381a, roughness: 0.95 });
         const matSoilWet = new THREE.MeshStandardMaterial({ color: 0x2d1a08, roughness: 0.8 });
 
-        const PLOT_COORDS = [
-            { c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 },
-            { c: 0, r: 1 }, { c: 1, r: 1 }, { c: 2, r: 1 },
-            { c: 0, r: 2 }, { c: 1, r: 2 }, { c: 2, r: 2 },
-            { c: 0, r: 3 }, { c: 1, r: 3 }, { c: 2, r: 3 }
-        ];
+        function buildPlotsForIsland(islandId, centerPos, borderMat) {
+            const gridGroup = new THREE.Group();
+            gridGroup.position.set(centerPos.x, centerPos.y, centerPos.z);
+            scene.add(gridGroup);
 
-        for (let i = 0; i < PLOT_COORDS.length; i++) {
-            const plotGroup = new THREE.Group();
-            const coord = PLOT_COORDS[i];
-            const frame = new THREE.Mesh(new THREE.BoxGeometry(plotSize, 0.3, plotSize), matWood);
-            frame.position.y = 0.15; frame.castShadow = true; frame.receiveShadow = true;
-            const soil = new THREE.Mesh(new THREE.BoxGeometry(plotSize - 0.2, 0.32, plotSize - 0.2), matSoilDry);
-            soil.position.y = 0.15; soil.receiveShadow = true;
-            plotGroup.add(frame, soil);
-            plotGroup.position.set((coord.c - 1) * (plotSize + gap), 0, (coord.r - 1.5) * (plotSize + gap));
-            plotGroup.visible = i < gameState.unlockedPlots;
-            gridGroup.add(plotGroup);
+            const plotSize = 2.0, gap = 0.25;
+            const COORDS = [
+                { c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 },
+                { c: 0, r: 1 }, { c: 1, r: 1 }, { c: 2, r: 1 }
+            ];
 
-            plots.push({
-                index: i, mesh: soil, group: plotGroup, state: 'empty', seedType: null, progress: 0,
-                cropMesh: null, progressBar: null, isLocked: i >= gameState.unlockedPlots
-            });
+            for (let i = 0; i < COORDS.length; i++) {
+                const pGrp = new THREE.Group();
+                const coord = COORDS[i];
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(plotSize, 0.3, plotSize), borderMat);
+                frame.position.y = 0.15; frame.castShadow = true; frame.receiveShadow = true;
+                const soil = new THREE.Mesh(new THREE.BoxGeometry(plotSize - 0.2, 0.32, plotSize - 0.2), matSoilDry);
+                soil.position.y = 0.15; soil.receiveShadow = true;
+                pGrp.add(frame, soil);
+                pGrp.position.set((coord.c - 1) * (plotSize + gap), 0, (coord.r - 0.5) * (plotSize + gap));
+                gridGroup.add(pGrp);
+
+                allPlots.push({
+                    islandId, index: i, mesh: soil, group: pGrp, gridPos: centerPos,
+                    state: 'empty', seedType: null, progress: 0, cropMesh: null, progressBar: null
+                });
+            }
         }
+
+        buildPlotsForIsland(1, { x: 3.5, y: 1.5, z: -1.5 }, matWood);
+        buildPlotsForIsland(2, { x: 55 + 3.5, y: 1.5, z: -10 + 2.5 }, matBamboo);
 
         function createProgressBar() {
             const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x222222, side: THREE.DoubleSide, depthTest: false }));
@@ -696,27 +777,42 @@
         function generateCropMesh(type) {
             const grp = new THREE.Group();
             if (type === 'tomato') {
-                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matFoliage); stem.position.y = 0.35;
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matFoliage1); stem.position.y = 0.35;
                 const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.3 })); f1.position.set(0.18, 0.45, 0.15);
                 grp.add(stem, f1);
             } else if (type === 'carrot') {
                 const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.4 })); root.rotation.x = Math.PI; root.position.y = 0.4;
-                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matFoliage); leaves.position.y = 0.85;
+                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matFoliage1); leaves.position.y = 0.85;
                 grp.add(root, leaves);
             } else if (type === 'cabbage') {
                 const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.7 })); cab.position.y = 0.42;
                 grp.add(cab);
-            } else {
-                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matFoliage); stalk.position.y = 0.55;
+            } else if (type === 'corn') {
+                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matFoliage1); stalk.position.y = 0.55;
                 const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.3 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
                 grp.add(stalk, cob);
+            } else if (type === 'strawberry') {
+                const berry = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xff3838, roughness: 0.3 })); berry.rotation.x = Math.PI; berry.position.y = 0.3;
+                const top = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.2, 5), matPalmFoliage); top.position.y = 0.55;
+                grp.add(berry, top);
+            } else if (type === 'watermelon') {
+                const mel = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.3 })); mel.scale.set(1.2, 0.9, 0.9); mel.position.y = 0.45;
+                grp.add(mel);
+            } else if (type === 'pineapple') {
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xffa502, roughness: 0.5 })); body.position.y = 0.45;
+                const crown = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), matPalmFoliage); crown.position.y = 0.95;
+                grp.add(body, crown);
+            } else if (type === 'dragonfruit') {
+                const df = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 1), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.4 })); df.position.y = 0.45;
+                grp.add(df);
             }
             return grp;
         }
 
-        // 9. UI Functions
+        // 9. UI & Progression Handlers
         const actionPrompt = document.getElementById('action-prompt');
         const actionText = document.getElementById('action-prompt-text');
+        const islandNameEl = document.getElementById('island-name');
         const moneyDisplay = document.getElementById('money-display');
         const invDisplay = document.getElementById('inventory-count');
         const buffIndicator = document.getElementById('buff-indicator');
@@ -724,6 +820,8 @@
         const seedSelector = document.getElementById('seed-selector');
         const questList = document.getElementById('quest-list');
         const marketModal = document.getElementById('market-modal');
+        const marketTitle = document.getElementById('market-title');
+        const marketDesc = document.getElementById('market-desc');
         const marketList = document.getElementById('market-list');
         const sellAllBtn = document.getElementById('btn-sell-all');
         const quizModal = document.getElementById('quiz-modal');
@@ -735,17 +833,25 @@
             let total = 0; Object.values(gameState.inventory).forEach(v => total += v);
             if (invDisplay) invDisplay.innerText = `${total} ชิ้น`;
 
+            if (islandNameEl) islandNameEl.innerText = ISLAND_CONFIGS[gameState.currentIsland].name;
+
             if (buffIndicator) {
                 buffIndicator.style.display = gameState.robot.buffActive ? 'flex' : 'none';
                 if (buffTimer) buffTimer.innerText = Math.ceil(gameState.robot.buffTimer);
             }
 
+            // Quests
             if (questList) {
                 questList.innerHTML = '';
-                gameState.quests.forEach(q => {
+                const qList = gameState.quests[gameState.currentIsland] || [];
+                qList.forEach(q => {
+                    if (q.id === 'unlock_boat') {
+                        q.current = gameState.player.money;
+                        q.done = (gameState.quests[1][0].done && gameState.quests[1][1].done && gameState.player.money >= 250);
+                    }
                     const item = document.createElement('div');
                     item.className = `quest-item ${q.done ? 'done' : ''}`;
-                    item.innerHTML = `<span class="quest-check">${q.done ? '✓' : '○'}</span><span class="quest-title">${q.title}</span>`;
+                    item.innerHTML = `<span class="quest-check">${q.done ? '✓' : '○'}</span><span class="quest-title">${q.title} (${q.current}/${q.target})</span>`;
                     questList.appendChild(item);
                 });
             }
@@ -754,8 +860,12 @@
         function renderSeedSelector() {
             if (!seedSelector) return;
             seedSelector.innerHTML = '';
-            Object.keys(SEED_TYPES).forEach(k => {
-                const s = SEED_TYPES[k];
+            const seeds = ISLAND_CONFIGS[gameState.currentIsland].seeds;
+            const seedKeys = Object.keys(seeds);
+            if (!seeds[gameState.selectedSeed]) gameState.selectedSeed = seedKeys[0];
+
+            seedKeys.forEach(k => {
+                const s = seeds[k];
                 const btn = document.createElement('div');
                 btn.className = `seed-chip ${gameState.selectedSeed === k ? 'active' : ''}`;
                 btn.innerHTML = `<span class="seed-emoji">${s.emoji}</span><span class="seed-label">${s.name.split(' ')[0]}</span><span class="seed-price">${s.cost}🪙</span>`;
@@ -763,6 +873,7 @@
                 seedSelector.appendChild(btn);
             });
         }
+
         renderSeedSelector();
         updateUI();
 
@@ -782,7 +893,7 @@
         });
         window.addEventListener('mouseup', () => { isDraggingCam = false; });
         window.addEventListener('wheel', (e) => {
-            cameraRadius = Math.max(5.0, Math.min(18.0, cameraRadius + e.deltaY * 0.01));
+            cameraRadius = Math.max(5.0, Math.min(22.0, cameraRadius + e.deltaY * 0.01));
         });
 
         // Touch Camera Drag
@@ -804,7 +915,7 @@
         });
         window.addEventListener('touchend', () => { isDraggingCam = false; });
 
-        // Supabase Init
+        // Supabase Session Init
         if (window.supabase) {
             try {
                 supabaseClient = window.supabase.createClient('https://acwtvjyavxpuuhkeqlln.supabase.co', 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA');
@@ -831,22 +942,29 @@
             if (googleBtn) googleBtn.style.display = 'none';
         }
 
+        // Market System
         window.openMarket = function() {
             try { window.sfx.click(); } catch(e){}
+            const conf = ISLAND_CONFIGS[gameState.currentIsland];
+            marketTitle.innerText = conf.marketTitle;
+            marketDesc.innerText = conf.marketDesc;
             marketList.innerHTML = '';
             let totalVal = 0, totalItems = 0;
+
+            const allSeeds = Object.assign({}, ISLAND_CONFIGS[1].seeds, ISLAND_CONFIGS[2].seeds);
             Object.keys(gameState.inventory).forEach(k => {
                 const cnt = gameState.inventory[k];
-                const s = SEED_TYPES[k];
-                const sub = cnt * s.earn;
-                totalVal += sub; totalItems += cnt;
-                if (cnt > 0) {
+                const s = allSeeds[k];
+                if (s && cnt > 0) {
+                    const sub = cnt * s.earn;
+                    totalVal += sub; totalItems += cnt;
                     const row = document.createElement('div');
                     row.className = 'market-row';
                     row.innerHTML = `<div>${s.emoji} ${s.name.split(' ')[0]} x${cnt}</div><div>+${sub} 🪙</div>`;
                     marketList.appendChild(row);
                 }
             });
+
             if (totalItems === 0) {
                 marketList.innerHTML = `<div style="text-align:center;color:#888;padding:15px;">ไม่มีผลผลิตในคลัง<br>ไปเก็บเกี่ยวพืชผลก่อนนะ!</div>`;
                 sellAllBtn.disabled = true;
@@ -859,9 +977,13 @@
 
         window.sellAllCrops = function() {
             let total = 0;
+            const allSeeds = Object.assign({}, ISLAND_CONFIGS[1].seeds, ISLAND_CONFIGS[2].seeds);
             Object.keys(gameState.inventory).forEach(k => {
-                total += gameState.inventory[k] * SEED_TYPES[k].earn;
-                gameState.inventory[k] = 0;
+                const s = allSeeds[k];
+                if (s) {
+                    total += gameState.inventory[k] * s.earn;
+                    gameState.inventory[k] = 0;
+                }
             });
             if (total > 0) {
                 gameState.player.money += total;
@@ -872,6 +994,7 @@
             }
         };
 
+        // Quiz System
         window.openQuiz = function() {
             try { window.sfx.click(); } catch(e){}
             const ops = ['+', '-', '*'];
@@ -897,9 +1020,13 @@
                     if (opt === ans) {
                         b.classList.add('correct');
                         gameState.robot.buffActive = true;
-                        gameState.robot.buffTimer = 12;
+                        gameState.robot.buffTimer = 14;
                         try { window.sfx.correct(); } catch(e){}
                         showToast('ถูกต้อง! บัฟรดน้ำทำงาน 💧');
+                        if (!gameState.quests[1][1].done) {
+                            gameState.quests[1][1].done = true;
+                            gameState.player.money += gameState.quests[1][1].reward;
+                        }
                     } else {
                         b.classList.add('wrong');
                         gameState.robot.broken = true;
@@ -913,6 +1040,28 @@
             });
             quizModal.style.display = 'flex';
         };
+
+        // Ferry Sailing System (คัตซีนล่องเรือข้ามฟาก)
+        function startSailingTo(islandId) {
+            targetIslandId = islandId;
+            gameState.mode = 'sailing';
+            sailingProg = 0;
+            try { window.sfx.sail(); } catch(e){}
+
+            if (islandId === 2) {
+                if (!gameState.unlockedIslands.includes(2)) {
+                    gameState.player.money -= 250;
+                    gameState.unlockedIslands.push(2);
+                    showToast('🎉 ปลดล็อกเกาะที่ 2 สำเร็จ! จ่ายค่าเรือ 250 🪙 ⛵');
+                }
+                sailingStartPos.copy(ferryBoat.position);
+                sailingTargetPos.set(44, 0.4, -1);
+            } else {
+                sailingStartPos.copy(ferryBoat.position);
+                sailingTargetPos.set(0, 0.4, 14.5);
+            }
+            updateUI();
+        }
 
         function showToast(txt) {
             const t = document.createElement('div');
@@ -954,9 +1103,13 @@
 
         window.triggerAction = function() {
             if (!activeTarget) return;
+
             if (activeTarget.type === 'plant') {
                 const p = activeTarget.plot;
-                const s = SEED_TYPES[gameState.selectedSeed];
+                const seeds = ISLAND_CONFIGS[gameState.currentIsland].seeds;
+                const s = seeds[gameState.selectedSeed];
+                if (!s) return;
+
                 if (gameState.player.money >= s.cost) {
                     gameState.player.money -= s.cost;
                     p.state = 'growing'; p.seedType = gameState.selectedSeed; p.progress = 0;
@@ -971,15 +1124,53 @@
                 gameState.inventory[p.seedType]++;
                 p.group.remove(p.cropMesh); p.cropMesh = null; p.state = 'empty'; p.seedType = null;
                 p.mesh.material = matSoilDry;
-                try { window.sfx.harvest(); } catch(e){} showToast('เก็บเกี่ยวผลผลิตสำเร็จ! ✨'); updateUI();
+                try { window.sfx.harvest(); } catch(e){} showToast('เก็บเกี่ยวผลผลิตสำเร็จ! ✨');
+
+                if (gameState.currentIsland === 1) {
+                    gameState.player.is1HarvestCount++;
+                    gameState.quests[1][0].current = Math.min(6, gameState.player.is1HarvestCount);
+                    if (gameState.quests[1][0].current >= 6 && !gameState.quests[1][0].done) {
+                        gameState.quests[1][0].done = true;
+                        gameState.player.money += gameState.quests[1][0].reward;
+                    }
+                } else {
+                    gameState.player.is2HarvestCount++;
+                    gameState.quests[2][0].current = Math.min(4, gameState.player.is2HarvestCount);
+                    if (gameState.quests[2][0].current >= 4 && !gameState.quests[2][0].done) {
+                        gameState.quests[2][0].done = true;
+                        gameState.player.money += gameState.quests[2][0].reward;
+                    }
+                }
+                updateUI();
             } else if (activeTarget.type === 'robot') {
                 window.openQuiz();
             } else if (activeTarget.type === 'market') {
                 window.openMarket();
+            } else if (activeTarget.type === 'boat_is1') {
+                // Check if ready to sail to Island 2
+                const q1 = gameState.quests[1][0].done;
+                const q2 = gameState.quests[1][1].done;
+                const hasMoney = gameState.player.money >= 250 || gameState.unlockedIslands.includes(2);
+
+                if (!gameState.unlockedIslands.includes(2)) {
+                    if (!q1 || !q2) {
+                        showToast('⚠️ ต้องทำเควสต์เก็บผัก 6 ชิ้น และตอบ Quiz ให้ผ่านก่อน!');
+                        try { window.sfx.error(); } catch(e){}
+                        return;
+                    }
+                    if (gameState.player.money < 250) {
+                        showToast('⚠️ ต้องการ 250 🪙 เพื่อซ่อม/จ่ายค่าเรือข้ามฟาก!');
+                        try { window.sfx.error(); } catch(e){}
+                        return;
+                    }
+                }
+                startSailingTo(2);
+            } else if (activeTarget.type === 'boat_is2') {
+                startSailingTo(1);
             }
         };
 
-        // 11. Main Loop & Engine
+        // 11. Main Animation & Physics Loop
         const clock = new THREE.Clock();
         let introAngle = 0;
         const tempVec = new THREE.Vector3();
@@ -996,11 +1187,50 @@
             posAttr.needsUpdate = true;
 
             bladesGroup.rotation.z += delta * 1.5;
-            beamLight.rotation.z += delta * 1.0;
-            clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 50) c.mesh.position.x = -50; });
+            clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 80) c.mesh.position.x = -80; });
             emitChimneySmoke(new THREE.Vector3(-4.5 - 1.2, 4.8, -8.0 - 0.8));
 
-            // Move Character
+            // Sailing Cutscene Mode
+            if (gameState.mode === 'sailing') {
+                sailingProg += delta * 0.35;
+                const t = Math.min(1.0, sailingProg);
+                
+                // Curve Path between Island 1 and 2
+                const midX = (sailingStartPos.x + sailingTargetPos.x) / 2;
+                const midZ = (sailingStartPos.z + sailingTargetPos.z) / 2 + 12; // arc out to sea
+                
+                const p0 = sailingStartPos, p1 = new THREE.Vector3(midX, 0.4, midZ), p2 = sailingTargetPos;
+                const bx = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
+                const bz = (1-t)*(1-t)*p0.z + 2*(1-t)*t*p1.z + t*t*p2.z;
+                const by = 0.4 + Math.sin(elapsed * 4) * 0.08;
+
+                ferryBoat.position.set(bx, by, bz);
+                charGroup.position.set(bx, by + 0.4, bz);
+
+                const nextT = Math.min(1.0, t + 0.01);
+                const nbx = (1-nextT)*(1-nextT)*p0.x + 2*(1-nextT)*nextT*p1.x + nextT*nextT*p2.x;
+                const nbz = (1-nextT)*(1-nextT)*p0.z + 2*(1-nextT)*nextT*p1.z + nextT*nextT*p2.z;
+                ferryBoat.rotation.y = Math.atan2(nbx - bx, nbz - bz);
+                modelGroup.rotation.y = ferryBoat.rotation.y;
+
+                emitWake(ferryBoat.position);
+
+                // Camera follows boat smoothly
+                camera.position.lerp(new THREE.Vector3(bx - 8, by + 7, bz + 12), 0.1);
+                camera.lookAt(bx, by + 1.0, bz);
+
+                if (sailingProg >= 1.0) {
+                    gameState.currentIsland = targetIslandId;
+                    gameState.mode = 'exploring';
+                    const spawn = ISLAND_CONFIGS[targetIslandId].spawnPos;
+                    charGroup.position.set(spawn.x, spawn.y, spawn.z);
+                    renderSeedSelector();
+                    updateUI();
+                    showToast(`ยินดีต้อนรับสู่ ${ISLAND_CONFIGS[targetIslandId].name}! 🌴✨`);
+                }
+            }
+
+            // Exploring Mode Character Movement
             const moveInput = new THREE.Vector2();
             if (keys['w'] || keys['arrowup']) moveInput.y += 1;
             if (keys['s'] || keys['arrowdown']) moveInput.y -= 1;
@@ -1041,40 +1271,35 @@
                 legL.rotation.x = Math.sin(t) * 0.75; legR.rotation.x = -Math.sin(t) * 0.75;
                 armL.rotation.x = -Math.sin(t) * 0.75; armR.rotation.x = Math.sin(t) * 0.75;
                 emitDust(charGroup.position);
-
-                if (charGroup.position.x > 25 && !gameState.quests[1].done) {
-                    gameState.quests[1].done = true;
-                    gameState.player.money += gameState.quests[1].reward;
-                    try { window.sfx.coin(); } catch(e){}
-                    showToast('🎉 สำรวจเกาะประภาคารโบราณสำเร็จ! (+100 🪙)');
-                    updateUI();
-                }
-            } else {
+            } else if (gameState.mode === 'exploring') {
                 legL.rotation.x = 0; legR.rotation.x = 0; armL.rotation.x = 0; armR.rotation.x = 0;
             }
 
-            // Crops
+            // Crops Update
             const speedMul = gameState.robot.buffActive ? 1.6 : 1.0;
-            plots.forEach(p => {
-                if (p.state === 'growing') {
-                    const conf = SEED_TYPES[p.seedType];
-                    p.progress += (delta / conf.growTime) * speedMul;
-                    if (p.progress >= 1.0) {
-                        p.progress = 1.0; p.state = 'ready';
-                        p.group.remove(p.progressBar.group); p.progressBar = null;
-                        p.cropMesh.scale.set(1.1, 1.1, 1.1);
-                    } else {
-                        const s = 0.15 + p.progress * 0.85;
-                        p.cropMesh.scale.set(s, s, s);
-                        p.progressBar.bar.scale.x = Math.max(0.01, p.progress);
-                        p.progressBar.group.quaternion.copy(camera.quaternion);
+            allPlots.forEach(p => {
+                if (p.islandId === gameState.currentIsland && p.state === 'growing') {
+                    const allSeeds = Object.assign({}, ISLAND_CONFIGS[1].seeds, ISLAND_CONFIGS[2].seeds);
+                    const conf = allSeeds[p.seedType];
+                    if (conf) {
+                        p.progress += (delta / conf.growTime) * speedMul;
+                        if (p.progress >= 1.0) {
+                            p.progress = 1.0; p.state = 'ready';
+                            p.group.remove(p.progressBar.group); p.progressBar = null;
+                            p.cropMesh.scale.set(1.1, 1.1, 1.1);
+                        } else {
+                            const s = 0.15 + p.progress * 0.85;
+                            p.cropMesh.scale.set(s, s, s);
+                            p.progressBar.bar.scale.x = Math.max(0.01, p.progress);
+                            p.progressBar.group.quaternion.copy(camera.quaternion);
+                        }
                     }
                 } else if (p.state === 'ready' && p.cropMesh) {
                     p.cropMesh.rotation.y += delta * 1.5;
                 }
             });
 
-            // Robot
+            // Robot on Island 1
             if (gameState.robot.broken) {
                 gameState.robot.brokenTimer -= delta;
                 robotMesh.position.x = 1.5 + Math.sin(elapsed * 45) * 0.08;
@@ -1087,29 +1312,51 @@
                 if (gameState.robot.buffTimer <= 0) { gameState.robot.buffActive = false; robotMesh.rotation.y = 0; updateUI(); }
             }
 
-            // Proximity Badges
+            // Proximity Detection
             if (gameState.mode === 'exploring') {
                 const pPos = charGroup.position;
                 let nearest = null, minDist = 2.8;
 
-                plots.forEach(plot => {
-                    const dPlot = pPos.distanceTo(plot.group.position.clone().add(gridGroup.position));
-                    if (dPlot < minDist) {
-                        minDist = dPlot;
-                        if (plot.state === 'empty') nearest = { type: 'plant', plot, text: 'ปลูกเมล็ดพันธุ์ 🌱', pos: plot.group.position.clone().add(gridGroup.position) };
-                        else if (plot.state === 'ready') nearest = { type: 'harvest', plot, text: 'เก็บเกี่ยวผลผลิต ✨', pos: plot.group.position.clone().add(gridGroup.position) };
+                allPlots.forEach(plot => {
+                    if (plot.islandId === gameState.currentIsland) {
+                        const worldPlotPos = plot.group.position.clone().add(plot.gridPos);
+                        const dPlot = pPos.distanceTo(worldPlotPos);
+                        if (dPlot < minDist) {
+                            minDist = dPlot;
+                            if (plot.state === 'empty') nearest = { type: 'plant', plot, text: 'ปลูกเมล็ดพันธุ์ 🌱', pos: worldPlotPos };
+                            else if (plot.state === 'ready') nearest = { type: 'harvest', plot, text: 'เก็บเกี่ยวผลผลิต ✨', pos: worldPlotPos };
+                        }
                     }
                 });
 
-                const dRob = pPos.distanceTo(wellRobotGroup.position);
-                if (dRob < minDist + 0.6) {
-                    minDist = dRob;
-                    nearest = { type: 'robot', text: 'คุยกับหุ่นยนต์ 🤖', pos: wellRobotGroup.position };
-                }
-
-                const dMkt = pPos.distanceTo(new THREE.Vector3(2.8, 1.5, 7.5));
-                if (dMkt < minDist + 0.8) {
-                    nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(2.8, 1.5, 7.5) };
+                if (gameState.currentIsland === 1) {
+                    const dRob = pPos.distanceTo(wellRobotGroup.position);
+                    if (dRob < minDist + 0.6) {
+                        minDist = dRob;
+                        nearest = { type: 'robot', text: 'คุยกับหุ่นยนต์ 🤖', pos: wellRobotGroup.position };
+                    }
+                    const dMkt = pPos.distanceTo(new THREE.Vector3(2.8, 1.5, 7.5));
+                    if (dMkt < minDist + 0.8) {
+                        nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(2.8, 1.5, 7.5) };
+                    }
+                    const dBoat = pPos.distanceTo(new THREE.Vector3(0, 0.5, 12.0));
+                    if (dBoat < minDist + 1.2) {
+                        const isUnlocked = gameState.unlockedIslands.includes(2);
+                        nearest = {
+                            type: 'boat_is1',
+                            text: isUnlocked ? 'ออกเรือไปเกาะผลไม้เมืองร้อน (เกาะ 2) ⛵' : 'ซ่อมเรือข้ามฟาก (ต้องเควสต์ครบ & 250🪙) ⛵',
+                            pos: new THREE.Vector3(0, 1.0, 12.0)
+                        };
+                    }
+                } else {
+                    const dJuice = pPos.distanceTo(new THREE.Vector3(58, 1.5, -12));
+                    if (dJuice < minDist + 0.8) {
+                        nearest = { type: 'market', text: 'ซุ้มน้ำผลไม้ปั่น 🥤 (ขายผลไม้)', pos: new THREE.Vector3(58, 1.5, -12) };
+                    }
+                    const dBoat2 = pPos.distanceTo(new THREE.Vector3(44, 0.5, -1));
+                    if (dBoat2 < minDist + 1.2) {
+                        nearest = { type: 'boat_is2', text: 'นั่งเรือกลับเกาะที่ 1 ⛵', pos: new THREE.Vector3(44, 1.0, -1) };
+                    }
                 }
 
                 activeTarget = nearest;
@@ -1126,12 +1373,13 @@
                 } else if (actionPrompt) actionPrompt.style.display = 'none';
             }
 
-            // Particles update
+            // Particles Update
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.life -= delta;
                 if (p.life <= 0) { scene.remove(p.mesh); particles.splice(i, 1); continue; }
                 p.mesh.position.addScaledVector(p.vel, delta);
+                if (p.scaleUp) p.mesh.scale.addScalar(delta * 1.5);
                 if (p.gravity) p.vel.y += p.gravity * delta;
             }
 
@@ -1147,7 +1395,7 @@
                 const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.1);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
-                if (transitionProg >= 1.0) { gameState.mode = 'exploring'; showToast('ยินดีต้อนรับสู่หมู่เกาะฟาร์ม! ลากเมาส์เพื่อหมุนกล้อง และใช้ WASD เพื่อสำรวจ 🌴'); }
+                if (transitionProg >= 1.0) { gameState.mode = 'exploring'; showToast('ยินดีต้อนรับสู่เกาะฟาร์ม! ปลูกผักและทำเควสต์เพื่อปลดล็อกเรือข้ามฟาก 🌴'); }
             } else if (gameState.mode === 'exploring') {
                 const camX = charGroup.position.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
                 const camY = charGroup.position.y + cameraRadius * Math.sin(cameraPhi);
