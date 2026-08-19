@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
     
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -19,6 +19,112 @@
     
     <link rel="stylesheet" href="style.css">
     <style>
+        /* ==========================================================
+           COASTAL WORLD EXACT LOADING SCREEN STYLES
+           ========================================================== */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #372d68; /* Deep Indigo / Purple */
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 50px 20px 35px 20px;
+            box-sizing: border-box;
+            user-select: none;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+        }
+        #loading-screen.loaded {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+
+        .loading-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        .coastal-brand-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-txt-top {
+            font-family: 'Montserrat', 'Kanit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            color: #ffffff;
+            letter-spacing: 4px;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        .logo-txt-bottom {
+            font-family: 'Montserrat', 'Kanit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(3.8rem, 8vw, 6.2rem);
+            color: #10ac84; /* Vibrant Turquoise / Emerald Cyan */
+            line-height: 0.9;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: -2px;
+        }
+
+        .loading-percentage {
+            font-family: 'Montserrat', 'Kanit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            color: #ffffff;
+            margin-top: 25px;
+            letter-spacing: 1px;
+        }
+
+        .loading-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .spinner-ring {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #10ac84;
+            border-radius: 50%;
+            animation: spinRing 0.8s linear infinite;
+        }
+
+        @keyframes spinRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-disclaimer {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.78rem;
+            text-align: center;
+            max-width: 520px;
+            line-height: 1.4;
+        }
+        .loading-disclaimer span {
+            color: #10ac84;
+            font-weight: 600;
+        }
+
+        /* Standard In-Game UI Overrides */
         #title-screen { z-index: 100; }
         .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout {
             cursor: pointer !important;
@@ -38,7 +144,6 @@
         }
         .btn-logout:hover { background: #d63031; }
 
-        /* Island Badge */
         #island-badge {
             background: linear-gradient(135deg, #0984e3, #00cec9);
             color: white;
@@ -55,10 +160,30 @@
 </head>
 <body>
 
+    <!-- ==========================================
+         0. COASTAL WORLD LOADING SCREEN
+         ========================================== -->
+    <div id="loading-screen">
+        <div class="loading-center">
+            <div class="coastal-brand-logo">
+                <span class="logo-txt-top">COASTAL</span>
+                <span class="logo-txt-bottom">WORLD</span>
+            </div>
+            <div class="loading-percentage" id="loading-number">0</div>
+        </div>
+
+        <div class="loading-footer">
+            <div class="spinner-ring"></div>
+            <div class="loading-disclaimer">
+                3D Mini Farm Island Archipelago • <span>Powered by Three.js & Supabase</span>
+            </div>
+        </div>
+    </div>
+
     <!-- 3D WebGL Canvas Container -->
     <div id="game-canvas-container"></div>
 
-    <!-- 1. TITLE / LOADING SCREEN -->
+    <!-- 1. TITLE / GAME START SCREEN -->
     <div id="title-screen">
         <div class="title-card">
             <span class="brand-badge">🌴 COASTAL WORLD 3D ARCHIPELAGO</span>
@@ -152,6 +277,29 @@
 
     <!-- GAME ENGINE SCRIPT -->
     <script>
+    // ==========================================================================
+    // 0. LOADING SCREEN CONTROLLER
+    // ==========================================================================
+    (function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingNumber = document.getElementById('loading-number');
+        let currentProgress = 0;
+
+        const loadInterval = setInterval(() => {
+            currentProgress += Math.floor(Math.random() * 12) + 6;
+            if (currentProgress >= 100) {
+                currentProgress = 100;
+                clearInterval(loadInterval);
+                if (loadingNumber) loadingNumber.innerText = '100';
+                setTimeout(() => {
+                    if (loadingScreen) loadingScreen.classList.add('loaded');
+                }, 400);
+            } else {
+                if (loadingNumber) loadingNumber.innerText = currentProgress;
+            }
+        }, 120);
+    })();
+
     // ==========================================================================
     // GLOBAL DEFINITIONS & GAME STATE
     // ==========================================================================
@@ -458,7 +606,7 @@
         const barnGroup = new THREE.Group();
         barnGroup.position.set(-4.5, 1.5, -8.0);
         const barnBody = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 3.2), matRoofRed);
-        barnBody.position.y = 1.2; barnBody.castShadow = true;
+        barnBody.position.y = 1.2; barnBody.castShadow = true; barnBody.receiveShadow = true;
         const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.0, 1.8, 4), matWhiteWall);
         barnRoof.rotation.y = Math.PI / 4; barnRoof.position.y = 3.2; barnRoof.castShadow = true;
         const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), matRock);
@@ -784,7 +932,7 @@
 
         // 360 Camera Drag Handlers
         window.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen')) return;
             isDraggingCam = true;
             prevMousePos = { x: e.clientX, y: e.clientY };
         });
@@ -804,7 +952,7 @@
         // Touch Camera Drag
         let touchStartCam = { x: 0, y: 0 };
         window.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen')) return;
             if (e.touches.length === 1) {
                 isDraggingCam = true;
                 touchStartCam = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -976,31 +1124,26 @@
             setTimeout(() => t.remove(), 1900);
         }
 
-        // 10. Robust Keyboard Event Listener (Supports Thai & English & Arrow Keys)
+        // Robust Keyboard Event Listener (Supports Thai & English & Arrow Keys)
         const moveState = { forward: false, backward: false, left: false, right: false };
 
         function updateKeyStatus(e, isPressed) {
             const code = e.code || '';
             const key = (e.key || '').toLowerCase();
 
-            // Forward: W, KeyW, ArrowUp, or Thai 'ไ' / 'ำ'
             if (code === 'KeyW' || key === 'w' || key === 'ไ' || key === 'ำ' || code === 'ArrowUp') {
                 moveState.forward = isPressed;
             }
-            // Backward: S, KeyS, ArrowDown, or Thai 'ห'
             if (code === 'KeyS' || key === 's' || key === 'ห' || code === 'ArrowDown') {
                 moveState.backward = isPressed;
             }
-            // Left: A, KeyA, ArrowLeft, or Thai 'ฟ'
             if (code === 'KeyA' || key === 'a' || key === 'ฟ' || code === 'ArrowLeft') {
                 moveState.left = isPressed;
             }
-            // Right: D, KeyD, ArrowRight, or Thai 'ก'
             if (code === 'KeyD' || key === 'd' || key === 'ก' || code === 'ArrowRight') {
                 moveState.right = isPressed;
             }
 
-            // Action: E or Space or Thai 'ฎ'
             if (isPressed && (code === 'KeyE' || key === 'e' || key === 'ฎ' || code === 'Space')) {
                 window.triggerAction();
             }
