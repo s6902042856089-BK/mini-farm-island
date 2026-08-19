@@ -35,9 +35,7 @@
             font-weight: 600;
             transition: background 0.2s;
         }
-        .btn-logout:hover {
-            background: #d63031;
-        }
+        .btn-logout:hover { background: #d63031; }
     </style>
 </head>
 <body>
@@ -45,9 +43,7 @@
     <!-- 3D WebGL Canvas Container -->
     <div id="game-canvas-container"></div>
 
-    <!-- ==========================================
-         1. TITLE / LOADING SCREEN (Coastal World Style)
-         ========================================== -->
+    <!-- 1. TITLE / LOADING SCREEN -->
     <div id="title-screen">
         <div class="title-card">
             <span class="brand-badge">🌴 COASTAL WORLD 3D</span>
@@ -70,9 +66,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         2. IN-GAME HUD OVERLAY
-         ========================================== -->
+    <!-- 2. IN-GAME HUD OVERLAY -->
     <div id="hud">
         <div class="hud-top-bar">
             <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -87,7 +81,6 @@
                     </div>
                 </div>
 
-                <!-- User Profile Pill with Logout Button -->
                 <div class="hud-pill" id="hud-auth-status" style="display: none; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.95); gap: 8px;">
                     <span>👤</span>
                     <span id="hud-player-name" style="font-weight: 600; color: #2c3e50;">Explorer</span>
@@ -122,10 +115,7 @@
         <div id="joystick-knob"></div>
     </div>
 
-    <!-- ==========================================
-         3. MODALS
-         ========================================== -->
-    <!-- Market Modal -->
+    <!-- 3. MODALS -->
     <div class="modal-overlay" id="market-modal">
         <div class="modal-content">
             <h2 class="modal-title">⛵ ตลาดริมท่าเรือ</h2>
@@ -136,7 +126,6 @@
         </div>
     </div>
 
-    <!-- Quiz Modal -->
     <div class="modal-overlay" id="quiz-modal">
         <div class="modal-content">
             <h2 class="modal-title">🤖 หุ่นยนต์ผู้ช่วยรดน้ำ</h2>
@@ -147,27 +136,27 @@
         </div>
     </div>
 
-    <!-- ==========================================================================
-         GAME SCRIPT
-         ========================================================================== -->
+    <!-- GAME ENGINE SCRIPT -->
     <script>
     (function() {
+        // ==========================================
         // 1. CONFIG & STATE
+        // ==========================================
         const SEED_TYPES = {
-            tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 6, color: 0xff4d4f },
-            carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 10, color: 0xfa8c16 },
-            cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 220, growTime: 16, color: 0x52c41a },
-            corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 22, color: 0xfadb14 }
+            tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 6, color: 0xff4757 },
+            carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 10, color: 0xff7f50 },
+            cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 220, growTime: 16, color: 0x2ecc71 },
+            corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 22, color: 0xf1c40f }
         };
 
         const LANDMARK_COORDS = {
-            spawn: { x: 0, y: 1.0, z: 10 },
-            farmCenter: { x: 4.5, y: 0.8, z: -2 },
-            lighthouse: { x: -14, y: 3.5, z: -8 },
-            barn: { x: -6, y: 1.5, z: -10 },
-            windmill: { x: -11, y: 2.2, z: -3 },
-            robotWell: { x: -3.5, y: 1.0, z: 2 },
-            marketPier: { x: 0, y: 0.6, z: 12 }
+            spawn: { x: 0, y: 0.8, z: 8.5 },
+            farmCenter: { x: 3.5, y: 0.8, z: -1.5 },
+            lighthouse: { x: -9, y: 2.2, z: -7 },
+            barn: { x: -4.5, y: 1.0, z: -8 },
+            windmill: { x: -8.5, y: 1.5, z: 0 },
+            robotWell: { x: -2.5, y: 0.8, z: 2.5 },
+            marketPier: { x: 0, y: 0.4, z: 10.5 }
         };
 
         const gameState = {
@@ -185,7 +174,9 @@
             ]
         };
 
-        // 2. AUDIO (Tone.js with Bulletproof Safe Wrappers)
+        // ==========================================
+        // 2. AUDIO SYSTEM (Tone.js)
+        // ==========================================
         let audioInit = false;
         let synthPlant, synthHarvest, synthCoin, synthError, synthClick, synthCorrect;
 
@@ -236,58 +227,77 @@
             }
         };
 
-        // 3. THREE.JS SCENE
+        // ==========================================
+        // 3. THREE.JS SCENE SETUP
+        // ==========================================
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x8fe0ff);
-        scene.fog = new THREE.FogExp2(0x9ee5ff, 0.008);
+        scene.background = new THREE.Color(0x7ed6df);
+        scene.fog = new THREE.FogExp2(0x81ecec, 0.012);
 
+        // Cozy action camera
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(28, 18, 28);
-        camera.lookAt(0, 2, 0);
+        camera.position.set(18, 14, 18);
+        camera.lookAt(0, 1.5, 0);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
+        renderer.toneMappingExposure = 1.25;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        const hemiLight = new THREE.HemisphereLight(0xd4f3ff, 0x82a952, 0.9);
+        // Warm Stylized Lighting
+        const hemiLight = new THREE.HemisphereLight(0xdff9fb, 0x6ab04c, 0.85);
         scene.add(hemiLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfff3db, 1.3);
-        sunLight.position.set(25, 40, 20);
+        const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.3);
+        sunLight.position.set(18, 28, 15);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
-        const d = 26;
+        const d = 18;
         sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.bias = -0.0005;
         scene.add(sunLight);
 
-        // Ocean
-        const waterGeo = new THREE.PlaneGeometry(160, 160, 32, 32);
-        const waterMat = new THREE.MeshStandardMaterial({ color: 0x36b8e8, roughness: 0.1, metalness: 0.2, flatShading: true, transparent: true, opacity: 0.88 });
+        // Animated Ocean Water
+        const waterGeo = new THREE.PlaneGeometry(120, 120, 32, 32);
+        const waterMat = new THREE.MeshStandardMaterial({
+            color: 0x22a6b3, roughness: 0.15, metalness: 0.2, flatShading: true, transparent: true, opacity: 0.85
+        });
         const water = new THREE.Mesh(waterGeo, waterMat);
         water.rotation.x = -Math.PI / 2;
-        water.position.y = -0.6;
+        water.position.y = -0.4;
+        water.receiveShadow = true;
         scene.add(water);
 
         const waveVertices = [];
         const posAttr = waterGeo.attributes.position;
         for (let i = 0; i < posAttr.count; i++) {
-            waveVertices.push({ ang: Math.random() * Math.PI * 2, amp: 0.15 + Math.random() * 0.15, speed: 0.015 + Math.random() * 0.02 });
+            waveVertices.push({ ang: Math.random() * Math.PI * 2, amp: 0.12 + Math.random() * 0.1, speed: 0.02 });
         }
 
+        // Foam Shoreline Ring
+        const foamRing = new THREE.Mesh(
+            new THREE.RingGeometry(13.8, 15.2, 36),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+        );
+        foamRing.rotation.x = -Math.PI / 2;
+        foamRing.position.y = -0.32;
+        scene.add(foamRing);
+
+        // ==========================================
         // 4. PARTICLES
+        // ==========================================
         const particles = [];
-        const matDust = new THREE.MeshBasicMaterial({ color: 0xedd6af, transparent: true, opacity: 0.7 });
-        const matWater = new THREE.MeshBasicMaterial({ color: 0x4fa4db, transparent: true, opacity: 0.8 });
-        const matSmoke = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-        const matSpark = new THREE.MeshBasicMaterial({ color: 0xff4d4f });
+        const matDust = new THREE.MeshBasicMaterial({ color: 0xf6e58d, transparent: true, opacity: 0.8 });
+        const matWater = new THREE.MeshBasicMaterial({ color: 0x7ed6df, transparent: true, opacity: 0.85 });
+        const matSmoke = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+        const matSpark = new THREE.MeshBasicMaterial({ color: 0xeb4d4b });
         const geoSphere = new THREE.SphereGeometry(0.12, 6, 6);
         const geoBox = new THREE.BoxGeometry(0.08, 0.08, 0.08);
 
@@ -300,16 +310,16 @@
 
         function emitWaterDrop(centerPos) {
             const p = new THREE.Mesh(geoSphere, matWater.clone());
-            p.position.set(centerPos.x + (Math.random()-0.5)*6, centerPos.y + 4 + Math.random()*2, centerPos.z + (Math.random()-0.5)*6);
+            p.position.set(centerPos.x + (Math.random()-0.5)*5, centerPos.y + 3.5 + Math.random()*2, centerPos.z + (Math.random()-0.5)*5);
             scene.add(p);
-            particles.push({ mesh: p, vel: new THREE.Vector3(0, -7, 0), life: 1.0, maxLife: 1.0 });
+            particles.push({ mesh: p, vel: new THREE.Vector3(0, -6, 0), life: 0.9, maxLife: 0.9 });
         }
 
         function emitChimneySmoke(pos) {
             if (Math.random() < 0.85) return;
             const p = new THREE.Mesh(geoSphere, matSmoke.clone());
             p.position.copy(pos); scene.add(p);
-            particles.push({ mesh: p, vel: new THREE.Vector3(0.2, 1.2, 0.1), life: 1.4, maxLife: 1.4 });
+            particles.push({ mesh: p, vel: new THREE.Vector3(0.15, 1.1, 0.1), life: 1.3, maxLife: 1.3 });
         }
 
         function emitSparks(pos) {
@@ -320,146 +330,293 @@
             }
         }
 
-        // 5. BUILD ISLAND & LANDMARKS
+        // ==========================================
+        // 5. COZY COASTAL ISLAND & ENVIRONMENT
+        // ==========================================
         const islandGroup = new THREE.Group();
         scene.add(islandGroup);
 
-        const matGrass = new THREE.MeshStandardMaterial({ color: 0x76c843, roughness: 0.8, flatShading: true });
-        const matSand = new THREE.MeshStandardMaterial({ color: 0xf5dfa6, roughness: 0.9, flatShading: true });
-        const matRock = new THREE.MeshStandardMaterial({ color: 0x8a99a8, roughness: 0.8, flatShading: true });
-        const matWood = new THREE.MeshStandardMaterial({ color: 0x9b6b43, roughness: 0.7 });
-        const matPlank = new THREE.MeshStandardMaterial({ color: 0xbf8b58, roughness: 0.7 });
-        const matRoofRed = new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.6 });
-        const matRoofBlue = new THREE.MeshStandardMaterial({ color: 0x3498db, roughness: 0.6 });
-        const matWhiteWall = new THREE.MeshStandardMaterial({ color: 0xfdfaf2, roughness: 0.6 });
-        const matFoliage = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.8, flatShading: true });
-        const matCloud = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, flatShading: true });
+        // Materials (Cozy Vibrant Palette)
+        const matGrass = new THREE.MeshStandardMaterial({ color: 0x6ab04c, roughness: 0.7, flatShading: true });
+        const matSand = new THREE.MeshStandardMaterial({ color: 0xf9ca24, roughness: 0.85, flatShading: true });
+        const matPath = new THREE.MeshStandardMaterial({ color: 0xdfe6e9, roughness: 0.9, flatShading: true });
+        const matRock = new THREE.MeshStandardMaterial({ color: 0x95afc0, roughness: 0.8, flatShading: true });
+        const matWood = new THREE.MeshStandardMaterial({ color: 0x8b572a, roughness: 0.7 });
+        const matWoodLight = new THREE.MeshStandardMaterial({ color: 0xc49b71, roughness: 0.7 });
+        const matRoofRed = new THREE.MeshStandardMaterial({ color: 0xeb4d4b, roughness: 0.6 });
+        const matRoofBlue = new THREE.MeshStandardMaterial({ color: 0x4834d4, roughness: 0.6 });
+        const matWhiteWall = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.5 });
+        const matFoliage = new THREE.MeshStandardMaterial({ color: 0x218c74, roughness: 0.75, flatShading: true });
+        const matFlowerPink = new THREE.MeshStandardMaterial({ color: 0xff7979 });
+        const matFlowerYellow = new THREE.MeshStandardMaterial({ color: 0xf6e58d });
 
-        // เกาะ
-        const beachMesh = new THREE.Mesh(new THREE.CylinderGeometry(20, 22, 2.5, 24), matSand);
-        beachMesh.position.y = -0.2; beachMesh.receiveShadow = true; islandGroup.add(beachMesh);
+        // Island Base (Multi-tiered Cozy Island)
+        const beachMesh = new THREE.Mesh(new THREE.CylinderGeometry(14, 15.5, 1.8, 28), matSand);
+        beachMesh.position.y = -0.1; beachMesh.receiveShadow = true; beachMesh.castShadow = true;
+        islandGroup.add(beachMesh);
 
-        const grassMesh = new THREE.Mesh(new THREE.CylinderGeometry(18, 19.5, 1.8, 24), matGrass);
-        grassMesh.position.y = 1.0; grassMesh.receiveShadow = true; islandGroup.add(grassMesh);
+        const grassMesh = new THREE.Mesh(new THREE.CylinderGeometry(12.8, 13.6, 1.4, 28), matGrass);
+        grassMesh.position.y = 0.8; grassMesh.receiveShadow = true; grassMesh.castShadow = true;
+        islandGroup.add(grassMesh);
 
-        const cliffMesh = new THREE.Mesh(new THREE.CylinderGeometry(8, 9, 2.2, 16), matGrass);
-        cliffMesh.position.set(-10, 2.5, -6); cliffMesh.receiveShadow = true; islandGroup.add(cliffMesh);
+        // Highland Cliff (Lighthouse Hill)
+        const cliffMesh = new THREE.Mesh(new THREE.CylinderGeometry(5.5, 6.5, 1.6, 18), matGrass);
+        cliffMesh.position.set(-7.5, 1.9, -5.5); cliffMesh.receiveShadow = true; cliffMesh.castShadow = true;
+        islandGroup.add(cliffMesh);
 
-        // ท่าเรือ & ตลาด
-        const pierGroup = new THREE.Group();
-        pierGroup.position.set(0, 0.4, 15);
-        for (let i = 0; i < 7; i++) {
-            const plank = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.2, 1.2), matPlank);
-            plank.position.set(0, 0, (i - 3) * 1.4); plank.receiveShadow = true; pierGroup.add(plank);
+        // Cobblestone / Dirt Paths (เชื่อมต่อจุดต่างๆ)
+        function createPathTile(x, z, sx = 1.6, sz = 1.6, rot = 0) {
+            const tile = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.05, sz), matPath);
+            tile.position.set(x, 1.51, z);
+            tile.rotation.y = rot;
+            tile.receiveShadow = true;
+            islandGroup.add(tile);
         }
+        // ทางเดินจากท่าเรือ -> ฟาร์ม -> ตลาด -> โรงนา
+        createPathTile(0, 9, 2.2, 3.0);
+        createPathTile(0, 6, 2.0, 3.2);
+        createPathTile(0, 3, 2.0, 3.0);
+        createPathTile(1.5, 1.5, 3.2, 1.8, 0.4);
+        createPathTile(-1.5, 1.5, 3.0, 1.8, -0.4);
+        createPathTile(0, 0, 2.2, 2.2);
+        createPathTile(-2.5, -3, 2.0, 4.0, 0.3);
+        createPathTile(-4.5, -6, 2.2, 3.5, 0.2);
+
+        // 1. ท่าเรือไม้ (Pier & Market)
+        const pierGroup = new THREE.Group();
+        pierGroup.position.set(0, 0.35, 11.5);
+        for (let i = 0; i < 6; i++) {
+            const plank = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.18, 1.0), matWoodLight);
+            plank.position.set(0, 0, (i - 2.5) * 1.15);
+            plank.receiveShadow = true; plank.castShadow = true;
+            pierGroup.add(plank);
+            if (i % 2 === 0) {
+                const pL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.6), matWood);
+                pL.position.set(-1.4, -0.6, (i - 2.5) * 1.15);
+                const pR = pL.clone(); pR.position.x = 1.4;
+                pierGroup.add(pL, pR);
+            }
+        }
+        // เรือไม้จอดเทียบท่า
+        const boat = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 3.0), matWood);
+        boat.position.set(2.6, -0.1, 1.5);
+        boat.rotation.y = 0.2;
+        pierGroup.add(boat);
         islandGroup.add(pierGroup);
 
+        // ร้านค้าตลาด (Market Stall)
         const stall = new THREE.Group();
-        stall.position.set(3.5, 0.8, 12);
-        const counter = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.2, 1.2), matWood); counter.position.y = 0.6;
-        const awning = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.1, 1.8), matRoofRed); awning.position.set(0, 2.0, 0); awning.rotation.x = 0.2;
-        stall.add(counter, awning);
+        stall.position.set(2.8, 1.5, 7.5);
+        const counter = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.2), matWood);
+        counter.position.y = 0.45; counter.castShadow = true; counter.receiveShadow = true;
+        const awning = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 1.6), matRoofRed);
+        awning.position.set(0, 1.7, 0); awning.rotation.x = 0.2; awning.castShadow = true;
+        const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.8), matWood);
+        postL.position.set(-1.1, 0.9, 0.5); postL.castShadow = true;
+        const postR = postL.clone(); postR.position.x = 1.1;
+        // ลังผลไม้
+        const crate1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.6), matWoodLight);
+        crate1.position.set(-0.6, 0.95, 0);
+        stall.add(counter, awning, postL, postR, crate1);
         islandGroup.add(stall);
 
-        // ประภาคาร
+        // 2. ประภาคาร (Lighthouse)
         const lighthouseGroup = new THREE.Group();
-        lighthouseGroup.position.set(LANDMARK_COORDS.lighthouse.x, 3.6, LANDMARK_COORDS.lighthouse.z);
-        const tower = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.5, 6.0, 12), matWhiteWall); tower.position.y = 4.5;
-        const stripe = new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.35, 1.4, 12), matRoofRed); stripe.position.y = 4.5;
-        const topRoof = new THREE.Mesh(new THREE.ConeGeometry(1.2, 1.2, 12), matRoofRed); topRoof.position.y = 9.2;
-        const beamLight = new THREE.Mesh(new THREE.ConeGeometry(3.0, 16.0, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xfffae0, transparent: true, opacity: 0.25, side: THREE.DoubleSide }));
-        beamLight.position.set(0, 8.0, 8.0); beamLight.rotation.x = Math.PI / 2;
-        lighthouseGroup.add(tower, stripe, topRoof, beamLight);
+        lighthouseGroup.position.set(LANDMARK_COORDS.lighthouse.x, 2.7, LANDMARK_COORDS.lighthouse.z);
+        const lBase = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.8, 1.2, 12), matRock);
+        lBase.position.y = 0.6; lBase.castShadow = true;
+        const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.3, 5.0, 12), matWhiteWall);
+        tower.position.y = 3.6; tower.castShadow = true;
+        const stripe = new THREE.Mesh(new THREE.CylinderGeometry(1.08, 1.18, 1.2, 12), matRoofRed);
+        stripe.position.y = 3.6;
+        const topRoof = new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.0, 12), matRoofRed);
+        topRoof.position.y = 6.8; topRoof.castShadow = true;
+        const beamLight = new THREE.Mesh(
+            new THREE.ConeGeometry(2.5, 14.0, 12, 1, true),
+            new THREE.MeshBasicMaterial({ color: 0xfffae0, transparent: true, opacity: 0.25, side: THREE.DoubleSide })
+        );
+        beamLight.position.set(0, 6.0, 7.0); beamLight.rotation.x = Math.PI / 2;
+        lighthouseGroup.add(lBase, tower, stripe, topRoof, beamLight);
         islandGroup.add(lighthouseGroup);
 
-        // กังหันลม
+        // 3. กังหันลม (Windmill)
         const windmillGroup = new THREE.Group();
-        windmillGroup.position.set(LANDMARK_COORDS.windmill.x, 2.0, LANDMARK_COORDS.windmill.z);
-        const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2.2, 5.0, 8), matWhiteWall); millTower.position.y = 2.5;
+        windmillGroup.position.set(LANDMARK_COORDS.windmill.x, 1.5, LANDMARK_COORDS.windmill.z);
+        const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.8, 4.2, 8), matWhiteWall);
+        millTower.position.y = 2.1; millTower.castShadow = true;
+        const millDome = new THREE.Mesh(new THREE.SphereGeometry(1.4, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2), matRoofBlue);
+        millDome.position.y = 4.2;
         const bladesGroup = new THREE.Group();
-        bladesGroup.position.set(0, 4.8, 1.6);
+        bladesGroup.position.set(0, 4.0, 1.4);
         for (let i = 0; i < 4; i++) {
-            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.4, 3.2, 0.05), matPlank); blade.position.y = 1.6;
-            const holder = new THREE.Group(); holder.rotation.z = (i * Math.PI) / 2; holder.add(blade); bladesGroup.add(holder);
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.6, 0.05), matWoodLight);
+            blade.position.y = 1.3;
+            const holder = new THREE.Group();
+            holder.rotation.z = (i * Math.PI) / 2;
+            holder.add(blade);
+            bladesGroup.add(holder);
         }
-        windmillGroup.add(millTower, bladesGroup);
+        windmillGroup.add(millTower, millDome, bladesGroup);
         islandGroup.add(windmillGroup);
 
-        // โรงนา
+        // 4. โรงนา & บ้าน (Cozy Red Barn)
         const barnGroup = new THREE.Group();
-        barnGroup.position.set(LANDMARK_COORDS.barn.x, 2.0, LANDMARK_COORDS.barn.z);
-        const barnBody = new THREE.Mesh(new THREE.BoxGeometry(4.5, 3.0, 4.0), matWhiteWall); barnBody.position.y = 1.5;
-        const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.6, 2.2, 4), matRoofRed); barnRoof.rotation.y = Math.PI / 4; barnRoof.position.y = 4.0;
-        const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.2, 0.7), matRock); chimney.position.set(-1.5, 4.2, -1.0);
-        barnGroup.add(barnBody, barnRoof, chimney);
+        barnGroup.position.set(LANDMARK_COORDS.barn.x, 1.5, LANDMARK_COORDS.barn.z);
+        const barnBody = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 3.2), matRoofRed);
+        barnBody.position.y = 1.2; barnBody.castShadow = true; barnBody.receiveShadow = true;
+        const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(3.0, 1.8, 4), matWhiteWall);
+        barnRoof.rotation.y = Math.PI / 4; barnRoof.position.y = 3.2; barnRoof.castShadow = true;
+        const barnDoor = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.6, 0.1), matWood);
+        barnDoor.position.set(0, 0.8, 1.65);
+        const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.6), matRock);
+        chimney.position.set(-1.2, 3.2, -0.8); chimney.castShadow = true;
+        barnGroup.add(barnBody, barnRoof, barnDoor, chimney);
         islandGroup.add(barnGroup);
 
-        // ต้นไม้ & เมฆ
-        function createPalm(x, z, s = 1) {
+        // 5. ต้นไม้ ปาล์ม และดอกไม้ตกแต่ง
+        function createCozyTree(x, z, s = 1) {
             const tree = new THREE.Group();
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.35, 3.5, 6), matWood); trunk.position.y = 1.75; tree.add(trunk);
-            for (let i = 0; i < 5; i++) {
-                const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.8, 2.2, 5), matFoliage);
-                leaf.rotation.x = Math.PI / 2 + 0.3; leaf.rotation.z = (i * Math.PI * 2) / 5; leaf.position.y = 3.5; tree.add(leaf);
-            }
-            tree.position.set(x, 1.8, z); tree.scale.setScalar(s); islandGroup.add(tree);
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 2.2, 6), matWood);
+            trunk.position.y = 1.1; trunk.castShadow = true;
+            const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2, 1), matFoliage);
+            leaves.position.y = 2.4; leaves.castShadow = true;
+            tree.add(trunk, leaves);
+            tree.position.set(x, 1.5, z);
+            tree.scale.setScalar(s);
+            islandGroup.add(tree);
         }
-        createPalm(8, -10, 1.2); createPalm(11, -4, 0.9); createPalm(-12, 6, 1.1); createPalm(-6, 8, 1.0);
+        createCozyTree(6.5, -6.5, 1.2);
+        createCozyTree(8.5, -2.5, 1.0);
+        createCozyTree(-8.5, 4.5, 1.1);
+        createCozyTree(-4.5, 6.5, 0.9);
+        createCozyTree(7.5, 4.5, 1.0);
 
+        // พุ่มดอกไม้
+        function createFlowerBush(x, z, colorMat) {
+            const bush = new THREE.Mesh(new THREE.SphereGeometry(0.35, 6, 6), colorMat);
+            bush.position.set(x, 1.6, z);
+            bush.castShadow = true;
+            islandGroup.add(bush);
+        }
+        createFlowerBush(1.5, 4.5, matFlowerPink);
+        createFlowerBush(1.8, 4.2, matFlowerYellow);
+        createFlowerBush(-2.0, 4.8, matFlowerPink);
+        createFlowerBush(-5.5, -2.0, matFlowerYellow);
+        createFlowerBush(5.2, 1.5, matFlowerPink);
+
+        // รั้วไม้ล้อมรอบแปลงผัก
+        function createFence(x, z, rot = 0) {
+            const fence = new THREE.Group();
+            const rail1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 0.08), matWoodLight);
+            rail1.position.y = 0.5;
+            const rail2 = rail1.clone(); rail2.position.y = 0.25;
+            const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 0.12), matWoodLight);
+            p1.position.set(-0.8, 0.35, 0); p1.castShadow = true;
+            const p2 = p1.clone(); p2.position.x = 0.8;
+            fence.add(rail1, rail2, p1, p2);
+            fence.position.set(x, 1.5, z);
+            fence.rotation.y = rot;
+            islandGroup.add(fence);
+        }
+        createFence(7.2, -1.5, Math.PI / 2);
+        createFence(7.2, 0.5, Math.PI / 2);
+        createFence(7.2, -3.5, Math.PI / 2);
+        createFence(3.5, -5.2, 0);
+        createFence(5.5, -5.2, 0);
+
+        // เมฆลอยฟ้า
         const clouds = [];
         for (let i = 0; i < 5; i++) {
-            const cloud = new THREE.Mesh(new THREE.DodecahedronGeometry(2.0, 0), matCloud);
-            cloud.position.set((Math.random() - 0.5) * 60, 14 + Math.random() * 6, (Math.random() - 0.5) * 60);
+            const cloud = new THREE.Mesh(new THREE.DodecahedronGeometry(1.8, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, flatShading: true }));
+            cloud.position.set((Math.random() - 0.5) * 50, 12 + Math.random() * 4, (Math.random() - 0.5) * 50);
+            cloud.castShadow = true;
             scene.add(cloud);
-            clouds.push({ mesh: cloud, speed: 0.8 + Math.random() * 0.8 });
+            clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
 
-        // 6. CHARACTER
+        // ==========================================
+        // 6. PLAYABLE 3D CHARACTER (Cozy Explorer)
+        // ==========================================
         const charGroup = new THREE.Group();
-        charGroup.position.set(LANDMARK_COORDS.spawn.x, LANDMARK_COORDS.spawn.y, LANDMARK_COORDS.spawn.z);
+        charGroup.position.set(LANDMARK_COORDS.spawn.x, 1.5, LANDMARK_COORDS.spawn.z);
         scene.add(charGroup);
 
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.6 });
-        const matShirt = new THREE.MeshStandardMaterial({ color: 0x3498db, roughness: 0.7 });
-        const matPants = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.8 });
-        const matHat = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.6 });
+        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 });
+        const matShirt = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.6 }); // เสื้อยีนส์ฟ้าสด
+        const matPants = new THREE.MeshStandardMaterial({ color: 0x2d3436, roughness: 0.8 });
+        const matHat = new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.6 }); // หมวกฟางสีทอง
 
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.4), matShirt); torso.position.y = 0.75;
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.45), matSkin); head.position.y = 1.35;
-        const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.08, 12), matHat); hat.position.y = 1.62;
-        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.5, 0.22), matPants); legL.position.set(0.18, 0.25, 0);
-        const legR = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.5, 0.22), matPants); legR.position.set(-0.18, 0.25, 0);
-        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.5, 0.18), matShirt); armL.position.set(0.4, 0.8, 0);
-        const armR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.5, 0.18), matShirt); armR.position.set(-0.4, 0.8, 0);
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.45), matShirt);
+        torso.position.y = 0.85; torso.castShadow = true;
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.5), matSkin);
+        head.position.y = 1.5; head.castShadow = true;
+
+        // ตา
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e272e });
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), eyeMat);
+        eyeL.position.set(0.15, 1.52, 0.26);
+        const eyeR = eyeL.clone(); eyeR.position.x = -0.15;
+
+        // หมวกฟาง
+        const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 12), matHat);
+        hatBrim.position.y = 1.8;
+        const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.35, 12), matHat);
+        hatTop.position.y = 1.98;
+
+        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.55, 0.26), matPants);
+        legL.position.set(0.2, 0.3, 0); legL.castShadow = true;
+        const legR = legL.clone(); legR.position.x = -0.2;
+
+        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.55, 0.2), matShirt);
+        armL.position.set(0.48, 0.9, 0); armL.castShadow = true;
+        const armR = armL.clone(); armR.position.x = -0.48;
 
         const modelGroup = new THREE.Group();
-        modelGroup.add(torso, head, hat, legL, legR, armL, armR);
+        modelGroup.add(torso, head, eyeL, eyeR, hatBrim, hatTop, legL, legR, armL, armR);
         charGroup.add(modelGroup);
 
-        // 7. ROBOT & WELL
+        // ==========================================
+        // 7. ROBOT ASSISTANT & STONE WELL
+        // ==========================================
         const wellRobotGroup = new THREE.Group();
-        wellRobotGroup.position.set(LANDMARK_COORDS.robotWell.x, LANDMARK_COORDS.robotWell.y, LANDMARK_COORDS.robotWell.z);
+        wellRobotGroup.position.set(LANDMARK_COORDS.robotWell.x, 1.5, LANDMARK_COORDS.robotWell.z);
         scene.add(wellRobotGroup);
 
-        const well = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.1, 0.8, 16), matRock); well.position.y = 0.4;
-        const wellRoof = new THREE.Mesh(new THREE.ConeGeometry(1.4, 0.8, 4), matRoofRed); wellRoof.position.y = 2.2; wellRoof.rotation.y = Math.PI / 4;
-        wellRobotGroup.add(well, wellRoof);
+        const well = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.1, 0.7, 16), matRock);
+        well.position.y = 0.35; well.castShadow = true; well.receiveShadow = true;
+        const waterWell = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.71, 16), new THREE.MeshBasicMaterial({ color: 0x0984e3 }));
+        waterWell.position.y = 0.35;
+        const postW1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.15), matWood);
+        postW1.position.set(0.75, 0.9, 0); postW1.castShadow = true;
+        const postW2 = postW1.clone(); postW2.position.x = -0.75;
+        const wellRoof = new THREE.Mesh(new THREE.ConeGeometry(1.3, 0.7, 4), matRoofRed);
+        wellRoof.position.y = 2.0; wellRoof.rotation.y = Math.PI / 4; wellRoof.castShadow = true;
+        wellRobotGroup.add(well, waterWell, postW1, postW2, wellRoof);
 
         const robotMesh = new THREE.Group();
-        robotMesh.position.set(1.6, 0, 0.8);
-        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.5), new THREE.MeshStandardMaterial({ color: 0xbdc3c7 })); rBody.position.y = 0.7;
-        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.45, 0.45), new THREE.MeshStandardMaterial({ color: 0xbdc3c7 })); rHead.position.y = 1.35;
-        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.6, 16), new THREE.MeshStandardMaterial({ color: 0x3498db })); rWheel.rotation.z = Math.PI / 2; rWheel.position.y = 0.24;
+        robotMesh.position.set(1.5, 0, 0.6);
+        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.45), new THREE.MeshStandardMaterial({ color: 0xdfe6e9 }));
+        rBody.position.y = 0.65; rBody.castShadow = true;
+        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xdfe6e9 }));
+        rHead.position.y = 1.25; rHead.castShadow = true;
+        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16), new THREE.MeshStandardMaterial({ color: 0x0984e3 }));
+        rWheel.rotation.z = Math.PI / 2; rWheel.position.y = 0.22; rWheel.castShadow = true;
         robotMesh.add(rBody, rHead, rWheel);
         wellRobotGroup.add(robotMesh);
 
-        // 8. FARM PLOTS
+        // ==========================================
+        // 8. RAISED WOODEN FARM PLOTS
+        // ==========================================
         const gridGroup = new THREE.Group();
-        gridGroup.position.set(LANDMARK_COORDS.farmCenter.x, LANDMARK_COORDS.farmCenter.y, LANDMARK_COORDS.farmCenter.z);
+        gridGroup.position.set(LANDMARK_COORDS.farmCenter.x, 1.5, LANDMARK_COORDS.farmCenter.y);
         scene.add(gridGroup);
 
         const plots = [];
-        const plotSize = 2.4, gap = 0.3;
+        const plotSize = 2.0, gap = 0.25;
+        const matSoilDry = new THREE.MeshStandardMaterial({ color: 0x53381a, roughness: 0.95 });
+        const matSoilWet = new THREE.MeshStandardMaterial({ color: 0x2d1a08, roughness: 0.8 });
+
         const PLOT_COORDS = [
             { c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 },
             { c: 0, r: 1 }, { c: 1, r: 1 }, { c: 2, r: 1 },
@@ -470,14 +627,24 @@
         for (let i = 0; i < PLOT_COORDS.length; i++) {
             const plotGroup = new THREE.Group();
             const coord = PLOT_COORDS[i];
-            const frame = new THREE.Mesh(new THREE.BoxGeometry(plotSize, 0.25, plotSize), matWood);
-            const soil = new THREE.Mesh(new THREE.BoxGeometry(plotSize - 0.24, 0.26, plotSize - 0.24), new THREE.MeshStandardMaterial({ color: 0x6e4726, roughness: 0.9 }));
+            
+            // ขอบไม้แปลงผักยกสูง
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(plotSize, 0.3, plotSize), matWood);
+            frame.position.y = 0.15; frame.castShadow = true; frame.receiveShadow = true;
+            
+            // ดินสีเข้มอุดมสมบูรณ์
+            const soil = new THREE.Mesh(new THREE.BoxGeometry(plotSize - 0.2, 0.32, plotSize - 0.2), matSoilDry);
+            soil.position.y = 0.15; soil.receiveShadow = true;
+            
             plotGroup.add(frame, soil);
-            plotGroup.position.set((coord.c - 1) * (plotSize + gap), 0.15, (coord.r - 1.5) * (plotSize + gap));
+            plotGroup.position.set((coord.c - 1) * (plotSize + gap), 0, (coord.r - 1.5) * (plotSize + gap));
             plotGroup.visible = i < gameState.unlockedPlots;
             gridGroup.add(plotGroup);
 
-            plots.push({ index: i, mesh: soil, group: plotGroup, state: 'empty', seedType: null, progress: 0, cropMesh: null, progressBar: null, isLocked: i >= gameState.unlockedPlots });
+            plots.push({
+                index: i, mesh: soil, group: plotGroup, state: 'empty', seedType: null, progress: 0,
+                cropMesh: null, progressBar: null, isLocked: i >= gameState.unlockedPlots
+            });
         }
 
         function createProgressBar() {
@@ -485,7 +652,7 @@
             const fgGeo = new THREE.PlaneGeometry(1.14, 0.14); fgGeo.translate(0.57, 0, 0);
             const fg = new THREE.Mesh(fgGeo, new THREE.MeshBasicMaterial({ color: 0x2ecc71, side: THREE.DoubleSide, depthTest: false }));
             fg.position.set(-0.57, 0, 0.01); fg.scale.x = 0.01;
-            const grp = new THREE.Group(); grp.add(bg, fg); grp.position.y = 1.4; grp.renderOrder = 999;
+            const grp = new THREE.Group(); grp.add(bg, fg); grp.position.y = 1.3; grp.renderOrder = 999;
             return { group: grp, bar: fg };
         }
 
@@ -493,24 +660,27 @@
             const grp = new THREE.Group();
             if (type === 'tomato') {
                 const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matFoliage); stem.position.y = 0.35;
-                const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4d4f })); f1.position.set(0.18, 0.45, 0.15);
-                grp.add(stem, f1);
+                const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.3 })); f1.position.set(0.18, 0.45, 0.15);
+                const f2 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.3 })); f2.position.set(-0.18, 0.35, -0.15);
+                grp.add(stem, f1, f2);
             } else if (type === 'carrot') {
-                const root = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0xfa8c16 })); root.rotation.x = Math.PI; root.position.y = 0.4;
-                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.6, 5), matFoliage); leaves.position.y = 0.9;
+                const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.4 })); root.rotation.x = Math.PI; root.position.y = 0.4;
+                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matFoliage); leaves.position.y = 0.85;
                 grp.add(root, leaves);
             } else if (type === 'cabbage') {
-                const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45, 0), new THREE.MeshStandardMaterial({ color: 0x52c41a })); cab.position.y = 0.45;
+                const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.7 })); cab.position.y = 0.42;
                 grp.add(cab);
             } else {
-                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.2, 6), matFoliage); stalk.position.y = 0.6;
-                const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xfadb14 })); cob.position.set(0.15, 0.7, 0);
+                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matFoliage); stalk.position.y = 0.55;
+                const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.3 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
                 grp.add(stalk, cob);
             }
             return grp;
         }
 
-        // 9. UI & GLOBAL HANDLERS
+        // ==========================================
+        // 9. UI & EVENT HANDLERS
+        // ==========================================
         const actionPrompt = document.getElementById('action-prompt');
         const actionText = document.getElementById('action-prompt-text');
         const moneyDisplay = document.getElementById('money-display');
@@ -564,61 +734,40 @@
 
         // Check Supabase Auth Session
         let supabaseClient = null;
-        let currentUser = null;
-
         if (window.supabase) {
             try {
                 supabaseClient = window.supabase.createClient('https://acwtvjyavxpuuhkeqlln.supabase.co', 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA');
                 supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                    if (session?.user) {
-                        onLoggedIn(session.user);
-                    }
+                    if (session?.user) onLoggedIn(session.user);
                 });
-
                 supabaseClient.auth.onAuthStateChange((event, session) => {
-                    if (session?.user) {
-                        onLoggedIn(session.user);
-                    }
+                    if (session?.user) onLoggedIn(session.user);
                 });
             } catch(e) {}
         }
 
         function onLoggedIn(user) {
-            currentUser = user;
             const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Explorer';
             gameState.player.name = name;
-
             const nameEl = document.getElementById('hud-player-name');
             if (nameEl) nameEl.innerText = name;
             const authStatus = document.getElementById('hud-auth-status');
             if (authStatus) authStatus.style.display = 'flex';
-
             const titleInfo = document.getElementById('title-logged-in-info');
             const titleName = document.getElementById('title-user-name');
-            if (titleInfo && titleName) {
-                titleName.innerText = name;
-                titleInfo.style.display = 'block';
-            }
-
+            if (titleInfo && titleName) { titleName.innerText = name; titleInfo.style.display = 'block'; }
             const googleBtn = document.getElementById('btn-google-login');
-            if (googleBtn) {
-                googleBtn.style.display = 'none'; // ซ่อนปุ่มล็อกอินเมื่อล็อกอินแล้ว
-            }
+            if (googleBtn) googleBtn.style.display = 'none';
         }
 
         // GLOBAL START GAME HANDLER
         window.startGame = function() {
             try { initAudio(); } catch(e){}
             try { sfx.click(); } catch(e){}
-            
             const ts = document.getElementById('title-screen');
-            if (ts) {
-                ts.style.display = 'none';
-            }
+            if (ts) ts.style.display = 'none';
             const hud = document.getElementById('hud');
-            if (hud) {
-                hud.style.display = 'flex';
-            }
+            if (hud) hud.style.display = 'flex';
             gameState.mode = 'transitioning';
             transitionProg = 0;
         };
@@ -635,15 +784,9 @@
             }
         };
 
-        // SIGN OUT FUNCTION
         window.signOutUser = async function() {
             try { initAudio(); sfx.click(); } catch(e){}
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.auth.signOut();
-                } catch(e){}
-            }
-            // ล้าง hash บน url แล้ว reload
+            if (supabaseClient) { try { await supabaseClient.auth.signOut(); } catch(e){} }
             window.location.hash = '';
             window.location.href = window.location.origin + window.location.pathname;
         };
@@ -784,6 +927,7 @@
                 if (gameState.player.money >= s.cost) {
                     gameState.player.money -= s.cost;
                     p.state = 'growing'; p.seedType = gameState.selectedSeed; p.progress = 0;
+                    p.mesh.material = matSoilWet;
                     p.cropMesh = generateCropMesh(p.seedType); p.cropMesh.scale.set(0.1, 0.1, 0.1);
                     p.group.add(p.cropMesh);
                     p.progressBar = createProgressBar(); p.group.add(p.progressBar.group);
@@ -793,6 +937,7 @@
                 const p = activeTarget.plot;
                 gameState.inventory[p.seedType]++;
                 p.group.remove(p.cropMesh); p.cropMesh = null; p.state = 'empty'; p.seedType = null;
+                p.mesh.material = matSoilDry;
                 try { sfx.harvest(); } catch(e){} showToast('เก็บเกี่ยวผลผลิตสำเร็จ! ✨'); updateUI();
             } else if (activeTarget.type === 'robot') {
                 window.openQuiz();
@@ -801,7 +946,7 @@
             }
         };
 
-        // 11. GAME LOOP
+        // 11. GAME LOOP & CAMERA
         const clock = new THREE.Clock();
         let transitionProg = 0, introAngle = 0;
         const tempVec = new THREE.Vector3();
@@ -811,18 +956,19 @@
             const delta = Math.min(clock.getDelta(), 0.1);
             const elapsed = clock.getElapsedTime();
 
-            // Waves
+            // Animated Waves & Shoreline
             for (let i = 0; i < waveVertices.length; i++) {
                 const v = waveVertices[i];
                 posAttr.setZ(i, Math.sin(v.ang + elapsed * v.speed * 80) * v.amp);
             }
             posAttr.needsUpdate = true;
+            foamRing.scale.setScalar(1.0 + Math.sin(elapsed * 2) * 0.02);
 
             // Environment
             bladesGroup.rotation.z += delta * 1.5;
             beamLight.rotation.z += delta * 1.0;
-            clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 40) c.mesh.position.x = -40; });
-            emitChimneySmoke(new THREE.Vector3(LANDMARK_COORDS.barn.x - 1.5, 6.2, LANDMARK_COORDS.barn.z - 1.0));
+            clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 30) c.mesh.position.x = -30; });
+            emitChimneySmoke(new THREE.Vector3(LANDMARK_COORDS.barn.x - 1.2, 4.8, LANDMARK_COORDS.barn.z - 0.8));
 
             // Move Character
             const moveDir = new THREE.Vector3();
@@ -834,14 +980,14 @@
 
             const isMoving = moveDir.lengthSq() > 0.01;
             if (gameState.mode === 'exploring' && isMoving) {
-                moveDir.normalize().multiplyScalar(9.0 * delta);
+                moveDir.normalize().multiplyScalar(8.0 * delta);
                 charGroup.position.add(moveDir);
 
                 const dist = Math.sqrt(charGroup.position.x**2 + charGroup.position.z**2);
-                if (dist > 18.5) {
+                if (dist > 12.5) {
                     const ang = Math.atan2(charGroup.position.z, charGroup.position.x);
-                    charGroup.position.x = Math.cos(ang) * 18.5;
-                    charGroup.position.z = Math.sin(ang) * 18.5;
+                    charGroup.position.x = Math.cos(ang) * 12.5;
+                    charGroup.position.z = Math.sin(ang) * 12.5;
                 }
 
                 const targetRot = Math.atan2(moveDir.x, moveDir.z);
@@ -879,44 +1025,44 @@
             // Robot
             if (gameState.robot.broken) {
                 gameState.robot.brokenTimer -= delta;
-                robotMesh.position.x = 1.6 + Math.sin(elapsed * 45) * 0.08;
+                robotMesh.position.x = 1.5 + Math.sin(elapsed * 45) * 0.08;
                 emitSparks(wellRobotGroup.position);
-                if (gameState.robot.brokenTimer <= 0) { gameState.robot.broken = false; robotMesh.position.set(1.6, 0, 0.8); updateUI(); }
+                if (gameState.robot.brokenTimer <= 0) { gameState.robot.broken = false; robotMesh.position.set(1.5, 0, 0.6); updateUI(); }
             } else if (gameState.robot.buffActive) {
                 gameState.robot.buffTimer -= delta;
                 robotMesh.rotation.y += delta * 6;
-                emitWaterDrop(new THREE.Vector3(LANDMARK_COORDS.farmCenter.x, 2, LANDMARK_COORDS.farmCenter.z));
+                emitWaterDrop(new THREE.Vector3(LANDMARK_COORDS.farmCenter.x, 1.5, LANDMARK_COORDS.farmCenter.y));
                 if (gameState.robot.buffTimer <= 0) { gameState.robot.buffActive = false; robotMesh.rotation.y = 0; updateUI(); }
             }
 
             // Proximity
             if (gameState.mode === 'exploring') {
                 const pPos = charGroup.position;
-                let nearest = null, minDist = 3.2;
+                let nearest = null, minDist = 2.8;
 
                 plots.forEach(plot => {
                     const dPlot = pPos.distanceTo(plot.group.position.clone().add(gridGroup.position));
                     if (dPlot < minDist) {
                         minDist = dPlot;
-                        if (plot.state === 'empty') nearest = { type: 'plant', plot, text: 'ปลูกเมล็ดพันธุ์', pos: plot.group.position.clone().add(gridGroup.position) };
+                        if (plot.state === 'empty') nearest = { type: 'plant', plot, text: 'ปลูกเมล็ดพันธุ์ 🌱', pos: plot.group.position.clone().add(gridGroup.position) };
                         else if (plot.state === 'ready') nearest = { type: 'harvest', plot, text: 'เก็บเกี่ยวผลผลิต ✨', pos: plot.group.position.clone().add(gridGroup.position) };
                     }
                 });
 
                 const dRob = pPos.distanceTo(wellRobotGroup.position);
-                if (dRob < minDist + 0.5) {
+                if (dRob < minDist + 0.6) {
                     minDist = dRob;
-                    nearest = { type: 'robot', text: 'ตอบคำถามรับบัฟ 🤖', pos: wellRobotGroup.position };
+                    nearest = { type: 'robot', text: 'คุยกับหุ่นยนต์ 🤖', pos: wellRobotGroup.position };
                 }
 
-                const dMkt = pPos.distanceTo(new THREE.Vector3(LANDMARK_COORDS.marketPier.x + 3.5, 1.2, LANDMARK_COORDS.marketPier.z));
+                const dMkt = pPos.distanceTo(new THREE.Vector3(LANDMARK_COORDS.marketPier.x + 2.8, 1.5, LANDMARK_COORDS.marketPier.z - 3.0));
                 if (dMkt < minDist + 0.8) {
-                    nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(LANDMARK_COORDS.marketPier.x + 3.5, 1.2, LANDMARK_COORDS.marketPier.z) };
+                    nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(LANDMARK_COORDS.marketPier.x + 2.8, 1.5, LANDMARK_COORDS.marketPier.z - 3.0) };
                 }
 
                 activeTarget = nearest;
                 if (nearest && actionPrompt) {
-                    tempVec.copy(nearest.pos); tempVec.y += 1.8;
+                    tempVec.copy(nearest.pos); tempVec.y += 1.4;
                     tempVec.project(camera);
                     if (tempVec.z < 1) {
                         const x = (tempVec.x * 0.5 + 0.5) * window.innerWidth;
@@ -928,7 +1074,7 @@
                 } else if (actionPrompt) actionPrompt.style.display = 'none';
             }
 
-            // Particles update
+            // Particles
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.life -= delta;
@@ -937,21 +1083,21 @@
                 if (p.gravity) p.vel.y += p.gravity * delta;
             }
 
-            // Camera update
+            // Camera Controller (Cozy Close-Up Third-Person Isometric Follow)
             if (gameState.mode === 'intro') {
                 introAngle += delta * 0.15;
-                camera.position.set(Math.cos(introAngle)*34, 20, Math.sin(introAngle)*34);
-                camera.lookAt(0, 2, 0);
+                camera.position.set(Math.cos(introAngle)*22, 12, Math.sin(introAngle)*22);
+                camera.lookAt(0, 1.5, 0);
             } else if (gameState.mode === 'transitioning') {
-                transitionProg += delta * 0.9;
-                const tPos = new THREE.Vector3(charGroup.position.x, charGroup.position.y + 7.5, charGroup.position.z + 13.0);
-                camera.position.lerp(tPos, 0.08);
-                camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
-                if (transitionProg >= 1.0) { gameState.mode = 'exploring'; showToast('ยินดีต้อนรับสู่เกาะฟาร์ม! ใช้ WASD หรือแตะปุ่มเพื่อเดินสำรวจ 🌴'); }
-            } else if (gameState.mode === 'exploring') {
-                const tPos = new THREE.Vector3(charGroup.position.x, charGroup.position.y + 7.5, charGroup.position.z + 13.0);
+                transitionProg += delta * 1.2;
+                const tPos = new THREE.Vector3(charGroup.position.x, charGroup.position.y + 4.5, charGroup.position.z + 7.5);
                 camera.position.lerp(tPos, 0.1);
-                camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
+                camera.lookAt(charGroup.position.x, charGroup.position.y + 1.1, charGroup.position.z);
+                if (transitionProg >= 1.0) { gameState.mode = 'exploring'; showToast('ยินดีต้อนรับสู่เกาะฟาร์ม! ใช้ WASD เพื่อเดินสำรวจ 🌴'); }
+            } else if (gameState.mode === 'exploring') {
+                const tPos = new THREE.Vector3(charGroup.position.x, charGroup.position.y + 4.5, charGroup.position.z + 7.5);
+                camera.position.lerp(tPos, 0.12);
+                camera.lookAt(charGroup.position.x, charGroup.position.y + 1.1, charGroup.position.z);
             }
 
             renderer.render(scene, camera);
