@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         #title-screen { z-index: 100; }
-        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout, .wasd-btn {
+        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout {
             cursor: pointer !important;
             touch-action: manipulation;
             user-select: none;
@@ -37,63 +37,6 @@
             transition: background 0.2s;
         }
         .btn-logout:hover { background: #d63031; }
-
-        /* On-Screen WASD Controller */
-        #wasd-controller {
-            position: absolute;
-            bottom: 25px;
-            left: 25px;
-            z-index: 40;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            pointer-events: auto;
-        }
-        .wasd-row {
-            display: flex;
-            gap: 6px;
-        }
-        .wasd-btn {
-            width: 52px;
-            height: 52px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            border: 2px solid rgba(255, 255, 255, 0.95);
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #2c3e50;
-            transition: all 0.1s ease;
-        }
-        .wasd-btn:active, .wasd-btn.active {
-            background: #2ecc71;
-            color: white;
-            transform: scale(0.92);
-            box-shadow: 0 2px 6px rgba(46, 204, 113, 0.4);
-        }
-
-        /* Camera Rotate Hint */
-        #camera-hint {
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.82rem;
-            pointer-events: none;
-            z-index: 30;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
 
         /* Island Badge */
         #island-badge {
@@ -175,23 +118,6 @@
             💧 บัฟรดน้ำทำงาน! โตเร็ว 1.6x (<span id="buff-timer">12</span>s)
         </div>
 
-        <!-- On-Screen WASD Controller -->
-        <div id="wasd-controller">
-            <div class="wasd-row">
-                <div class="wasd-btn" id="btn-wasd-w">W</div>
-            </div>
-            <div class="wasd-row">
-                <div class="wasd-btn" id="btn-wasd-a">A</div>
-                <div class="wasd-btn" id="btn-wasd-s">S</div>
-                <div class="wasd-btn" id="btn-wasd-d">D</div>
-            </div>
-        </div>
-
-        <!-- Camera Rotate Hint -->
-        <div id="camera-hint">
-            <span>🖱️ ลากเมาส์ / รูดนิ้ว เพื่อหมุนกล้อง 360°</span>
-        </div>
-
         <div class="hud-bottom-bar">
             <div id="seed-selector"></div>
         </div>
@@ -234,10 +160,6 @@
             id: 1,
             name: 'เกาะที่ 1: เกาะผักสวนครัว 🥬',
             spawnPos: { x: 0, y: 1.5, z: 8.5 },
-            boatDockPos: { x: 0, y: 0.5, z: 12.5 },
-            marketPos: { x: 2.8, y: 1.5, z: 7.5 },
-            marketTitle: '⛵ ตลาดริมท่าเรือ (เกาะที่ 1)',
-            marketDesc: 'ขายผักสดเพื่อสะสมเหรียญทองและปลดล็อกเรือข้ามฟาก',
             seeds: {
                 tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 5, island: 1 },
                 carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 8, island: 1 },
@@ -249,10 +171,6 @@
             id: 2,
             name: 'เกาะที่ 2: เกาะผลไม้เมืองร้อน 🍍',
             spawnPos: { x: 55, y: 1.5, z: -5 },
-            boatDockPos: { x: 44, y: 0.5, z: -1 },
-            marketPos: { x: 58, y: 1.5, z: -12 },
-            marketTitle: '🥤 ซุ้มน้ำผลไม้ปั่น (เกาะที่ 2)',
-            marketDesc: 'แปรรูปผลไม้เมืองร้อนเป็นเครื่องดื่มทำกำไรมหาศาล!',
             seeds: {
                 strawberry: { id: 'strawberry', name: 'สตรอว์เบอร์รี 🍓', emoji: '🍓', cost: 50, earn: 150, growTime: 7, island: 2 },
                 watermelon: { id: 'watermelon', name: 'แตงโม 🍉', emoji: '🍉', cost: 120, earn: 380, growTime: 12, island: 2 },
@@ -471,7 +389,6 @@
         const matWhiteWall = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.5 });
         const matFoliage1 = new THREE.MeshStandardMaterial({ color: 0x218c74, roughness: 0.75, flatShading: true });
         
-        // Island 2 Tropical Materials
         const matSand2 = new THREE.MeshStandardMaterial({ color: 0xf6e58d, roughness: 0.8, flatShading: true });
         const matGrass2 = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.7, flatShading: true });
         const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.75, flatShading: true });
@@ -479,7 +396,7 @@
         const matJuiceRoof = new THREE.MeshStandardMaterial({ color: 0xff9f43, roughness: 0.5 });
         const matPalmFoliage = new THREE.MeshStandardMaterial({ color: 0x1dd1a1, roughness: 0.7, flatShading: true });
 
-        // --- ISLAND 1: STARTER VEGGIE FARM (เกาะผักสวนครัว) ---
+        // --- ISLAND 1: STARTER VEGGIE FARM ---
         const is1Group = new THREE.Group();
         is1Group.position.set(0, 0, 0);
 
@@ -500,7 +417,6 @@
         createPath(1.5, -0.5, 3.2, 1.8, 0.4);
         createPath(-1.5, -0.5, 3.0, 1.8, -0.4);
 
-        // ท่าเรือเกาะ 1 (Ferry Pier)
         const pier1 = new THREE.Group();
         pier1.position.set(0, 0.35, 11.5);
         for (let i = 0; i < 6; i++) {
@@ -511,7 +427,6 @@
         }
         is1Group.add(pier1);
 
-        // ตลาดเกาะ 1
         const stall1 = new THREE.Group();
         stall1.position.set(2.8, 1.5, 7.5);
         const counter1 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.2), matWood);
@@ -521,7 +436,6 @@
         stall1.add(counter1, awning1);
         is1Group.add(stall1);
 
-        // กังหันลม
         const windmillGroup = new THREE.Group();
         windmillGroup.position.set(-8.5, 1.5, 0);
         const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.8, 4.2, 8), matWhiteWall);
@@ -541,7 +455,6 @@
         windmillGroup.add(millTower, millDome, bladesGroup);
         is1Group.add(windmillGroup);
 
-        // โรงนา
         const barnGroup = new THREE.Group();
         barnGroup.position.set(-4.5, 1.5, -8.0);
         const barnBody = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 3.2), matRoofRed);
@@ -555,7 +468,7 @@
 
         worldGroup.add(is1Group);
 
-        // --- ISLAND 2: TROPICAL FRUIT ISLE (เกาะผลไม้เขตร้อน) ---
+        // --- ISLAND 2: TROPICAL FRUIT ISLE ---
         const is2Group = new THREE.Group();
         is2Group.position.set(55, 0, -10);
 
@@ -564,12 +477,10 @@
         const is2Grass = new THREE.Mesh(new THREE.CylinderGeometry(13.5, 14.2, 1.4, 28), matGrass2);
         is2Grass.position.set(0, 0.8, 0); is2Grass.receiveShadow = true; is2Grass.castShadow = true;
         
-        // หน้าผาปะการังสีชมพู (Coral Cliffs)
         const is2Cliff = new THREE.Mesh(new THREE.CylinderGeometry(6.0, 7.2, 2.4, 16), matCoralPink);
         is2Cliff.position.set(-6.0, 2.2, -6.0); is2Cliff.receiveShadow = true; is2Cliff.castShadow = true;
         is2Group.add(is2Beach, is2Grass, is2Cliff);
 
-        // ท่าเรือเกาะ 2 (Return Pier)
         const pier2 = new THREE.Group();
         pier2.position.set(-11, 0.35, 9);
         pier2.rotation.y = -Math.PI / 3;
@@ -581,7 +492,6 @@
         }
         is2Group.add(pier2);
 
-        // ซุ้มน้ำผลไม้ปั่น (Tropical Juice Bar)
         const juiceBar = new THREE.Group();
         juiceBar.position.set(3, 1.5, -2);
         const jCounter = new THREE.Mesh(new THREE.BoxGeometry(3.0, 1.0, 1.4), matBamboo);
@@ -594,7 +504,6 @@
         juiceBar.add(jCounter, jRoof, jPost1, jPost2);
         is2Group.add(juiceBar);
 
-        // ต้นมะพร้าวเขตร้อนเกาะ 2 (Tropical Palms)
         function createTropicalPalm(x, z, s=1) {
             const palm = new THREE.Group();
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 3.8, 6), matWood);
@@ -616,7 +525,7 @@
 
         worldGroup.add(is2Group);
 
-        // --- SHARED FERRY BOAT (เรือข้ามฟาก) ---
+        // Ferry Boat
         const ferryBoat = new THREE.Group();
         const bHull = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.8, 4.0), matWood);
         bHull.position.y = 0.2; bHull.castShadow = true;
@@ -641,22 +550,19 @@
 
         // 5. Terrain Elevation Physics & Obstacles
         function getTerrainElevation(x, z) {
-            // เกาะ 1
             const d1 = Math.hypot(x, z);
             if (d1 <= 12.8) return 1.5;
             if (d1 <= 14.5) return 1.5 - ((d1 - 12.8) / 1.7) * 0.8;
             if (Math.abs(x) <= 1.8 && z >= 8.5 && z <= 15.0) return 0.9;
 
-            // เกาะ 2
             const dx2 = x - 55, dz2 = z - (-10);
             const d2 = Math.hypot(dx2, dz2);
             if (d2 <= 13.5) return 1.5;
             if (d2 <= 15.2) return 1.5 - ((d2 - 13.5) / 1.7) * 0.8;
-            // ท่าเรือเกาะ 2
             const dDock2 = Math.hypot(x - 44, z - (-1));
             if (dDock2 <= 3.5) return 0.9;
 
-            return -0.2; // ตกน้ำ
+            return -0.2;
         }
 
         const obstacles = [
@@ -664,7 +570,7 @@
             { x: -8.5, z: 0, radius: 1.8 },
             { x: 2.8, z: 7.5, radius: 1.4 },
             { x: -2.5, z: 2.5, radius: 1.2 },
-            { x: 58, z: -12, radius: 1.8 } // ร้านน้ำผลไม้เกาะ 2
+            { x: 58, z: -12, radius: 1.8 }
         ];
 
         // 6. Character
@@ -701,13 +607,13 @@
         modelGroup.add(torso, head, eyeL, eyeR, hatBrim, hatTop, legL, legR, armL, armR);
         charGroup.add(modelGroup);
 
-        // 7. Robot & Well (Island 1)
+        // 7. Robot & Well
         const wellRobotGroup = new THREE.Group();
         wellRobotGroup.position.set(-2.5, 1.5, 2.5);
         scene.add(wellRobotGroup);
 
         const well = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.1, 0.7, 16), matRock);
-        well.position.y = 0.35; well.castShadow = true;
+        well.position.y = 0.35; well.castShadow = true; well.receiveShadow = true;
         const waterWell = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.71, 16), new THREE.MeshBasicMaterial({ color: 0x0984e3 }));
         waterWell.position.y = 0.35;
         const postW1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.8, 0.15), matWood);
@@ -840,7 +746,6 @@
                 if (buffTimer) buffTimer.innerText = Math.ceil(gameState.robot.buffTimer);
             }
 
-            // Quests
             if (questList) {
                 questList.innerHTML = '';
                 const qList = gameState.quests[gameState.currentIsland] || [];
@@ -899,7 +804,7 @@
         // Touch Camera Drag
         let touchStartCam = { x: 0, y: 0 };
         window.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#wasd-controller')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen')) return;
             if (e.touches.length === 1) {
                 isDraggingCam = true;
                 touchStartCam = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -1041,7 +946,7 @@
             quizModal.style.display = 'flex';
         };
 
-        // Ferry Sailing System (คัตซีนล่องเรือข้ามฟาก)
+        // Ferry Sailing System
         function startSailingTo(islandId) {
             targetIslandId = islandId;
             gameState.mode = 'sailing';
@@ -1071,34 +976,43 @@
             setTimeout(() => t.remove(), 1900);
         }
 
-        // 10. Key & Button Listeners
-        const keys = {};
+        // 10. Robust Keyboard Event Listener (Supports Thai & English & Arrow Keys)
+        const moveState = { forward: false, backward: false, left: false, right: false };
+
+        function updateKeyStatus(e, isPressed) {
+            const code = e.code || '';
+            const key = (e.key || '').toLowerCase();
+
+            // Forward: W, KeyW, ArrowUp, or Thai 'ไ' / 'ำ'
+            if (code === 'KeyW' || key === 'w' || key === 'ไ' || key === 'ำ' || code === 'ArrowUp') {
+                moveState.forward = isPressed;
+            }
+            // Backward: S, KeyS, ArrowDown, or Thai 'ห'
+            if (code === 'KeyS' || key === 's' || key === 'ห' || code === 'ArrowDown') {
+                moveState.backward = isPressed;
+            }
+            // Left: A, KeyA, ArrowLeft, or Thai 'ฟ'
+            if (code === 'KeyA' || key === 'a' || key === 'ฟ' || code === 'ArrowLeft') {
+                moveState.left = isPressed;
+            }
+            // Right: D, KeyD, ArrowRight, or Thai 'ก'
+            if (code === 'KeyD' || key === 'd' || key === 'ก' || code === 'ArrowRight') {
+                moveState.right = isPressed;
+            }
+
+            // Action: E or Space or Thai 'ฎ'
+            if (isPressed && (code === 'KeyE' || key === 'e' || key === 'ฎ' || code === 'Space')) {
+                window.triggerAction();
+            }
+        }
+
         window.addEventListener('keydown', (e) => {
-            try { window.initAudio(); } catch(e){}
-            const k = e.key.toLowerCase();
-            keys[k] = true;
-            const btn = document.getElementById(`btn-wasd-${k}`);
-            if (btn) btn.classList.add('active');
-            if (k === 'e' || k === ' ') window.triggerAction();
-        });
-        window.addEventListener('keyup', (e) => {
-            const k = e.key.toLowerCase();
-            keys[k] = false;
-            const btn = document.getElementById(`btn-wasd-${k}`);
-            if (btn) btn.classList.remove('active');
+            try { window.initAudio(); } catch(err){}
+            updateKeyStatus(e, true);
         });
 
-        ['w', 'a', 's', 'd'].forEach(k => {
-            const btn = document.getElementById(`btn-wasd-${k}`);
-            if (btn) {
-                const press = (e) => { try { window.initAudio(); } catch(e){} keys[k] = true; btn.classList.add('active'); };
-                const release = (e) => { keys[k] = false; btn.classList.remove('active'); };
-                btn.addEventListener('mousedown', press);
-                btn.addEventListener('mouseup', release);
-                btn.addEventListener('mouseleave', release);
-                btn.addEventListener('touchstart', press, { passive: true });
-                btn.addEventListener('touchend', release, { passive: true });
-            }
+        window.addEventListener('keyup', (e) => {
+            updateKeyStatus(e, false);
         });
 
         window.triggerAction = function() {
@@ -1147,11 +1061,8 @@
             } else if (activeTarget.type === 'market') {
                 window.openMarket();
             } else if (activeTarget.type === 'boat_is1') {
-                // Check if ready to sail to Island 2
                 const q1 = gameState.quests[1][0].done;
                 const q2 = gameState.quests[1][1].done;
-                const hasMoney = gameState.player.money >= 250 || gameState.unlockedIslands.includes(2);
-
                 if (!gameState.unlockedIslands.includes(2)) {
                     if (!q1 || !q2) {
                         showToast('⚠️ ต้องทำเควสต์เก็บผัก 6 ชิ้น และตอบ Quiz ให้ผ่านก่อน!');
@@ -1195,9 +1106,8 @@
                 sailingProg += delta * 0.35;
                 const t = Math.min(1.0, sailingProg);
                 
-                // Curve Path between Island 1 and 2
                 const midX = (sailingStartPos.x + sailingTargetPos.x) / 2;
-                const midZ = (sailingStartPos.z + sailingTargetPos.z) / 2 + 12; // arc out to sea
+                const midZ = (sailingStartPos.z + sailingTargetPos.z) / 2 + 12;
                 
                 const p0 = sailingStartPos, p1 = new THREE.Vector3(midX, 0.4, midZ), p2 = sailingTargetPos;
                 const bx = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
@@ -1215,7 +1125,6 @@
 
                 emitWake(ferryBoat.position);
 
-                // Camera follows boat smoothly
                 camera.position.lerp(new THREE.Vector3(bx - 8, by + 7, bz + 12), 0.1);
                 camera.lookAt(bx, by + 1.0, bz);
 
@@ -1232,10 +1141,10 @@
 
             // Exploring Mode Character Movement
             const moveInput = new THREE.Vector2();
-            if (keys['w'] || keys['arrowup']) moveInput.y += 1;
-            if (keys['s'] || keys['arrowdown']) moveInput.y -= 1;
-            if (keys['a'] || keys['arrowleft']) moveInput.x -= 1;
-            if (keys['d'] || keys['arrowright']) moveInput.x += 1;
+            if (moveState.forward) moveInput.y += 1;
+            if (moveState.backward) moveInput.y -= 1;
+            if (moveState.left) moveInput.x -= 1;
+            if (moveState.right) moveInput.x += 1;
 
             const isMoving = moveInput.lengthSq() > 0.01;
             if (gameState.mode === 'exploring' && isMoving) {
