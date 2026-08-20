@@ -162,37 +162,6 @@
             align-items: center;
             gap: 6px;
         }
-
-        /* Coastal World Speech Bubble Marker */
-        .speech-bubble-marker {
-            background: white;
-            border-radius: 18px;
-            padding: 6px 14px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            position: relative;
-            animation: bubbleBob 2s infinite ease-in-out;
-        }
-        .speech-bubble-marker::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px 6px 0;
-            border-style: solid;
-            border-color: white transparent;
-            display: block;
-            width: 0;
-        }
-        .bubble-dot {
-            width: 6px;
-            height: 6px;
-            background: #ff7675;
-            border-radius: 50%;
-        }
     </style>
 </head>
 <body>
@@ -212,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>Vibrant Coastal World Aesthetics</span>
+                3D Mini Farm Island Archipelago • <span>Vibrant Soft-Lit 3D World</span>
             </div>
         </div>
     </div>
@@ -248,7 +217,6 @@
         <!-- EXACT COASTAL WORLD GUIDE & NOTIFICATION BANNER -->
         <div id="coastal-guide-banner" onclick="window.onBannerClick()">
             <div class="banner-icon-container">
-                <!-- 3D Stylized Location Pin with Pedestal -->
                 <svg class="banner-pin-svg" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <ellipse cx="22" cy="44" rx="14" ry="5.5" fill="#e67e22"/>
                     <ellipse cx="22" cy="42" rx="14" ry="5.5" fill="#f39c12"/>
@@ -551,7 +519,7 @@
     };
 
     // ==========================================================================
-    // THREE.JS SCENE, EXACT VIBRANT LIGHTING & RICH SHADERS
+    // THREE.JS SCENE, SOFT CLEAN LIGHTING (No Harsh Dark Shadows)
     // ==========================================================================
     (function() {
         // 1. Audio Setup
@@ -584,11 +552,11 @@
             sail: () => { try { if(synthSail) synthSail.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n"); } catch(e){} }
         };
 
-        // 2. Three.js Scene Setup with EXACT Rich Vibrant Colors & Tone Mapping
+        // 2. Three.js Scene Setup with SOFT VIBRANT LIGHTING
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x38bdf8); // Rich Vibrant Sky Blue
-        scene.fog = new THREE.FogExp2(0x7dd3fc, 0.004);
+        scene.background = new THREE.Color(0x38bdf8); // Clean Azure Sky
+        scene.fog = new THREE.FogExp2(0x7dd3fc, 0.003);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -602,38 +570,44 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // EXACT Vibrant Tone Mapping & Punchy Exposure:
+        // Soft, balanced lighting without dark harsh contrasting shadows:
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.28; // Punchy & rich like Coastal World
+        renderer.toneMappingExposure = 1.15; // Natural & vibrant without blinding glare
         container.appendChild(renderer.domElement);
 
-        // Sky Gradient Dome (Vivid Blue to Turquoise)
+        // Sky Gradient Dome
         const skyGeo = new THREE.SphereGeometry(250, 32, 15);
         const skyMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.BackSide });
         const skyDome = new THREE.Mesh(skyGeo, skyMat);
         scene.add(skyDome);
 
-        // Lighting: Rich Hemisphere + Crisp Warm Sunlight
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x10b981, 1.05); // Clean Sky + Vibrant Green Ground Bounce
+        // High Ambient / Hemisphere Lighting for soft shadow fill:
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x86efac, 1.45); // Bright, clean, cheerful fill
         scene.add(hemiLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfff5cc, 1.75); // Strong warm sunlight
-        sunLight.position.set(35, 52, 26);
+        // Gentle Sunlight (Soft shadows, not pitch black)
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.85); // Gentle soft directional sun
+        sunLight.position.set(30, 48, 24);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.bias = -0.0004;
-        const d = 60;
+        sunLight.shadow.mapSize.width = 1024;
+        sunLight.shadow.mapSize.height = 1024;
+        sunLight.shadow.bias = -0.0002;
+        const d = 50;
         sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Stylized Glistening Turquoise Ocean
+        // Ambient Fill Light from opposite angle to eliminate any dark pitch black areas:
+        const fillLight = new THREE.DirectionalLight(0xe0f2fe, 0.45);
+        fillLight.position.set(-30, 30, -24);
+        scene.add(fillLight);
+
+        // Stylized Clean Turquoise Ocean
         const waterGeo = new THREE.PlaneGeometry(380, 380, 52, 52);
         const waterMat = new THREE.MeshStandardMaterial({
-            color: 0x06b6d4, roughness: 0.08, metalness: 0.12, flatShading: true, transparent: true, opacity: 0.92
+            color: 0x06b6d4, roughness: 0.15, metalness: 0.05, flatShading: true, transparent: true, opacity: 0.92
         });
         const water = new THREE.Mesh(waterGeo, waterMat);
         water.rotation.x = -Math.PI / 2;
@@ -702,21 +676,19 @@
         }
 
         // ==========================================================================
-        // 4. ACCURATE 3D TERRAIN ELEVATION & OBSTACLES (Zero Sinking & Zero Clipping)
+        // 4. ACCURATE 3D TERRAIN ELEVATION & OBSTACLES
         // ==========================================================================
         function getTerrainElevation(x, z) {
-            // 1. Island 1 (Starter Island)
             const d1 = Math.hypot(x, z);
             if (d1 <= 17.0) {
                 const dHill = Math.hypot(x - (-8.5), z - 0);
                 if (dHill <= 4.2) {
-                    return 2.6; // Top of the hill
+                    return 2.6;
                 } else if (dHill <= 5.5) {
                     const t = (dHill - 4.2) / 1.3;
-                    return 2.6 - t * 1.1; // Smooth slope from 2.6 to 1.5
+                    return 2.6 - t * 1.1;
                 }
 
-                // Pier 1 dock (starts only past z = 11.5)
                 if (Math.abs(x) <= 2.0 && z >= 11.5 && z <= 15.5) {
                     return 0.45;
                 }
@@ -724,7 +696,6 @@
                 if (d1 <= 13.5) {
                     return 1.5;
                 }
-                // Beach Slope
                 if (d1 <= 16.0) {
                     const t = (d1 - 13.5) / 2.5;
                     return 1.5 - t * 1.1;
@@ -732,7 +703,6 @@
                 return 0.4;
             }
 
-            // 2. Island 2 (Tropical Island at 55, -10)
             const dx2 = x - 55, dz2 = z - (-10);
             const d2 = Math.hypot(dx2, dz2);
             if (d2 <= 18.0) {
@@ -759,15 +729,15 @@
                 return 0.4;
             }
 
-            return -0.2; // Water
+            return -0.2;
         }
 
         const obstacles = [
-            { x: -4.5, z: -8.0, radius: 2.6 },  // Nordic Barn House
-            { x: -8.5, z: 0, radius: 2.4 },     // Windmill Tower
-            { x: 2.8, z: 7.5, radius: 1.8 },     // Market Stall
-            { x: -2.5, z: 2.5, radius: 1.5 },    // Well
-            { x: 58, z: -12, radius: 2.2 }       // Juice Bar
+            { x: -4.5, z: -8.0, radius: 2.6 },
+            { x: -8.5, z: 0, radius: 2.4 },
+            { x: 2.8, z: 7.5, radius: 1.8 },
+            { x: -2.5, z: 2.5, radius: 1.5 },
+            { x: 58, z: -12, radius: 2.2 }
         ];
 
         // ==========================================================================
@@ -789,9 +759,8 @@
                         if (obj.isMesh) {
                             obj.castShadow = true;
                             obj.receiveShadow = true;
-                            // Ensure crisp bright materials
                             if (obj.material) {
-                                obj.material.roughness = 0.5;
+                                obj.material.roughness = 0.75;
                             }
                         }
                     });
@@ -803,7 +772,7 @@
             );
         }
 
-        // --- ISLAND 1: PROPORTIONAL NORDIC FOREST & VIBRANT AUTUMN TREES ---
+        // Island 1 Trees
         loadGLB('/assets/models/tree_pine.glb', -5.5, -11.5, 6.5, 0.4);
         loadGLB('/assets/models/tree_pine.glb', -1.5, -12.0, 5.8, -0.3);
         loadGLB('/assets/models/tree_pine.glb', -8.5, -6.8, 6.2, 0.8);
@@ -822,7 +791,7 @@
         loadGLB('/assets/models/fence.glb', 3.5, -3.5, 2.0, 0);
         loadGLB('/assets/models/fence.glb', 6.0, -3.5, 2.0, 0);
 
-        // --- ISLAND 2: TALL TROPICAL PALM TREES ---
+        // Island 2 Palm Trees
         loadGLB('/assets/models/tree_palm.glb', 55 - 9.5, -10 + 6.5, 6.0, 0.5);
         loadGLB('/assets/models/tree_palm.glb', 55 + 10.5, -10 + 4.5, 6.2, -0.8);
         loadGLB('/assets/models/tree_palm.glb', 55 + 8.5, -10 - 8.5, 5.8, 1.5);
@@ -834,21 +803,21 @@
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
-        // EXACT COASTAL WORLD VIBRANT PALETTE:
-        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.55, flatShading: true }); // Lush Emerald Green
-        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.75, flatShading: true }); // Bright Golden Shore
-        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.55, flatShading: true }); // Tropical Emerald Mint
-        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.75, flatShading: true });
+        // Clean, Soft, Cheerful Materials:
+        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.7, flatShading: true });
+        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.85, flatShading: true });
+        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.7, flatShading: true });
+        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.85, flatShading: true });
         
-        const matCobble = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.7, flatShading: true }); // Clean Crisp White Pathway
-        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.65, flatShading: true }); // Vibrant Coral Pink
-        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xfb923c, roughness: 0.65, flatShading: true }); // Coastal Peach Mats
+        const matCobble = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.8, flatShading: true });
+        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.75, flatShading: true });
+        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xfb923c, roughness: 0.75, flatShading: true });
         
-        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.55 });
-        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.5, flatShading: true }); // Warm Orange Roof
-        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 }); // Clean Bright White Walls
-        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.45 }); // Azure Cyan Blue
-        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.55, flatShading: true });
+        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.7 });
+        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.65, flatShading: true });
+        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.6 });
+        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.7, flatShading: true });
 
         // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
@@ -876,12 +845,10 @@
         createCobbleRoad(-1.8, -0.5, 3.2, 1.8, -0.35);
         createCobbleRoad(-5.5, 0.8, 4.0, 1.8, -0.4);
 
-        // Coastal White Round Plaza Pad
         const plazaCircle = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.05, 24), matCobble);
         plazaCircle.position.set(0, 1.52, 4.8); plazaCircle.receiveShadow = true;
         is1Group.add(plazaCircle);
 
-        // Coastal Peach Exercise / Relax Mat
         const exerciseMat = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.04, 3.2), matPeachPad);
         exerciseMat.position.set(4.8, 1.52, 4.2); exerciseMat.receiveShadow = true;
         is1Group.add(exerciseMat);
@@ -995,15 +962,15 @@
             clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
 
-        // 5. Stylized Cute Bean Character (Like Coastal World)
+        // 5. Stylized Cute Bean Character
         const charGroup = new THREE.Group();
         charGroup.position.set(0, 1.5, 8.5);
         scene.add(charGroup);
 
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.45 }); // Warm Sunny Yellow/Orange Bean
-        const matShirt = new THREE.MeshStandardMaterial({ color: 0x06b6d4, roughness: 0.5 }); // Cyan Turquoise Shirt
-        const matPants = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.7 });
-        const matHat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.55 }); // Orange Hat
+        const matSkin = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.6 });
+        const matShirt = new THREE.MeshStandardMaterial({ color: 0x06b6d4, roughness: 0.65 });
+        const matPants = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.75 });
+        const matHat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.65 });
 
         const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.45), matShirt);
         torso.position.y = 0.85; torso.castShadow = true;
@@ -1047,11 +1014,11 @@
 
         const robotMesh = new THREE.Group();
         robotMesh.position.set(1.5, 0, 0.6);
-        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.45), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
+        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.45), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 }));
         rBody.position.y = 0.65; rBody.castShadow = true;
-        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
+        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 }));
         rHead.position.y = 1.25; rHead.castShadow = true;
-        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16), new THREE.MeshStandardMaterial({ color: 0x0284c7 }));
+        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16), new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.6 }));
         rWheel.rotation.z = Math.PI / 2; rWheel.position.y = 0.22; rWheel.castShadow = true;
         robotMesh.add(rBody, rHead, rWheel);
         wellRobotGroup.add(robotMesh);
@@ -1059,7 +1026,7 @@
         // 7. Farm Plots
         const allPlots = [];
         const matSoilDry = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 });
-        const matSoilWet = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.75 });
+        const matSoilWet = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.8 });
 
         function buildPlotsForIsland(islandId, centerPos, borderMat) {
             const gridGroup = new THREE.Group();
@@ -1106,32 +1073,32 @@
             const grp = new THREE.Group();
             if (type === 'tomato') {
                 const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matGrassVibrant2); stem.position.y = 0.35;
-                const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.25 })); f1.position.set(0.18, 0.45, 0.15);
+                const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.5 })); f1.position.set(0.18, 0.45, 0.15);
                 grp.add(stem, f1);
             } else if (type === 'carrot') {
-                const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.35 })); root.rotation.x = Math.PI; root.position.y = 0.4;
+                const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.5 })); root.rotation.x = Math.PI; root.position.y = 0.4;
                 const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matGrassVibrant2); leaves.position.y = 0.85;
                 grp.add(root, leaves);
             } else if (type === 'cabbage') {
-                const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.6 })); cab.position.y = 0.42;
+                const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.65 })); cab.position.y = 0.42;
                 grp.add(cab);
             } else if (type === 'corn') {
                 const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matGrassVibrant2); stalk.position.y = 0.55;
-                const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.25 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
+                const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.5 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
                 grp.add(stalk, cob);
             } else if (type === 'strawberry') {
-                const berry = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.25 })); berry.rotation.x = Math.PI; berry.position.y = 0.3;
+                const berry = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.5 })); berry.rotation.x = Math.PI; berry.position.y = 0.3;
                 const top = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.2, 5), matPalmLeaf); top.position.y = 0.55;
                 grp.add(berry, top);
             } else if (type === 'watermelon') {
-                const mel = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.25 })); mel.scale.set(1.2, 0.9, 0.9); mel.position.y = 0.45;
+                const mel = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.5 })); mel.scale.set(1.2, 0.9, 0.9); mel.position.y = 0.45;
                 grp.add(mel);
             } else if (type === 'pineapple') {
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.45 })); body.position.y = 0.45;
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.55 })); body.position.y = 0.45;
                 const crown = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), matPalmLeaf); crown.position.y = 0.95;
                 grp.add(body, crown);
             } else if (type === 'dragonfruit') {
-                const df = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 1), new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.35 })); df.position.y = 0.45;
+                const df = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 1), new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.5 })); df.position.y = 0.45;
                 grp.add(df);
             }
             grp.traverse(n => { if(n.isMesh) { n.castShadow = true; } });
@@ -1765,7 +1732,7 @@
             } else if (gameState.mode === 'exploring') {
                 const camX = charGroup.position.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
                 const camY = charGroup.position.y + cameraRadius * Math.sin(cameraPhi);
-                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraPhi);
+                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.15);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
             }
