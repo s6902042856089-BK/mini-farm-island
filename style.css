@@ -9,8 +9,8 @@
     --accent-dark: #d4ac0d;
     --success: #2ecc71;
     --danger: #e74c3c;
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-bg: rgba(255, 255, 255, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.65);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     --font-family: 'Kanit', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -251,6 +251,141 @@ body, html {
     font-weight: 600;
 }
 
+/* ==========================================================
+   COASTAL WORLD EXACT NOTIFICATION & DISCOVERY BANNER
+   ========================================================== */
+#coastal-guide-banner {
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border-radius: 26px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 8px 18px 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 520px;
+    width: calc(100% - 40px);
+    z-index: 80;
+    pointer-events: auto;
+    cursor: pointer;
+    animation: bannerSlideDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s;
+    user-select: none;
+}
+
+#coastal-guide-banner:hover {
+    transform: translateX(-50%) translateY(-2px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes bannerSlideDown {
+    0% { transform: translateX(-50%) translateY(-60px) scale(0.9); opacity: 0; }
+    100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+}
+
+.banner-icon-container {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    background: #dff0fe;
+    border-radius: 20px 8px 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.banner-icon-container::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+}
+
+.banner-pin-svg {
+    width: 38px;
+    height: 48px;
+    filter: drop-shadow(0 4px 6px rgba(52, 152, 219, 0.25));
+    animation: pinBounce 2.5s infinite ease-in-out;
+}
+
+@keyframes pinBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.banner-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.banner-text {
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: #2b2d42;
+    line-height: 1.35;
+    letter-spacing: -0.2px;
+}
+
+.banner-subtext {
+    font-size: 0.78rem;
+    color: #8d99ae;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.banner-action-btn {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.2s, background-color 0.2s;
+    cursor: pointer;
+}
+
+.banner-action-btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2.5px solid transparent;
+    border-top-color: #2b2d42;
+    border-right-color: #2b2d42;
+    border-radius: 50%;
+    transform: rotate(35deg);
+}
+
+.banner-action-btn:hover {
+    background: #f8fafc;
+    transform: scale(1.08);
+}
+
+.banner-arrow-icon {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #2b2d42;
+    margin-left: 2px;
+    line-height: 1;
+}
+
 /* Bottom Seed Selector */
 .hud-bottom-bar {
     display: flex;
@@ -335,7 +470,7 @@ body, html {
 }
 
 /* ==========================================
-   4. MODALS (Market, Quiz)
+   4. MODALS (Market, Quiz, Map)
    ========================================== */
 .modal-overlay {
     position: absolute;
@@ -358,7 +493,7 @@ body, html {
     backdrop-filter: blur(16px);
     padding: 30px;
     border-radius: 24px;
-    max-width: 420px;
+    max-width: 460px;
     width: 90%;
     text-align: center;
     animation: popModal 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -441,24 +576,25 @@ body, html {
 /* Buff Indicator */
 #buff-indicator {
     position: absolute;
-    top: 20px;
+    top: 90px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
-    padding: 10px 24px;
+    padding: 8px 20px;
     border-radius: 30px;
     font-weight: 600;
     box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
     display: none;
     z-index: 50;
     border: 2px solid white;
+    font-size: 0.88rem;
 }
 
 /* Floating Toast */
 .floating-toast {
     position: absolute;
-    top: 80px;
+    top: 85px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(44, 62, 80, 0.9);
@@ -482,35 +618,23 @@ body, html {
     100% { transform: translate(-50%, 0); opacity: 1; }
 }
 
-/* Virtual Joystick for Mobile */
-#joystick-zone {
-    position: absolute;
-    bottom: 30px;
-    left: 30px;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: none;
-    pointer-events: auto;
-    z-index: 25;
-}
-
-#joystick-knob {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-}
-
-@media (min-width: 768px) {
-    #joystick-zone {
-        display: none;
+@media (max-width: 768px) {
+    #coastal-guide-banner {
+        top: 14px;
+        padding: 6px 14px 6px 8px;
+        gap: 12px;
+    }
+    .banner-icon-container {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+    }
+    .banner-text {
+        font-size: 0.85rem;
+    }
+    .banner-action-btn {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
     }
 }
