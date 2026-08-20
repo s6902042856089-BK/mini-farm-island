@@ -81,7 +81,7 @@
             font-family: 'Montserrat', 'Kanit', sans-serif;
             font-weight: 900;
             font-size: clamp(3.8rem, 8vw, 6.2rem);
-            color: #00d2d3; /* Vibrant Turquoise / Emerald Cyan */
+            color: #00d2d3;
             line-height: 0.9;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -181,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>Vibrant Colorful World</span>
+                3D Mini Farm Island Archipelago • <span>Vibrant Balanced World</span>
             </div>
         </div>
     </div>
@@ -519,7 +519,7 @@
     };
 
     // ==========================================================================
-    // THREE.JS SCENE, GORGEOUS COASTAL WORLD AESTHETICS (True Color Pop)
+    // THREE.JS SCENE, TRUE RICH COLORS & ZERO WHITE-FOG WASH
     // ==========================================================================
     (function() {
         let audioInit = false;
@@ -551,11 +551,10 @@
             sail: () => { try { if(synthSail) synthSail.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n"); } catch(e){} }
         };
 
-        // Scene, Renderer & Vibrant sRGB Color Management
+        // Scene, Renderer & Rich Colors (Zero Fog Washout)
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x54a0ff); // Gorgeous Rich Cyan-Blue
-        scene.fog = new THREE.FogExp2(0x70a1ff, 0.0035);
+        scene.background = new THREE.Color(0x3498db); // Deep Beautiful Sky Blue
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -569,26 +568,23 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Color Management for TRUE Pop:
-        renderer.outputEncoding = THREE.sRGBEncoding;
+        // Normal Balanced Tone Mapping
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
         container.appendChild(renderer.domElement);
 
         // Sky Gradient Dome
         const skyGeo = new THREE.SphereGeometry(250, 32, 15);
-        const skyMat = new THREE.MeshBasicMaterial({ color: 0x54a0ff, side: THREE.BackSide });
+        const skyMat = new THREE.MeshBasicMaterial({ color: 0x3498db, side: THREE.BackSide });
         const skyDome = new THREE.Mesh(skyGeo, skyMat);
         scene.add(skyDome);
 
-        // Master Hemisphere & Directional Lights
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1dd1a1, 0.95);
+        // Balanced Natural Lighting:
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e3799, 0.65);
         scene.add(hemiLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfffae6, 1.15);
-        sunLight.position.set(32, 50, 24);
+        const sunLight = new THREE.DirectionalLight(0xfffae6, 0.95);
+        sunLight.position.set(30, 48, 22);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 1024;
         sunLight.shadow.mapSize.height = 1024;
@@ -598,15 +594,10 @@
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Soft Warm Fill
-        const fillLight = new THREE.DirectionalLight(0xdff9fb, 0.45);
-        fillLight.position.set(-25, 25, -20);
-        scene.add(fillLight);
-
-        // Glistening Turquoise Ocean
+        // Deep Vibrant Turquoise Ocean
         const waterGeo = new THREE.PlaneGeometry(380, 380, 52, 52);
         const waterMat = new THREE.MeshStandardMaterial({
-            color: 0x00cec9, roughness: 0.1, metalness: 0.1, flatShading: true, transparent: true, opacity: 0.92
+            color: 0x00a8ff, roughness: 0.2, metalness: 0.1, flatShading: true, transparent: true, opacity: 0.92
         });
         const water = new THREE.Mesh(waterGeo, waterMat);
         water.rotation.x = -Math.PI / 2;
@@ -629,10 +620,10 @@
 
         // Particles
         const particles = [];
-        const matDust = new THREE.MeshBasicMaterial({ color: 0xfeca57, transparent: true, opacity: 0.85 });
-        const matWater = new THREE.MeshBasicMaterial({ color: 0x48dbfb, transparent: true, opacity: 0.85 });
+        const matDust = new THREE.MeshBasicMaterial({ color: 0xf1c40f, transparent: true, opacity: 0.85 });
+        const matWater = new THREE.MeshBasicMaterial({ color: 0x00cec9, transparent: true, opacity: 0.85 });
         const matSmoke = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.65 });
-        const matSpark = new THREE.MeshBasicMaterial({ color: 0xff4757 });
+        const matSpark = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
         const matWake = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
         const geoSphere = new THREE.SphereGeometry(0.12, 6, 6);
         const geoBox = new THREE.BoxGeometry(0.08, 0.08, 0.08);
@@ -737,7 +728,7 @@
             { x: 2.8, z: 7.5, radius: 1.8 },
             { x: -2.5, z: 2.5, radius: 1.5 },
             { x: 58, z: -12, radius: 2.2 },
-            { x: -3.5, z: 4.5, radius: 2.0 } // Coastal Pavilion
+            { x: -3.5, z: 4.5, radius: 2.0 }
         ];
 
         // ==========================================================================
@@ -759,9 +750,6 @@
                         if (obj.isMesh) {
                             obj.castShadow = true;
                             obj.receiveShadow = true;
-                            if (obj.material) {
-                                obj.material.roughness = 0.55;
-                            }
                         }
                     });
 
@@ -805,23 +793,23 @@
         scene.add(worldGroup);
 
         // ==========================================================
-        // VIBRANT COASTAL WORLD COLOR PALETTE (Lush, Rich & Cheerful)
+        // SOLID, RICH & VIBRANT COASTAL WORLD MATERIALS
         // ==========================================================
-        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.5, flatShading: true }); // Vivid Spring Emerald
-        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xffbe76, roughness: 0.65, flatShading: true }); // Warm Golden Beach
-        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.5, flatShading: true }); // Tropical Mint
-        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xf6e58d, roughness: 0.65, flatShading: true });
+        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6, flatShading: true }); // Solid Rich Green
+        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.7, flatShading: true }); // Warm Golden Beach
+        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x16a085, roughness: 0.6, flatShading: true }); // Tropical Mint
+        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.7, flatShading: true });
         
-        const matCobble = new THREE.MeshStandardMaterial({ color: 0xf1f2f6, roughness: 0.6, flatShading: true }); // Clean White Pathway
-        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.5, flatShading: true }); // Sweet Coral Pink
-        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.5, flatShading: true }); // Peach Coral Gym Mat
-        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.45 }); // Emerald Brand Kiosk
+        const matCobble = new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.65, flatShading: true }); // Clean Stone Paving
+        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xe84393, roughness: 0.6, flatShading: true }); // Pink Cliff
+        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xe17055, roughness: 0.6, flatShading: true }); // Coral Peach Gym Mat
+        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.5 }); // Emerald Brand Kiosk
         
-        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xcd6133, roughness: 0.55 });
-        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xff5252, roughness: 0.45, flatShading: true }); // Bright Coral Red Roof
-        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
-        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.45 });
-        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x20bf6b, roughness: 0.5, flatShading: true });
+        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xb7791f, roughness: 0.6 });
+        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.5, flatShading: true }); // Red Barn Roof
+        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xf5f6fa, roughness: 0.5 });
+        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.5 });
+        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.6, flatShading: true });
 
         // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
@@ -854,7 +842,7 @@
         plazaCircle.position.set(0, 1.52, 4.8); plazaCircle.receiveShadow = true;
         is1Group.add(plazaCircle);
 
-        // Coastal Peach Exercise Mat (with dumbbells like screenshot!)
+        // Coastal Peach Exercise Mat
         const exerciseMat = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.04, 3.2), matPeachPad);
         exerciseMat.position.set(4.8, 1.52, 4.2); exerciseMat.receiveShadow = true;
         is1Group.add(exerciseMat);
@@ -865,7 +853,7 @@
         dumbbell.rotation.z = Math.PI / 2; dumbbell.position.set(4.8, 1.62, 4.8); dumbbell.castShadow = true;
         is1Group.add(dumbbell);
 
-        // Coastal World Iconic Green Curved Pavilion (Brigid Style from photo!)
+        // Coastal World Green Pavilion
         const pavilionGroup = new THREE.Group();
         pavilionGroup.position.set(-3.5, 1.5, 4.5);
         const pavStep = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.15, 2.2), matCobble);
@@ -877,8 +865,8 @@
         pavilionGroup.add(pavStep, pavSign, pavArch);
         is1Group.add(pavilionGroup);
 
-        // Lush Decorative Green Bushes (Round Coastal World Shrubbery)
-        const matShrub = new THREE.MeshStandardMaterial({ color: 0x20bf6b, roughness: 0.6, flatShading: true });
+        // Green Bushes
+        const matShrub = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6, flatShading: true });
         function addShrub(x, z, s=1.0) {
             const sh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6 * s, 1), matShrub);
             sh.position.set(x, 1.6, z); sh.castShadow = true; sh.receiveShadow = true;
@@ -1002,15 +990,15 @@
             clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
 
-        // 5. Stylized Cute Bean Character (Warm Apricot / Peach with Cyan Glasses)
+        // 5. Stylized Cute Bean Character
         const charGroup = new THREE.Group();
         charGroup.position.set(0, 1.5, 8.5);
         scene.add(charGroup);
 
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffbe76, roughness: 0.45 }); // Warm Coastal Bean Skin
-        const matShirt = new THREE.MeshStandardMaterial({ color: 0x00cec9, roughness: 0.5 }); // Cyan Shirt
+        const matSkin = new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.5 });
+        const matShirt = new THREE.MeshStandardMaterial({ color: 0x00cec9, roughness: 0.5 });
         const matPants = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.6 });
-        const matHat = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.5 }); // Pink / Coral Hat
+        const matHat = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.5 });
 
         const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.45), matShirt);
         torso.position.y = 0.85; torso.castShadow = true;
@@ -1018,11 +1006,11 @@
         head.position.y = 1.5; head.castShadow = true;
         
         // Cute Glasses
-        const matGlasses = new THREE.MeshBasicMaterial({ color: 0xff5252 });
+        const matGlasses = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
         const glassL = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.16, 12), matGlasses);
         glassL.position.set(0.15, 1.52, 0.27);
         const glassR = glassL.clone(); glassR.position.x = -0.15;
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x2f3542 });
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x2c3e50 });
         const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat);
         eyeL.position.set(0.15, 1.52, 0.26);
         const eyeR = eyeL.clone(); eyeR.position.x = -0.15;
@@ -1061,11 +1049,11 @@
 
         const robotMesh = new THREE.Group();
         robotMesh.position.set(1.5, 0, 0.6);
-        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.45), new THREE.MeshStandardMaterial({ color: 0xf1f2f6, roughness: 0.4 }));
+        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.45), new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.5 }));
         rBody.position.y = 0.65; rBody.castShadow = true;
-        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xf1f2f6, roughness: 0.4 }));
+        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.5 }));
         rHead.position.y = 1.25; rHead.castShadow = true;
-        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16), new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.4 }));
+        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16), new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.5 }));
         rWheel.rotation.z = Math.PI / 2; rWheel.position.y = 0.22; rWheel.castShadow = true;
         robotMesh.add(rBody, rHead, rWheel);
         wellRobotGroup.add(robotMesh);
@@ -1108,9 +1096,9 @@
         buildPlotsForIsland(2, { x: 55 + 3.5, y: 1.5, z: -10 + 2.5 }, matNordicWood);
 
         function createProgressBar() {
-            const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x2f3542, side: THREE.DoubleSide, depthTest: false }));
+            const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x2c3e50, side: THREE.DoubleSide, depthTest: false }));
             const fgGeo = new THREE.PlaneGeometry(1.14, 0.14); fgGeo.translate(0.57, 0, 0);
-            const fg = new THREE.Mesh(fgGeo, new THREE.MeshBasicMaterial({ color: 0x2ed573, side: THREE.DoubleSide, depthTest: false }));
+            const fg = new THREE.Mesh(fgGeo, new THREE.MeshBasicMaterial({ color: 0x2ecc71, side: THREE.DoubleSide, depthTest: false }));
             fg.position.set(-0.57, 0, 0.01); fg.scale.x = 0.01;
             const grp = new THREE.Group(); grp.add(bg, fg); grp.position.y = 1.3; grp.renderOrder = 999;
             return { group: grp, bar: fg };
@@ -1120,32 +1108,32 @@
             const grp = new THREE.Group();
             if (type === 'tomato') {
                 const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matGrassVibrant2); stem.position.y = 0.35;
-                const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.3 })); f1.position.set(0.18, 0.45, 0.15);
+                const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.3 })); f1.position.set(0.18, 0.45, 0.15);
                 grp.add(stem, f1);
             } else if (type === 'carrot') {
-                const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.35 })); root.rotation.x = Math.PI; root.position.y = 0.4;
+                const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.35 })); root.rotation.x = Math.PI; root.position.y = 0.4;
                 const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matGrassVibrant2); leaves.position.y = 0.85;
                 grp.add(root, leaves);
             } else if (type === 'cabbage') {
-                const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.5 })); cab.position.y = 0.42;
+                const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.5 })); cab.position.y = 0.42;
                 grp.add(cab);
             } else if (type === 'corn') {
                 const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matGrassVibrant2); stalk.position.y = 0.55;
-                const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xffbe76, roughness: 0.3 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
+                const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.3 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
                 grp.add(stalk, cob);
             } else if (type === 'strawberry') {
-                const berry = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.3 })); berry.rotation.x = Math.PI; berry.position.y = 0.3;
+                const berry = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.5, 6), new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.3 })); berry.rotation.x = Math.PI; berry.position.y = 0.3;
                 const top = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.2, 5), matPalmLeaf); top.position.y = 0.55;
                 grp.add(berry, top);
             } else if (type === 'watermelon') {
-                const mel = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.3 })); mel.scale.set(1.2, 0.9, 0.9); mel.position.y = 0.45;
+                const mel = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.3 })); mel.scale.set(1.2, 0.9, 0.9); mel.position.y = 0.45;
                 grp.add(mel);
             } else if (type === 'pineapple') {
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xffa502, roughness: 0.4 })); body.position.y = 0.45;
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.4 })); body.position.y = 0.45;
                 const crown = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), matPalmLeaf); crown.position.y = 0.95;
                 grp.add(body, crown);
             } else if (type === 'dragonfruit') {
-                const df = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 1), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.35 })); df.position.y = 0.45;
+                const df = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 1), new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.35 })); df.position.y = 0.45;
                 grp.add(df);
             }
             grp.traverse(n => { if(n.isMesh) { n.castShadow = true; } });
@@ -1635,7 +1623,7 @@
 
                 const t = elapsed * 15;
                 legL.rotation.x = Math.sin(t) * 0.75; legR.rotation.x = -Math.sin(t) * 0.75;
-                armL.rotation.x = -Math.sin(t) * 0.75; armR.rotation.x = Math.sin(t) * 0.75;
+                armL.rotation.x = -Math.sin(t) * 0.75; armR.rotation.x = -Math.sin(t) * 0.75;
                 emitDust(charGroup.position);
             } else if (gameState.mode === 'exploring') {
                 legL.rotation.x = 0; legR.rotation.x = 0; armL.rotation.x = 0; armR.rotation.x = 0;
