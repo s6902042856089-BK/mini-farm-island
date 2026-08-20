@@ -181,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>Vibrant Soft-Lit 3D World</span>
+                3D Mini Farm Island Archipelago • <span>Vibrant Balanced 3D World</span>
             </div>
         </div>
     </div>
@@ -519,7 +519,7 @@
     };
 
     // ==========================================================================
-    // THREE.JS SCENE, SOFT CLEAN LIGHTING (No Harsh Dark Shadows)
+    // THREE.JS SCENE, BALANCED VIBRANT LIGHTING (Comfortable Exposure)
     // ==========================================================================
     (function() {
         // 1. Audio Setup
@@ -552,7 +552,7 @@
             sail: () => { try { if(synthSail) synthSail.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n"); } catch(e){} }
         };
 
-        // 2. Three.js Scene Setup with SOFT VIBRANT LIGHTING
+        // 2. Three.js Scene Setup with BALANCED COMFORTABLE LIGHTING & EXPOSURE
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x38bdf8); // Clean Azure Sky
@@ -570,11 +570,11 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Soft, balanced lighting without dark harsh contrasting shadows:
+        // Balanced Exposure (Comfortable on eyes, rich in colors):
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15; // Natural & vibrant without blinding glare
+        renderer.toneMappingExposure = 0.95; // Gently reduced exposure to prevent excessive brightness
         container.appendChild(renderer.domElement);
 
         // Sky Gradient Dome
@@ -583,12 +583,12 @@
         const skyDome = new THREE.Mesh(skyGeo, skyMat);
         scene.add(skyDome);
 
-        // High Ambient / Hemisphere Lighting for soft shadow fill:
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x86efac, 1.45); // Bright, clean, cheerful fill
+        // Soft, Balanced Ambient Fill:
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x86efac, 1.15);
         scene.add(hemiLight);
 
-        // Gentle Sunlight (Soft shadows, not pitch black)
-        const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.85); // Gentle soft directional sun
+        // Gentle Sunlight:
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.75);
         sunLight.position.set(30, 48, 24);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 1024;
@@ -599,8 +599,8 @@
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Ambient Fill Light from opposite angle to eliminate any dark pitch black areas:
-        const fillLight = new THREE.DirectionalLight(0xe0f2fe, 0.45);
+        // Subtle ambient fill light:
+        const fillLight = new THREE.DirectionalLight(0xe0f2fe, 0.35);
         fillLight.position.set(-30, 30, -24);
         scene.add(fillLight);
 
