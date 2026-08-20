@@ -181,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>High-Definition Stylized 3D Models</span>
+                3D Mini Farm Island Archipelago • <span>Loading GLB Assets with GLTFLoader</span>
             </div>
         </div>
     </div>
@@ -405,7 +405,7 @@
     };
 
     // ==========================================================================
-    // THREE.JS SCENE, STYLIZED WORLD ENGINE & SHADOW MAP
+    // THREE.JS SCENE, GLTFLOADER ENGINE & SHADOW MAP
     // ==========================================================================
     (function() {
         // 1. Audio Setup
@@ -463,16 +463,13 @@
         renderer.toneMappingExposure = 1.15;
         container.appendChild(renderer.domElement);
 
-        // Sky Gradient Dome (Coastal Pastel Sky)
+        // Sky Gradient Dome
         const skyGeo = new THREE.SphereGeometry(250, 32, 15);
-        const skyMat = new THREE.MeshBasicMaterial({
-            color: 0x68d8d6,
-            side: THREE.BackSide
-        });
+        const skyMat = new THREE.MeshBasicMaterial({ color: 0x68d8d6, side: THREE.BackSide });
         const skyDome = new THREE.Mesh(skyGeo, skyMat);
         scene.add(skyDome);
 
-        // Lighting with Rich Ambient Warmth
+        // Lighting
         const hemiLight = new THREE.HemisphereLight(0xfff5e6, 0x55efc4, 0.9);
         scene.add(hemiLight);
 
@@ -487,7 +484,7 @@
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
         scene.add(sunLight);
 
-        // Stylized Ocean Plane with Shore Foam Ring
+        // Stylized Ocean
         const waterGeo = new THREE.PlaneGeometry(380, 380, 52, 52);
         const waterMat = new THREE.MeshStandardMaterial({
             color: 0x00cec9, roughness: 0.1, metalness: 0.15, flatShading: true, transparent: true, opacity: 0.88
@@ -558,7 +555,47 @@
             }
         }
 
-        // 3. STYLIZED PALETTE & MODEL GENERATOR
+        // ==========================================================================
+        // 3. GLTF MODEL LOADER (/assets/models/tree.glb & Props)
+        // ==========================================================================
+        const loader = new THREE.GLTFLoader();
+
+        function loadGLB(url, pos, scale = [1, 1, 1], rotY = 0, targetGroup = scene) {
+            loader.load(
+                url,
+                (gltf) => {
+                    const model = gltf.scene;
+                    model.position.set(pos[0], pos[1], pos[2]);
+                    model.scale.set(scale[0], scale[1], scale[2]);
+                    model.rotation.y = rotY;
+
+                    model.traverse((obj) => {
+                        if (obj.isMesh) {
+                            obj.castShadow = true;
+                            obj.receiveShadow = true;
+                        }
+                    });
+
+                    targetGroup.add(model);
+                },
+                undefined,
+                (err) => {
+                    console.log(`GLB info for ${url}`);
+                }
+            );
+        }
+
+        // Load tree.glb models from assets/models/
+        loadGLB('/assets/models/tree.glb', [-2.0, 1.5, -10.5], [1.3, 1.3, 1.3]);
+        loadGLB('/assets/models/tree.glb', [9.5, 1.5, -4.5], [1.2, 1.2, 1.2]);
+        loadGLB('/assets/models/treePine.glb', [-8.0, 1.5, -7.5], [1.4, 1.4, 1.4]);
+        loadGLB('/assets/models/treePine.glb', [8.5, 1.5, 4.5], [1.2, 1.2, 1.2]);
+        loadGLB('/assets/models/rocks.glb', [12.5, 0.3, 2.5], [1.5, 1.5, 1.5]);
+        loadGLB('/assets/models/rocks.glb', [-12.5, 0.3, -4.0], [1.5, 1.5, 1.5]);
+        loadGLB('/assets/models/flowers.glb', [6.0, 1.5, 3.0], [1.2, 1.2, 1.2]);
+        loadGLB('/assets/models/fence.glb', [3.5, 1.5, 0.8], [1.2, 1.2, 1.2]);
+
+        // World Group for Island Terrains & Structures
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
@@ -568,70 +605,13 @@
         const matSandPastel2 = new THREE.MeshStandardMaterial({ color: 0xfdcb6e, roughness: 0.8, flatShading: true });
         
         const matCobble = new THREE.MeshStandardMaterial({ color: 0xdfe6e9, roughness: 0.85, flatShading: true });
-        const matRockStylized = new THREE.MeshStandardMaterial({ color: 0x74b9ff, roughness: 0.75, flatShading: true });
         const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.7, flatShading: true });
         
         const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xb7791f, roughness: 0.6 });
         const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xe17055, roughness: 0.55, flatShading: true });
         const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xfff9e6, roughness: 0.5 });
         const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.55 });
-        
-        const matFoliagePine1 = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.7, flatShading: true });
-        const matFoliagePine2 = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.7, flatShading: true });
         const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x1dd1a1, roughness: 0.65, flatShading: true });
-        const matFlowerYellow = new THREE.MeshStandardMaterial({ color: 0xfdcb6e, roughness: 0.4 });
-        const matFlowerRed = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.4 });
-        const matFlowerWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
-
-        function createStylizedRock(x, y, z, s=1, mat=matRockStylized) {
-            const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8 * s, 1), mat);
-            rock.position.set(x, y, z);
-            rock.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
-            rock.castShadow = true; rock.receiveShadow = true;
-            return rock;
-        }
-
-        function createStylizedPine(x, z, s=1, tintMat=matFoliagePine1) {
-            const tree = new THREE.Group();
-            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 1.4, 6), matNordicWood);
-            trunk.position.y = 0.7; trunk.castShadow = true; trunk.receiveShadow = true;
-            tree.add(trunk);
-
-            for (let i = 0; i < 3; i++) {
-                const cone = new THREE.Mesh(new THREE.ConeGeometry((1.4 - i * 0.32) * s, 1.2 * s, 7), tintMat);
-                cone.position.y = 1.4 + i * 0.75 * s;
-                cone.rotation.y = i * 0.5;
-                cone.castShadow = true; cone.receiveShadow = true;
-                tree.add(cone);
-            }
-            tree.position.set(x, 1.5, z);
-            return tree;
-        }
-
-        function createFlowerPatch(parent, x, z, count=6) {
-            const flowerColors = [matFlowerYellow, matFlowerRed, matFlowerWhite];
-            for (let i = 0; i < count; i++) {
-                const fMat = flowerColors[i % flowerColors.length];
-                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3, 4), matFoliagePine1);
-                const petal = new THREE.Mesh(new THREE.DodecahedronGeometry(0.1, 0), fMat);
-                stem.position.y = 0.15; petal.position.y = 0.3;
-                const fl = new THREE.Group(); fl.add(stem, petal);
-                fl.position.set(x + (Math.random()-0.5)*1.6, 1.5, z + (Math.random()-0.5)*1.6);
-                parent.add(fl);
-            }
-        }
-
-        function createFence(parent, x, z, rot=0) {
-            const fence = new THREE.Group();
-            const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.7, 0.1), matNordicWall); p1.position.set(-0.6, 0.35, 0);
-            const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.7, 0.1), matNordicWall); p2.position.set(0.6, 0.35, 0);
-            const r1 = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.08, 0.04), matNordicWall); r1.position.set(0, 0.5, 0);
-            const r2 = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.08, 0.04), matNordicWall); r2.position.set(0, 0.25, 0);
-            fence.add(p1, p2, r1, r2);
-            fence.position.set(x, 1.5, z); fence.rotation.y = rot;
-            fence.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
-            parent.add(fence);
-        }
 
         // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
@@ -708,23 +688,6 @@
         stall1.add(counter1, awning1);
         is1Group.add(stall1);
 
-        is1Group.add(createStylizedPine(-2.0, -10.5, 1.2, matFoliagePine1));
-        is1Group.add(createStylizedPine(-8.0, -7.5, 1.1, matFoliagePine2));
-        is1Group.add(createStylizedPine(-11.5, 2.5, 1.0, matFoliagePine1));
-        is1Group.add(createStylizedPine(9.5, -4.5, 1.15, matFoliagePine2));
-        is1Group.add(createStylizedPine(8.5, 4.5, 0.9, matFoliagePine1));
-
-        is1Group.add(createStylizedRock(12.5, 0.3, 2.5, 1.2));
-        is1Group.add(createStylizedRock(11.0, 0.2, -6.0, 1.4));
-        is1Group.add(createStylizedRock(-12.5, 0.4, -4.0, 1.5));
-        is1Group.add(createStylizedRock(-3.5, 0.2, 12.5, 0.9));
-
-        createFlowerPatch(is1Group, 6.0, 3.0, 8);
-        createFlowerPatch(is1Group, -4.0, 5.0, 7);
-        createFlowerPatch(is1Group, 1.5, -5.5, 9);
-        createFence(is1Group, 3.5, 0.8, 0);
-        createFence(is1Group, 3.5, -3.8, 0);
-
         worldGroup.add(is1Group);
 
         // --- 2. ASSEMBLE ISLAND 2 ---
@@ -779,9 +742,6 @@
         createTropicalPalm(9, 5, 1.25);
         createTropicalPalm(8, -8, 1.05);
         createTropicalPalm(-2, -10, 1.2);
-
-        is2Group.add(createStylizedRock(11.5, 0.3, -3.0, 1.3, matCoralPink));
-        is2Group.add(createStylizedRock(-12.0, 0.3, -2.0, 1.5, matCoralPink));
 
         worldGroup.add(is2Group);
 
@@ -943,18 +903,18 @@
         function generateCropMesh(type) {
             const grp = new THREE.Group();
             if (type === 'tomato') {
-                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matFoliagePine1); stem.position.y = 0.35;
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), matGrassPastel2); stem.position.y = 0.35;
                 const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.3 })); f1.position.set(0.18, 0.45, 0.15);
                 grp.add(stem, f1);
             } else if (type === 'carrot') {
                 const root = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.4 })); root.rotation.x = Math.PI; root.position.y = 0.4;
-                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matFoliagePine1); leaves.position.y = 0.85;
+                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.55, 5), matGrassPastel2); leaves.position.y = 0.85;
                 grp.add(root, leaves);
             } else if (type === 'cabbage') {
                 const cab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.7 })); cab.position.y = 0.42;
                 grp.add(cab);
             } else if (type === 'corn') {
-                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matFoliagePine1); stalk.position.y = 0.55;
+                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.1, 6), matGrassPastel2); stalk.position.y = 0.55;
                 const cob = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.65, 8), new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.3 })); cob.position.set(0.15, 0.65, 0); cob.rotation.z = -0.3;
                 grp.add(stalk, cob);
             } else if (type === 'strawberry') {
@@ -1318,7 +1278,7 @@
                 window.openMarket();
             } else if (activeTarget.type === 'boat_is1') {
                 const q1 = gameState.quests[1][0].done;
-                const q2 = gameState.quests[1][0].done;
+                const q2 = gameState.quests[1][1].done;
                 if (!gameState.unlockedIslands.includes(2)) {
                     if (!q1 || !q2) {
                         showToast('⚠️ ต้องทำเควสต์เก็บผัก 6 ชิ้น และตอบ Quiz ให้ผ่านก่อน!');
