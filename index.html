@@ -294,7 +294,7 @@
             seeds: {
                 tomato: { id: 'tomato', name: 'มะเขือเทศ 🍅', emoji: '🍅', cost: 10, earn: 25, growTime: 5, island: 1 },
                 carrot: { id: 'carrot', name: 'แครอท 🥕', emoji: '🥕', cost: 25, earn: 70, growTime: 8, island: 1 },
-                cabbage: { id: 'cabbage', name: 'กะหล่ำปลี 🥬', emoji: '🥬', cost: 60, earn: 200, growTime: 14, island: 1 },
+                cabbage: { id: 'cabbage', name: 'กะหล่幅ปลี 🥬', emoji: '🥬', cost: 60, earn: 200, growTime: 14, island: 1 },
                 corn: { id: 'corn', name: 'ข้าวโพด 🌽', emoji: '🌽', cost: 120, earn: 450, growTime: 20, island: 1 }
             }
         },
@@ -767,51 +767,46 @@
         }
 
         // ==========================================================================
-        // 4. ACCURATE 3D TERRAIN ELEVATION & SLOPES HEIGHTMAP
+        // 4. ACCURATE 3D TERRAIN ELEVATION & OBSTACLES (Zero Sinking & Zero Clipping)
         // ==========================================================================
         function getTerrainElevation(x, z) {
-            // Island 1 (Starter Island)
+            // 1. Island 1 (Starter Island)
             const d1 = Math.hypot(x, z);
-            if (d1 <= 16.5) {
-                // Hill at (-8.5, 0)
+            if (d1 <= 17.0) {
+                // Windmill Hill plateau & slope at (-8.5, 0)
                 const dHill = Math.hypot(x - (-8.5), z - 0);
                 if (dHill <= 4.2) {
-                    return 2.6; // Top plateau of windmill hill
+                    return 2.6; // Top of the hill
                 } else if (dHill <= 5.5) {
                     const t = (dHill - 4.2) / 1.3;
-                    return 2.6 - t * 1.1; // Smooth slope up the hill
+                    return 2.6 - t * 1.1; // Smooth slope from 2.6 to 1.5
                 }
 
-                // Pier 1 dock
-                if (Math.abs(x) <= 1.8 && z >= 8.5 && z <= 15.2) {
-                    return 0.55;
+                // Pier 1 dock (starts only past z = 11.5)
+                if (Math.abs(x) <= 2.0 && z >= 11.5 && z <= 15.5) {
+                    return 0.45;
                 }
 
-                // Farm Plots area elevation (x: 1.5 to 5.5, z: -3.0 to 0.5)
-                if (x >= 1.2 && x <= 5.8 && z >= -3.2 && z <= 0.8) {
-                    return 1.65; // Stand cleanly on top of farm soil frame
-                }
-
-                // Main Island 1 Grass
-                if (d1 <= 13.2) {
+                // Main Island 1 Grass & Roads (all pathways and ground are 1.5)
+                if (d1 <= 13.5) {
                     return 1.5;
                 }
-                // Beach slope
-                if (d1 <= 15.8) {
-                    const t = (d1 - 13.2) / 2.6;
-                    return 1.5 - t * 1.0;
+                // Beach Slope
+                if (d1 <= 16.0) {
+                    const t = (d1 - 13.5) / 2.5;
+                    return 1.5 - t * 1.1;
                 }
-                return 0.5;
+                return 0.4;
             }
 
-            // Island 2 (Tropical Island)
+            // 2. Island 2 (Tropical Island at 55, -10)
             const dx2 = x - 55, dz2 = z - (-10);
             const d2 = Math.hypot(dx2, dz2);
-            if (d2 <= 17.5) {
+            if (d2 <= 18.0) {
                 // Cliff at (49, -16)
                 const dCliff = Math.hypot(x - 49, z - (-16));
                 if (dCliff <= 5.8) {
-                    return 3.6; // Top of the cliff
+                    return 3.6;
                 } else if (dCliff <= 7.2) {
                     const t = (dCliff - 5.8) / 1.4;
                     return 3.6 - t * 2.1;
@@ -819,36 +814,31 @@
 
                 // Pier 2 dock (44, -1)
                 const dDock2 = Math.hypot(x - 44, z - (-1));
-                if (dDock2 <= 3.6) {
-                    return 0.55;
-                }
-
-                // Island 2 Farm Plots area (x: 56 to 61, z: -9 to -6)
-                if (x >= 56.0 && x <= 61.0 && z >= -9.0 && z <= -5.5) {
-                    return 1.65;
+                if (dDock2 <= 3.2) {
+                    return 0.45;
                 }
 
                 // Main Grass
                 if (d2 <= 14.0) {
                     return 1.5;
                 }
-                // Beach slope
+                // Beach Slope
                 if (d2 <= 16.8) {
                     const t = (d2 - 14.0) / 2.8;
-                    return 1.5 - t * 1.0;
+                    return 1.5 - t * 1.1;
                 }
-                return 0.5;
+                return 0.4;
             }
 
-            return -0.2; // Ocean
+            return -0.2; // Water
         }
 
         const obstacles = [
-            { x: -4.5, z: -8.0, radius: 2.3 }, // House
-            { x: -8.5, z: 0, radius: 1.6 },    // Windmill tower base only
-            { x: 2.8, z: 7.5, radius: 1.5 },    // Market stall
-            { x: -2.5, z: 2.5, radius: 1.3 },   // Well
-            { x: 58, z: -12, radius: 2.0 }      // Juice bar
+            { x: -4.5, z: -8.0, radius: 2.6 },  // Nordic Barn House
+            { x: -8.5, z: 0, radius: 2.4 },     // Windmill Tower (prevents clipping into cylinder)
+            { x: 2.8, z: 7.5, radius: 1.8 },     // Market Stall
+            { x: -2.5, z: 2.5, radius: 1.5 },    // Well
+            { x: 58, z: -12, radius: 2.2 }       // Juice Bar
         ];
 
         // 5. Stylized Character
@@ -1481,10 +1471,10 @@
                 }
 
                 const groundY = getTerrainElevation(charGroup.position.x, charGroup.position.z);
-                charGroup.position.y = THREE.MathUtils.lerp(charGroup.position.y, groundY, 0.35);
+                charGroup.position.y = groundY;
 
                 const targetRot = Math.atan2(moveDir.x, moveDir.z);
-                modelGroup.rotation.y = THREE.MathUtils.lerp(modelGroup.rotation.y, targetRot, 0.25);
+                modelGroup.rotation.y = THREE.MathUtils.lerp(modelGroup.rotation.y, targetRot, 0.35);
 
                 const t = elapsed * 15;
                 legL.rotation.x = Math.sin(t) * 0.75; legR.rotation.x = -Math.sin(t) * 0.75;
@@ -1493,7 +1483,7 @@
             } else if (gameState.mode === 'exploring') {
                 legL.rotation.x = 0; legR.rotation.x = 0; armL.rotation.x = 0; armR.rotation.x = 0;
                 const groundY = getTerrainElevation(charGroup.position.x, charGroup.position.z);
-                charGroup.position.y = THREE.MathUtils.lerp(charGroup.position.y, groundY, 0.35);
+                charGroup.position.y = groundY;
             }
 
             // Crops Update
