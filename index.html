@@ -930,43 +930,48 @@
         // ==========================================================
         // 3. CLEAN & HARMONIOUS KAYKIT 3D SCENE LAYOUT (ZERO CLIPPING)
         // ==========================================================
-        // Island 1: Clean Pine Forest on North Hill
-        loadGLB('/assets/nature/Tree_2_A_Color1.gltf', -5.5, -11.5, 1.5, 0.4);
-        loadGLB('/assets/nature/Tree_2_B_Color1.gltf', -1.5, -12.0, 1.4, -0.3);
-        loadGLB('/assets/nature/Tree_2_C_Color1.gltf', -8.5, -6.8, 1.5, 0.8);
-        loadGLB('/assets/nature/Tree_2_D_Color1.gltf', -11.5, -3.5, 1.4, 1.2);
+        // ==========================================================
+        // 3. PERFECT PROPORTIONS & ZERO OVERLAPPING SCENE (KAYKIT 3D)
+        // ==========================================================
+        // Island 1: Pine & Leafy Trees
+        loadGLB('/assets/nature/Tree_2_A_Color1.gltf', -5.5, -11.5, 1.6, 0.4);
+        loadGLB('/assets/nature/Tree_2_B_Color1.gltf', -1.5, -12.0, 1.5, -0.3);
+        loadGLB('/assets/nature/Tree_2_C_Color1.gltf', -8.5, -6.8, 1.6, 0.8);
+        loadGLB('/assets/nature/Tree_2_D_Color1.gltf', -11.5, -3.5, 1.5, 1.2);
 
-        // Autumn Warm Trees on East & Northwest Edge
-        loadGLB('/assets/props/tree_pine_orange_large.gltf', 11.0, -7.5, 1.4, 1.1);
-        loadGLB('/assets/props/tree_pine_yellow_large.gltf', 11.5, -3.0, 1.3, -0.6);
-        loadGLB('/assets/props/tree_pine_orange_medium.gltf', 9.5, 5.5, 1.3, 0.3);
-        loadGLB('/assets/nature/Tree_4_A_Color1.gltf', -11.0, 5.5, 1.5, -1.2);
+        // Autumn Warm Trees
+        loadGLB('/assets/props/tree_pine_orange_large.gltf', 11.0, -7.5, 1.5, 1.1);
+        loadGLB('/assets/props/tree_pine_yellow_large.gltf', 11.5, -3.0, 1.4, -0.6);
+        loadGLB('/assets/props/tree_pine_orange_medium.gltf', 9.5, 5.5, 1.4, 0.3);
+        loadGLB('/assets/nature/Tree_4_A_Color1.gltf', -11.0, 5.5, 1.6, -1.2);
 
-        // Nature Rocks & Bushes
+        // Rocks & Bushes
         loadGLB('/assets/nature/Rock_1_A_Color1.gltf', 11.8, 2.0, 1.2, 0.5);
         loadGLB('/assets/nature/Rock_2_A_Color1.gltf', -11.8, -5.5, 1.1, -0.8);
-        loadGLB('/assets/nature/Bush_1_A_Color1.gltf', -2.2, 4.8, 1.0, 0);
-        loadGLB('/assets/nature/Bush_1_B_Color1.gltf', 2.2, 4.8, 1.0, 0.5);
+        loadGLB('/assets/nature/Bush_1_A_Color1.gltf', -2.2, 4.8, 0.9, 0);
+        loadGLB('/assets/nature/Bush_1_B_Color1.gltf', 2.2, 4.8, 0.9, 0.5);
 
-        // KayKit Medieval Buildings (Calculated Realistic Scale ~1:1 with Character)
-        loadGLB('/assets/medieval/buildings/red/building_home_A_red.gltf', -4.8, -7.8, 1.15, 0.4);
-        loadGLB('/assets/medieval/buildings/red/building_windmill_red.gltf', -8.5, 0.0, 1.25, 0.0);
-        loadGLB('/assets/medieval/buildings/red/building_market_red.gltf', 3.4, 7.2, 0.95, Math.PI);
-        loadGLB('/assets/medieval/buildings/red/building_well_red.gltf', -2.5, 2.5, 0.85, 0.0);
+        // GRAND KAYKIT BUILDINGS (Proper Realistic Proportions - Much larger than lanterns!)
+        loadGLB('/assets/medieval/buildings/red/building_market_red.gltf', 4.5, 7.2, 2.4, Math.PI); // Large Market Shop
+        loadGLB('/assets/medieval/buildings/red/building_home_A_red.gltf', -4.8, -7.8, 2.5, 0.4);   // Farmhouse
+        loadGLB('/assets/medieval/buildings/red/building_windmill_red.gltf', -8.5, 0.0, 2.8, 0.0); // Towering Windmill
+        loadGLB('/assets/medieval/buildings/red/building_well_red.gltf', -2.5, 2.5, 1.4, 0.0);     // Stone Well
 
-        // Realistic Scaled Farm Props, Sacks, Crates & Chests
-        loadGLB('/assets/dungeon/chest_gold.gltf', 1.8, 12.0, 0.75, -0.4);
-        loadGLB('/assets/dungeon/sword_shield_gold.gltf', -3.2, 4.5, 0.85, 0);
-        loadGLB('/assets/medieval/decoration/props/crate_A_big.gltf', 4.5, 6.8, 0.75, 0.2);
-        loadGLB('/assets/medieval/decoration/props/barrel.gltf', 4.4, 7.8, 0.75, 0);
-        loadGLB('/assets/medieval/decoration/props/sack.gltf', 2.2, 6.6, 0.75, 0.5);
-        loadGLB('/assets/medieval/decoration/props/wheelbarrow.gltf', 6.2, 0.5, 0.85, -0.8);
-        loadGLB('/assets/props/pumpkin_orange.gltf', 4.6, 5.8, 0.45, 0.3);
-        loadGLB('/assets/props/pumpkin_yellow.gltf', 3.8, -3.8, 0.45, 0.8);
-        loadGLB('/assets/props/bench.gltf', -2.8, 5.8, 0.75, Math.PI / 2);
-        loadGLB('/assets/props/post_lantern.gltf', 1.5, 10.5, 0.65, 0);
-        loadGLB('/assets/props/post_lantern.gltf', -1.5, 10.5, 0.65, Math.PI);
-        loadGLB('/assets/props/arch.gltf', 1.8, 3.2, 0.75, 0);
+        // Slender Lanterns & Gateway
+        loadGLB('/assets/props/post_lantern.gltf', 1.6, 11.2, 0.35, 0);       // Slender pier lamp
+        loadGLB('/assets/props/post_lantern.gltf', -1.6, 11.2, 0.35, Math.PI);// Slender pier lamp
+        loadGLB('/assets/props/arch.gltf', 1.8, 3.2, 0.65, 0);                 // Stone walkway arch
+        loadGLB('/assets/props/bench.gltf', -2.8, 5.8, 0.6, Math.PI / 2);      // Park bench
+
+        // Small, Cute Decorative Props (Proportional)
+        loadGLB('/assets/dungeon/chest_gold.gltf', 1.8, 12.0, 0.6, -0.4);
+        loadGLB('/assets/dungeon/sword_shield_gold.gltf', -3.2, 4.5, 0.75, 0);
+        loadGLB('/assets/medieval/decoration/props/crate_A_big.gltf', 6.0, 6.8, 0.55, 0.2);
+        loadGLB('/assets/medieval/decoration/props/barrel.gltf', 5.8, 7.8, 0.55, 0);
+        loadGLB('/assets/medieval/decoration/props/sack.gltf', 3.0, 6.4, 0.55, 0.5);
+        loadGLB('/assets/medieval/decoration/props/wheelbarrow.gltf', 6.2, 0.5, 0.7, -0.8);
+        loadGLB('/assets/props/pumpkin_orange.gltf', 6.2, 5.8, 0.22, 0.3);
+        loadGLB('/assets/props/pumpkin_yellow.gltf', 3.8, -3.8, 0.22, 0.8);
 
         // Island 2: Tropical Trees, Fruit Market & Nature
         loadGLB('/assets/models/tree_palm.glb', 55 - 9.5, -10 + 6.5, 5.5, 0.5);
@@ -976,10 +981,10 @@
         loadGLB('/assets/models/tree_palm.glb', 55 - 10.5, -10 - 4.5, 5.0, 2.1);
         loadGLB('/assets/nature/Rock_1_B_Color1.gltf', 55 + 11.0, -10 - 1.0, 1.3, 1.2);
         loadGLB('/assets/nature/Bush_1_C_Color1.gltf', 55 - 6.0, -10 + 7.5, 1.0, 0.8);
-        loadGLB('/assets/medieval/buildings/red/building_market_red.gltf', 58, -12, 0.95, 0.0);
-        loadGLB('/assets/medieval/decoration/props/barrel.gltf', 56.5, -11.5, 0.75, 0.4);
-        loadGLB('/assets/dungeon/chest.gltf', 55 + 2.5, -10 + 2.0, 0.75, 0.5);
-        loadGLB('/assets/props/post_lantern.gltf', 55 - 9.5, -10 + 7.5, 0.65, -1.0);
+        loadGLB('/assets/medieval/buildings/red/building_market_red.gltf', 58, -12, 2.4, 0.0);
+        loadGLB('/assets/medieval/decoration/props/barrel.gltf', 56.5, -11.5, 0.55, 0.4);
+        loadGLB('/assets/dungeon/chest.gltf', 55 + 2.5, -10 + 2.0, 0.6, 0.5);
+        loadGLB('/assets/props/post_lantern.gltf', 55 - 9.5, -10 + 7.5, 0.35, -1.0);
 
         // World Group for Island Terrains & Structures
         const worldGroup = new THREE.Group();
@@ -1199,21 +1204,38 @@
             );
         };
 
-        // 6. Robot Assistant (Helper standing beside the KayKit Well)
+        // 6. Farm Assistant NPC (3D Character standing beside the KayKit Well)
         const wellRobotGroup = new THREE.Group();
         wellRobotGroup.position.set(-2.5, 1.5, 2.5);
         scene.add(wellRobotGroup);
 
         const robotMesh = new THREE.Group();
         robotMesh.position.set(1.4, 0, 0.4);
-        const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.75, 0.45), new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.5 }));
-        rBody.position.y = 0.65; rBody.castShadow = true;
-        const rHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.5 }));
-        rHead.position.y = 1.25; rHead.castShadow = true;
-        const rWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.55, 16), new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.5 }));
-        rWheel.rotation.z = Math.PI / 2; rWheel.position.y = 0.22; rWheel.castShadow = true;
-        robotMesh.add(rBody, rHead, rWheel);
         wellRobotGroup.add(robotMesh);
+
+        gltfLoader.load('/assets/characters/Mage.glb', (gltf) => {
+            const npc = gltf.scene;
+            npc.scale.set(0.9, 0.9, 0.9);
+            npc.rotation.y = -Math.PI / 4;
+            npc.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (child.material) {
+                        child.material.metalness = 0.0;
+                        child.material.roughness = 0.74;
+                    }
+                }
+            });
+            robotMesh.add(npc);
+
+            if (gltf.animations && gltf.animations.length > 0) {
+                const npcMixer = new THREE.AnimationMixer(npc);
+                const idleClip = gltf.animations.find(c => /idle/i.test(c.name)) || gltf.animations[0];
+                if (idleClip) npcMixer.clipAction(idleClip).play();
+                mixers.push(npcMixer);
+            }
+        });
 
         // 7. Farm Plots
         const allPlots = [];
