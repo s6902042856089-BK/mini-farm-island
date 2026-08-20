@@ -576,14 +576,7 @@
     window.onStartAdventureClick = function() {
         try { if(window.initAudio) window.initAudio(); } catch(e){}
         try { if(window.sfx) window.sfx.click(); } catch(e){}
-
-        const hasSavedProfile = localStorage.getItem('coastal_player_name') && localStorage.getItem('coastal_character');
-        if (hasSavedProfile) {
-            showToast(`ยินดีต้อนรับกลับ ${gameState.player.name}! 🌟`);
-            window.startGame();
-        } else {
-            document.getElementById('login-modal').style.display = 'flex';
-        }
+        window.openCharacterStudio();
     };
 
     window.continueAsGuest = function() {
@@ -735,16 +728,21 @@
         const ts = document.getElementById('title-screen');
         if (ts) ts.style.display = 'none';
 
+        // Close all modals
+        const modals = document.querySelectorAll('.modal-overlay');
+        modals.forEach(m => m.style.display = 'none');
+
         const ls = document.getElementById('loading-screen');
         const ln = document.getElementById('loading-number');
         if (ls) {
             ls.classList.remove('loaded');
             ls.classList.add('active');
+            ls.style.display = 'flex';
             let prog = 0;
             if (ln) ln.innerText = '0';
             
             const loadTimer = setInterval(() => {
-                prog += Math.floor(Math.random() * 15) + 8;
+                prog += Math.floor(Math.random() * 25) + 15;
                 if (prog >= 100) {
                     prog = 100;
                     if (ln) ln.innerText = '100';
@@ -752,19 +750,17 @@
                     
                     setTimeout(() => {
                         ls.classList.add('loaded');
+                        ls.style.display = 'none';
                         const hud = document.getElementById('hud');
                         if (hud) hud.style.display = 'flex';
                         gameState.mode = 'transitioning';
                         transitionProg = 0;
                         initTutorialUI();
-                        setTimeout(() => {
-                            ls.classList.remove('active');
-                        }, 700);
-                    }, 400);
+                    }, 200);
                 } else {
                     if (ln) ln.innerText = prog;
                 }
-            }, 75);
+            }, 45);
         } else {
             const hud = document.getElementById('hud');
             if (hud) hud.style.display = 'flex';
