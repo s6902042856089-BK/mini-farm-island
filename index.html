@@ -228,32 +228,25 @@
         </div>
     </div>
 
-    <!-- 3. CHARACTER CREATION STUDIO MODAL (360 Turntable & Name Tag) -->
+    <!-- 3. CHARACTER CREATION STUDIO MODAL (Lightweight & Clean) -->
     <div class="modal-overlay" id="char-studio-modal">
-        <div class="studio-modal-container">
-            <!-- Left Turntable 3D Viewport -->
-            <div class="studio-preview-col">
-                <div class="floating-nametag-badge" id="studio-live-nametag">น้องมะนาว</div>
-                <div id="turntable-canvas-holder"></div>
-                <div class="turntable-hint">🔄 ลากเมาส์ / หมุนตัวละคร 360°</div>
-            </div>
-
-            <!-- Right Controls Viewport -->
-            <div class="studio-controls-col">
+        <div class="modal-content" style="max-width: 580px; width: 92%;">
+            <div style="text-align: center; margin-bottom: 12px;">
+                <div class="floating-nametag-badge" id="studio-live-nametag" style="position: static; display: inline-block; margin-bottom: 12px;">น้องมะนาว</div>
                 <h2 style="font-size: 1.5rem; color: #1e293b; font-weight: 700; margin-bottom: 4px;">สร้างโปรไฟล์นักผจญภัย</h2>
-                <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 20px;">นักผจญภัยอยากให้เราเรียกว่าอะไร?</p>
-
-                <div class="name-input-group">
-                    <input type="text" id="player-name-input" class="name-input-field" maxlength="16" placeholder="พิมพ์ชื่อในเกม (เช่น น้องมะนาว / Coder03)" value="น้องมะนาว" oninput="window.onNameInput(this.value)">
-                </div>
-
-                <div style="font-weight: 600; font-size: 0.95rem; color: #334155; margin-bottom: 10px;">เลือกฮีโร่ของคุณ (Avatar)</div>
-                <div class="char-class-selector" id="studio-class-grid"></div>
-
-                <button class="btn-confirm-identity" onclick="window.confirmCharacterCreation()">
-                    ✨ นี่คือตัวฉัน! (Confirm Identity)
-                </button>
+                <p style="font-size: 0.9rem; color: #64748b;">นักผจญภัยอยากให้เราเรียกว่าอะไร?</p>
             </div>
+
+            <div class="name-input-group" style="margin-bottom: 16px;">
+                <input type="text" id="player-name-input" class="name-input-field" maxlength="16" placeholder="พิมพ์ชื่อในเกม (เช่น น้องมะนาว / Coder03)" value="น้องมะนาว" oninput="window.onNameInput(this.value)">
+            </div>
+
+            <div style="font-weight: 600; font-size: 0.95rem; color: #334155; margin-bottom: 10px;">เลือกฮีโร่ของคุณ (Avatar)</div>
+            <div class="char-class-selector" id="studio-class-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;"></div>
+
+            <button class="btn-confirm-identity" onclick="window.confirmCharacterCreation()">
+                ✨ นี่คือตัวฉัน! (Confirm Identity)
+            </button>
         </div>
     </div>
 
@@ -625,6 +618,7 @@
                 card.innerHTML = `
                     <div class="card-icon">${c.shortName.split(' ')[1] || '🧙‍♂️'}</div>
                     <div class="card-name">${c.name.split(' ')[0]}</div>
+                    <div style="font-size: 0.75rem; color: #7f8c8d; margin-top: 2px;">${c.desc}</div>
                 `;
                 card.onclick = () => {
                     window.selectStudioCharacter(key);
@@ -632,109 +626,11 @@
                 grid.appendChild(card);
             });
         }
-
-        // Init 3D Turntable
-        initTurntableStudio();
-        loadTurntableModel(gameState.selectedCharacter);
     };
-
-    function initTurntableStudio() {
-        const container = document.getElementById('turntable-canvas-holder');
-        if (!container || turntableRenderer) return;
-
-        turntableScene = new THREE.Scene();
-        turntableCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 50);
-        turntableCamera.position.set(0, 1.3, 3.2);
-
-        turntableRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        turntableRenderer.setSize(container.clientWidth, container.clientHeight);
-        turntableRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        turntableRenderer.outputEncoding = THREE.sRGBEncoding;
-        turntableRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-        container.appendChild(turntableRenderer.domElement);
-
-        const amb = new THREE.AmbientLight(0xffffff, 1.2);
-        const sun = new THREE.DirectionalLight(0xfff8ee, 1.4);
-        sun.position.set(3, 5, 4);
-        turntableScene.add(amb, sun);
-
-        // Mouse & Touch 360 Drag
-        const dom = turntableRenderer.domElement;
-        dom.addEventListener('mousedown', (e) => { isTurntableDragging = true; turntablePrevX = e.clientX; });
-        window.addEventListener('mouseup', () => { isTurntableDragging = false; });
-        window.addEventListener('mousemove', (e) => {
-            if (isTurntableDragging && turntableModel) {
-                const delta = e.clientX - turntablePrevX;
-                turntableModel.rotation.y += delta * 0.012;
-                turntablePrevX = e.clientX;
-            }
-        });
-
-        dom.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
-                isTurntableDragging = true;
-                turntablePrevX = e.touches[0].clientX;
-            }
-        });
-        window.addEventListener('touchend', () => { isTurntableDragging = false; });
-        window.addEventListener('touchmove', (e) => {
-            if (isTurntableDragging && turntableModel && e.touches.length === 1) {
-                const delta = e.touches[0].clientX - turntablePrevX;
-                turntableModel.rotation.y += delta * 0.012;
-                turntablePrevX = e.touches[0].clientX;
-            }
-        });
-
-        // Animation Loop for Turntable
-        const clock = new THREE.Clock();
-        function animateTurntable() {
-            requestAnimationFrame(animateTurntable);
-            const dt = clock.getDelta();
-            if (turntableMixer) turntableMixer.update(dt);
-            if (!isTurntableDragging && turntableModel) {
-                turntableModel.rotation.y += 0.005; // Slow gentle auto-rotation
-            }
-            if (turntableRenderer && turntableScene && turntableCamera) {
-                turntableRenderer.render(turntableScene, turntableCamera);
-            }
-        }
-        animateTurntable();
-    }
-
-    function loadTurntableModel(charKey) {
-        if (!turntableScene) return;
-        const config = CHARACTERS[charKey];
-        if (!config) return;
-
-        const loader = new THREE.GLTFLoader();
-        loader.load(config.modelUrl, (gltf) => {
-            if (turntableModel) turntableScene.remove(turntableModel);
-            turntableModel = gltf.scene;
-            turntableModel.scale.set(1.0, 1.0, 1.0);
-            turntableModel.position.set(0, 0, 0);
-
-            turntableModel.traverse(child => {
-                if (child.isMesh) {
-                    if (child.material) {
-                        child.material.metalness = 0.0;
-                        child.material.roughness = 0.74;
-                    }
-                }
-            });
-
-            turntableScene.add(turntableModel);
-
-            turntableMixer = new THREE.AnimationMixer(turntableModel);
-            const allClips = [ ...(gltf.animations || []), ...Object.values(animClips) ];
-            const idleClip = allClips.find(c => /idle/i.test(c.name)) || allClips[0];
-            if (idleClip) turntableMixer.clipAction(idleClip).play();
-        });
-    }
 
     window.selectStudioCharacter = function(key) {
         try { window.sfx.click(); } catch(e){}
         gameState.selectedCharacter = key;
-        loadTurntableModel(key);
 
         const cards = document.querySelectorAll('.char-class-card');
         cards.forEach((c, idx) => {
