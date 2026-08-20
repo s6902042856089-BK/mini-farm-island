@@ -186,6 +186,9 @@
         </div>
     </div>
 
+    <!-- 3D WebGL Canvas Container -->
+    <div id="game-canvas-container"></div>
+
     <!-- 1. TITLE / GAME START SCREEN (3D Welcome Landing) -->
     <div id="title-screen">
         <div class="title-card">
@@ -565,10 +568,6 @@
     let targetIslandId = 2;
     let activeTarget = null;
     let supabaseClient = null;
-
-    // Turntable Studio Mini Engine
-    let turntableScene, turntableCamera, turntableRenderer, turntableModel, turntableMixer;
-    let isTurntableDragging = false, turntablePrevX = 0;
 
     // ==========================================================================
     // ONBOARDING & GAMEPLAY FLOW ENGINE
