@@ -702,13 +702,16 @@
 
         // High Quality Color Grading & Soft Shadow Mapping
         renderer.outputEncoding = THREE.sRGBEncoding;
+        if (typeof THREE.SRGBColorSpace !== 'undefined' && renderer.outputColorSpace !== undefined) {
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+        }
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
+        renderer.toneMappingExposure = 1.12; // Vibrant daylight without white clipping
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        // Sky Gradient Dome (Tropical Horizon Gradient)
+        // Sky Gradient Dome (Clean Tropical Blue Sky)
         const skyGeo = new THREE.SphereGeometry(280, 32, 16);
         const skyMat = new THREE.MeshBasicMaterial({
             color: 0x48dbfb,
@@ -718,31 +721,33 @@
         scene.add(skyDome);
 
         // ==========================================================
-        // 3-POINT STYLIZED LIGHTING: Warm Key + Lush Ambient + Soft Rim
+        // STYLIZED LOW-POLY LIGHTING: Directional Sun + Subtle Sky Fill
         // ==========================================================
-        // 1. Hemisphere Light (Soft Sky Blue top + Lush Mint Grass bounce)
-        const hemiLight = new THREE.HemisphereLight(0xdff9fb, 0x1dd1a1, 0.68);
+        // 1. Hemisphere Light (Sky: Soft Pale Blue, Ground: Soft Forest Gray-Green)
+        // Keeps clear contrast between lit and unlit low-poly facets
+        const hemiLight = new THREE.HemisphereLight(0xd6eef8, 0x486b52, 0.52);
         scene.add(hemiLight);
 
-        // 2. Key Sun Light (Warm Golden Sunlight with Crisp Soft Shadows)
-        const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.15);
-        sunLight.position.set(32, 45, 24);
+        // 2. Primary Sun Light (Warm White sunlight at ~45 degree angle for clear volume)
+        const sunLight = new THREE.DirectionalLight(0xfff8ee, 1.18);
+        sunLight.position.set(26, 38, 22);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
-        sunLight.shadow.bias = -0.00025;
-        sunLight.shadow.normalBias = 0.02;
-        const d = 45;
-        sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
-        sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
-        sunLight.shadow.camera.near = 5;
-        sunLight.shadow.camera.far = 130;
-        scene.add(sunLight);
+        sunLight.shadow.bias = -0.00015;
+        sunLight.shadow.normalBias = 0.025; // Prevents shadow acne on low poly faces
+        sunLight.shadow.radius = 1.6; // Soft contact shadow penumbra
 
-        // 3. Subtle Rim/Fill Light (Cool Cyan/Lavender Rim to highlight edges)
-        const rimLight = new THREE.DirectionalLight(0x74b9ff, 0.42);
-        rimLight.position.set(-28, 22, -28);
-        scene.add(rimLight);
+        // Focused shadow bounds for maximum shadow map sharpness
+        const d = 26;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.camera.near = 1;
+        sunLight.shadow.camera.far = 110;
+        scene.add(sunLight);
+        scene.add(sunLight.target);
 
         // Crystal Turquoise Tropical Ocean
         const waterGeo = new THREE.PlaneGeometry(420, 420, 56, 56);
@@ -905,6 +910,10 @@
                         if (obj.isMesh) {
                             obj.castShadow = true;
                             obj.receiveShadow = true;
+                            if (obj.material) {
+                                if (obj.material.metalness !== undefined) obj.material.metalness = 0.0;
+                                if (obj.material.roughness !== undefined && obj.material.roughness < 0.65) obj.material.roughness = 0.74;
+                            }
                         }
                     });
 
@@ -947,22 +956,22 @@
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
-        // Harmonious Stylized Materials Palette
-        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.55, flatShading: true });
-        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xffbe76, roughness: 0.65, flatShading: true });
-        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.55, flatShading: true });
-        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xf3a683, roughness: 0.65, flatShading: true });
+        // Harmonious Stylized Materials Palette (Soft Matte Surface Response)
+        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.76, metalness: 0.0, flatShading: true });
+        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xffbe76, roughness: 0.84, metalness: 0.0, flatShading: true });
+        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.76, metalness: 0.0, flatShading: true });
+        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xf3a683, roughness: 0.84, metalness: 0.0, flatShading: true });
         
-        const matCobble = new THREE.MeshStandardMaterial({ color: 0xf1f2f6, roughness: 0.6, flatShading: true });
-        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.55, flatShading: true });
-        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.55, flatShading: true });
-        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.45 });
+        const matCobble = new THREE.MeshStandardMaterial({ color: 0xf1f2f6, roughness: 0.72, metalness: 0.0, flatShading: true });
+        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.75, metalness: 0.0, flatShading: true });
+        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.78, metalness: 0.0, flatShading: true });
+        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.70, metalness: 0.0 });
         
-        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xcd6133, roughness: 0.6 });
-        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.5, flatShading: true });
-        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
-        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x1e90ff, roughness: 0.45 });
-        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.55, flatShading: true });
+        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xcd6133, roughness: 0.76, metalness: 0.0 });
+        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.70, metalness: 0.0, flatShading: true });
+        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.72, metalness: 0.0 });
+        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x1e90ff, roughness: 0.70, metalness: 0.0 });
+        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.75, metalness: 0.0, flatShading: true });
 
         // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
@@ -1202,6 +1211,10 @@
                         if (child.isMesh) {
                             child.castShadow = true;
                             child.receiveShadow = true;
+                            if (child.material) {
+                                if (child.material.metalness !== undefined) child.material.metalness = 0.0;
+                                if (child.material.roughness !== undefined && child.material.roughness < 0.65) child.material.roughness = 0.74;
+                            }
                         }
                     });
 
@@ -1746,6 +1759,10 @@
             if (charMixer) {
                 charMixer.update(delta);
             }
+
+            // Keep Directional Sunlight centered over the active area for maximum shadow precision
+            sunLight.target.position.set(charGroup.position.x, charGroup.position.y, charGroup.position.z);
+            sunLight.position.set(charGroup.position.x + 26, charGroup.position.y + 38, charGroup.position.z + 22);
 
             for (let i = 0; i < waveVertices.length; i++) {
                 const v = waveVertices[i];
