@@ -706,7 +706,7 @@
             renderer.outputColorSpace = THREE.SRGBColorSpace;
         }
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.12; // Vibrant daylight without white clipping
+        renderer.toneMappingExposure = 1.02; // Balanced exposure, soft & comfortable
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
@@ -725,11 +725,11 @@
         // ==========================================================
         // 1. Hemisphere Light (Sky: Soft Pale Blue, Ground: Soft Forest Gray-Green)
         // Keeps clear contrast between lit and unlit low-poly facets
-        const hemiLight = new THREE.HemisphereLight(0xd6eef8, 0x486b52, 0.52);
+        const hemiLight = new THREE.HemisphereLight(0xd6eef8, 0x486b52, 0.46);
         scene.add(hemiLight);
 
         // 2. Primary Sun Light (Warm White sunlight at ~45 degree angle for clear volume)
-        const sunLight = new THREE.DirectionalLight(0xfff8ee, 1.18);
+        const sunLight = new THREE.DirectionalLight(0xfff8ee, 1.02);
         sunLight.position.set(26, 38, 22);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
