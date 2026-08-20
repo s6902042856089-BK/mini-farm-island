@@ -245,11 +245,12 @@
             </div>
 
             <div style="font-weight: 600; font-size: 0.95rem; color: #334155; margin-bottom: 10px;">เลือกฮีโร่ของคุณ (Avatar)</div>
-            <div class="char-class-selector" id="studio-class-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;"></div>
+            <div class="char-class-selector" id="studio-class-grid"></div>
 
             <button class="btn-confirm-identity" onclick="window.confirmCharacterCreation()">
                 ✨ นี่คือตัวฉัน! (Confirm Identity)
             </button>
+            <button class="btn-close" style="margin-top: 12px; width: 100%;" onclick="document.getElementById('char-studio-modal').style.display='none'">ย้อนกลับ</button>
         </div>
     </div>
 
