@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
     
     <!-- Three.js & GLTF Loaders CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -132,7 +132,7 @@
 
         /* Standard In-Game UI Overrides */
         #title-screen { z-index: 100; }
-        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout {
+        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout, #coastal-guide-banner {
             cursor: pointer !important;
             touch-action: manipulation;
             user-select: none;
@@ -214,6 +214,42 @@
 
     <!-- 2. IN-GAME HUD OVERLAY -->
     <div id="hud">
+        <!-- EXACT COASTAL WORLD GUIDE & NOTIFICATION BANNER -->
+        <div id="coastal-guide-banner" onclick="window.onBannerClick()">
+            <div class="banner-icon-container">
+                <!-- 3D Stylized Location Pin with Pedestal -->
+                <svg class="banner-pin-svg" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Base Disc / Pedestal -->
+                    <ellipse cx="22" cy="44" rx="14" ry="5.5" fill="#e67e22"/>
+                    <ellipse cx="22" cy="42" rx="14" ry="5.5" fill="#f39c12"/>
+                    <ellipse cx="22" cy="41" rx="12" ry="4.5" fill="#f1c40f"/>
+                    <!-- Pin Shadow -->
+                    <path d="M22 38C15 26 10 20 10 14C10 7.37 15.37 2 22 2C28.63 2 34 7.37 34 14C34 20 29 26 22 38Z" fill="#2980b9" opacity="0.3"/>
+                    <!-- 3D Pin Body -->
+                    <path d="M22 36C16 25 11 19 11 13C11 6.92 15.92 2 22 2C28.08 2 33 6.92 33 13C33 19 28 25 22 36Z" fill="url(#pinGradient)"/>
+                    <!-- Inner Pin Dot -->
+                    <circle cx="22" cy="13" r="5.5" fill="#ebf8ff"/>
+                    <!-- Glossy Highlight -->
+                    <path d="M15 8C17 4.5 20 3.5 23 3.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                    <defs>
+                        <linearGradient id="pinGradient" x1="11" y1="2" x2="33" y2="36" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#4facfe"/>
+                            <stop offset="1" stop-color="#00f2fe"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
+            <div class="banner-content">
+                <div class="banner-text" id="banner-main-text">Open the map to quickly navigate and discover places to go</div>
+                <div class="banner-subtext" id="banner-sub-text">แตะเพื่อเปิดแผนที่และดูตำแหน่งภารกิจ 🗺️</div>
+            </div>
+
+            <div class="banner-action-btn">
+                <span class="banner-arrow-icon">→</span>
+            </div>
+        </div>
+
         <div class="hud-top-bar">
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; gap: 10px; align-items: center;">
@@ -261,6 +297,7 @@
     </div>
 
     <!-- 3. MODALS -->
+    <!-- Market Modal -->
     <div class="modal-overlay" id="market-modal">
         <div class="modal-content">
             <h2 class="modal-title" id="market-title">⛵ ตลาดริมท่าเรือ</h2>
@@ -271,6 +308,7 @@
         </div>
     </div>
 
+    <!-- Quiz Modal -->
     <div class="modal-overlay" id="quiz-modal">
         <div class="modal-content">
             <h2 class="modal-title">🤖 หุ่นยนต์ผู้ช่วยรดน้ำ</h2>
@@ -278,6 +316,38 @@
             <div class="quiz-question-box" id="quiz-question">12 + 15 = ?</div>
             <div class="quiz-options-grid" id="quiz-options"></div>
             <button class="btn-close" onclick="document.getElementById('quiz-modal').style.display='none'">ปิด</button>
+        </div>
+    </div>
+
+    <!-- Archipelago Map & Discovery Modal -->
+    <div class="modal-overlay" id="map-modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <h2 class="modal-title">🗺️ แผนที่หมู่เกาะชายฝั่ง (Archipelago Map)</h2>
+            <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 15px;">เลือกเกาะที่ต้องการสำรวจและนำทาง</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <div style="background: white; border-radius: 16px; padding: 14px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #2ecc71;">
+                    <div style="text-align: left;">
+                        <div style="font-weight: bold; color: #2c3e50; font-size: 1.05rem;">🥬 เกาะที่ 1: เกาะผักสวนครัว</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">แปลงผัก, หุ่นยนต์รดน้ำ, ตลาดท่าเรือ, กังหันลม</div>
+                    </div>
+                    <button class="btn-primary" style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.85rem;" onclick="window.fastTravel(1)">
+                        นำทาง 📍
+                    </button>
+                </div>
+
+                <div style="background: white; border-radius: 16px; padding: 14px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #3498db;">
+                    <div style="text-align: left;">
+                        <div style="font-weight: bold; color: #2c3e50; font-size: 1.05rem;">🍍 เกาะที่ 2: เกาะผลไม้เมืองร้อน</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">สวนสตรอว์เบอร์รี, แตงโม, สับปะรด, ซุ้มน้ำปั่น</div>
+                    </div>
+                    <button class="btn-primary" id="btn-travel-is2" style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.85rem; background: linear-gradient(135deg, #0984e3, #00cec9);" onclick="window.fastTravel(2)">
+                        สำรวจ ⛵
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-close" onclick="document.getElementById('map-modal').style.display='none'">ปิดแผนที่</button>
         </div>
     </div>
 
@@ -319,6 +389,13 @@
         inventory: { tomato: 0, carrot: 0, cabbage: 0, corn: 0, strawberry: 0, watermelon: 0, pineapple: 0, dragonfruit: 0 },
         selectedSeed: 'tomato',
         robot: { buffActive: false, buffTimer: 0, broken: false, brokenTimer: 0, currentAnswer: 0 },
+        bannerIndex: 0,
+        banners: [
+            { main: "Open the map to quickly navigate and discover places to go", sub: "แตะเพื่อเปิดแผนที่และดูภาพรวมของหมู่เกาะ 🗺️", action: "map" },
+            { main: "Plant seeds and harvest crops to earn gold coins", sub: "เดินไปที่แปลงดินเพื่อปลูกและเก็บเกี่ยวผลผลิต 🌱", action: "focus_plot" },
+            { main: "Help the robot answer math quiz for 1.6x growth water buff", sub: "คุยกับหุ่นยนต์ที่บ่อน้ำเพื่อรับบัฟน้ำเร่งโต 🤖💧", action: "focus_robot" },
+            { main: "Save 250 🪙 to repair ferry boat and sail to Tropical Fruit Island", sub: "สะสมเงินแล้วไปที่ท่าเรือเพื่อซ่อมเรือข้ามฟาก ⛵", action: "focus_boat" }
+        ],
         quests: {
             1: [
                 { id: 'harvest_6', title: 'เก็บเกี่ยวผักให้ครบ 6 ชิ้น', target: 6, current: 0, reward: 80, done: false },
@@ -402,6 +479,50 @@
         if (supabaseClient) { try { await supabaseClient.auth.signOut(); } catch(e){} }
         window.location.hash = '';
         window.location.href = window.location.origin + window.location.pathname;
+    };
+
+    // Banner Guide Handlers
+    window.onBannerClick = function() {
+        try { window.sfx.click(); } catch(e){}
+        const currentBanner = gameState.banners[gameState.bannerIndex];
+        
+        if (currentBanner.action === 'map') {
+            document.getElementById('map-modal').style.display = 'flex';
+        } else if (currentBanner.action === 'focus_plot') {
+            showToast('🌱 มุ่งหน้าไปที่แปลงดินเพื่อเริ่มทำฟาร์ม!');
+        } else if (currentBanner.action === 'focus_robot') {
+            showToast('🤖 มุ่งหน้าไปที่บ่อน้ำเพื่อคุยกับหุ่นยนต์!');
+        } else if (currentBanner.action === 'focus_boat') {
+            showToast('⛵ มุ่งหน้าไปที่ท่าเรือทางทิศใต้!');
+        }
+
+        // Advance to next tip
+        gameState.bannerIndex = (gameState.bannerIndex + 1) % gameState.banners.length;
+        window.updateBannerUI();
+    };
+
+    window.updateBannerUI = function() {
+        const banner = gameState.banners[gameState.bannerIndex];
+        const mainEl = document.getElementById('banner-main-text');
+        const subEl = document.getElementById('banner-sub-text');
+        if (mainEl && subEl && banner) {
+            mainEl.innerText = banner.main;
+            subEl.innerText = banner.sub;
+        }
+    };
+
+    window.fastTravel = function(islandId) {
+        document.getElementById('map-modal').style.display = 'none';
+        if (islandId === gameState.currentIsland) {
+            showToast(`คุณอยู่ที่ ${ISLAND_CONFIGS[islandId].name} อยู่แล้วครับ 📍`);
+            return;
+        }
+        if (islandId === 2 && !gameState.unlockedIslands.includes(2)) {
+            showToast('⚠️ ต้องทำเควสต์เกาะ 1 ให้ครบและมีเงิน 250🪙 เพื่อปลดล็อกเกาะที่ 2!');
+            try { window.sfx.error(); } catch(e){}
+            return;
+        }
+        startSailingTo(islandId);
     };
 
     // ==========================================================================
@@ -659,7 +780,7 @@
             );
         }
 
-        // --- ISLAND 1: PROPORTIONAL NORDIC FOREST & AUTUMN TREES (Placed tastefully along edges/backdrop) ---
+        // --- ISLAND 1: PROPORTIONAL NORDIC FOREST & AUTUMN TREES ---
         // 1. Majestic Pine Trees Behind the House & Windmill Hill Backdrop (Scale 5.5 - 6.5)
         loadGLB('/assets/models/tree_pine.glb', -5.5, -11.5, 6.5, 0.4);
         loadGLB('/assets/models/tree_pine.glb', -1.5, -12.0, 5.8, -0.3);
@@ -1050,10 +1171,11 @@
 
         renderSeedSelector();
         updateUI();
+        window.updateBannerUI();
 
         // 360 Camera Drag Handlers
         window.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen') || e.target.closest('#coastal-guide-banner')) return;
             isDraggingCam = true;
             prevMousePos = { x: e.clientX, y: e.clientY };
         });
@@ -1073,7 +1195,7 @@
         // Touch Camera Drag
         let touchStartCam = { x: 0, y: 0 };
         window.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen') || e.target.closest('#coastal-guide-banner')) return;
             if (e.touches.length === 1) {
                 isDraggingCam = true;
                 touchStartCam = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -1120,8 +1242,8 @@
         window.openMarket = function() {
             try { window.sfx.click(); } catch(e){}
             const conf = ISLAND_CONFIGS[gameState.currentIsland];
-            marketTitle.innerText = conf.marketTitle;
-            marketDesc.innerText = conf.marketDesc;
+            marketTitle.innerText = '⛵ ตลาดริมท่าเรือ';
+            marketDesc.innerText = 'นำผลผลิตจากการทำฟาร์มมาขายเพื่อรับเหรียญทอง';
             marketList.innerHTML = '';
             let totalVal = 0, totalItems = 0;
 
@@ -1603,14 +1725,14 @@
                 transitionProg += delta * 1.2;
                 const camX = charGroup.position.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
                 const camY = charGroup.position.y + cameraRadius * Math.sin(cameraPhi);
-                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraPhi);
+                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.1);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
                 if (transitionProg >= 1.0) { gameState.mode = 'exploring'; showToast('ยินดีต้อนรับสู่เกาะฟาร์ม! ปลูกผักและทำเควสต์เพื่อปลดล็อกเรือข้ามฟาก 🌴'); }
             } else if (gameState.mode === 'exploring') {
                 const camX = charGroup.position.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
                 const camY = charGroup.position.y + cameraRadius * Math.sin(cameraPhi);
-                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraPhi);
+                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.15);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
             }
