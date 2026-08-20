@@ -683,10 +683,10 @@
             sail: () => { try { if(synthSail) synthSail.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n"); } catch(e){} }
         };
 
-        // Scene, Renderer & Rich Colors
+        // Scene, Renderer & Modern Stylized Color Grading
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x3498db);
+        scene.background = new THREE.Color(0x54a0ff); // Vibrant Sky Blue
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -700,35 +700,59 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+        // High Quality Color Grading & Soft Shadow Mapping
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
-        // Sky Gradient Dome
-        const skyGeo = new THREE.SphereGeometry(250, 32, 15);
-        const skyMat = new THREE.MeshBasicMaterial({ color: 0x3498db, side: THREE.BackSide });
+        // Sky Gradient Dome (Tropical Horizon Gradient)
+        const skyGeo = new THREE.SphereGeometry(280, 32, 16);
+        const skyMat = new THREE.MeshBasicMaterial({
+            color: 0x48dbfb,
+            side: THREE.BackSide
+        });
         const skyDome = new THREE.Mesh(skyGeo, skyMat);
         scene.add(skyDome);
 
-        // Balanced Natural Lighting:
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e3799, 0.65);
+        // ==========================================================
+        // 3-POINT STYLIZED LIGHTING: Warm Key + Lush Ambient + Soft Rim
+        // ==========================================================
+        // 1. Hemisphere Light (Soft Sky Blue top + Lush Mint Grass bounce)
+        const hemiLight = new THREE.HemisphereLight(0xdff9fb, 0x1dd1a1, 0.68);
         scene.add(hemiLight);
 
-        const sunLight = new THREE.DirectionalLight(0xfffae6, 0.95);
-        sunLight.position.set(30, 48, 22);
+        // 2. Key Sun Light (Warm Golden Sunlight with Crisp Soft Shadows)
+        const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.15);
+        sunLight.position.set(32, 45, 24);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 1024;
-        sunLight.shadow.mapSize.height = 1024;
-        sunLight.shadow.bias = -0.0003;
-        const d = 50;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.bias = -0.00025;
+        sunLight.shadow.normalBias = 0.02;
+        const d = 45;
         sunLight.shadow.camera.left = -d; sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d; sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.camera.near = 5;
+        sunLight.shadow.camera.far = 130;
         scene.add(sunLight);
 
-        // Deep Vibrant Turquoise Ocean
-        const waterGeo = new THREE.PlaneGeometry(380, 380, 52, 52);
+        // 3. Subtle Rim/Fill Light (Cool Cyan/Lavender Rim to highlight edges)
+        const rimLight = new THREE.DirectionalLight(0x74b9ff, 0.42);
+        rimLight.position.set(-28, 22, -28);
+        scene.add(rimLight);
+
+        // Crystal Turquoise Tropical Ocean
+        const waterGeo = new THREE.PlaneGeometry(420, 420, 56, 56);
         const waterMat = new THREE.MeshStandardMaterial({
-            color: 0x00a8ff, roughness: 0.2, metalness: 0.1, flatShading: true, transparent: true, opacity: 0.92
+            color: 0x00cec9,
+            roughness: 0.15,
+            metalness: 0.08,
+            flatShading: true,
+            transparent: true,
+            opacity: 0.92
         });
         const water = new THREE.Mesh(waterGeo, waterMat);
         water.rotation.x = -Math.PI / 2;
@@ -923,22 +947,22 @@
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
-        // Materials
-        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6, flatShading: true });
-        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.7, flatShading: true });
-        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x16a085, roughness: 0.6, flatShading: true });
-        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.7, flatShading: true });
+        // Harmonious Stylized Materials Palette
+        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.55, flatShading: true });
+        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xffbe76, roughness: 0.65, flatShading: true });
+        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.55, flatShading: true });
+        const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xf3a683, roughness: 0.65, flatShading: true });
         
-        const matCobble = new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.65, flatShading: true });
-        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xe84393, roughness: 0.6, flatShading: true });
-        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xe17055, roughness: 0.6, flatShading: true });
-        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.5 });
+        const matCobble = new THREE.MeshStandardMaterial({ color: 0xf1f2f6, roughness: 0.6, flatShading: true });
+        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xff6b81, roughness: 0.55, flatShading: true });
+        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xff7f50, roughness: 0.55, flatShading: true });
+        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.45 });
         
-        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xb7791f, roughness: 0.6 });
-        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.5, flatShading: true });
-        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xf5f6fa, roughness: 0.5 });
-        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.5 });
-        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.6, flatShading: true });
+        const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xcd6133, roughness: 0.6 });
+        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xff4757, roughness: 0.5, flatShading: true });
+        const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
+        const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x1e90ff, roughness: 0.45 });
+        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.55, flatShading: true });
 
         // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
