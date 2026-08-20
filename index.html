@@ -579,13 +579,11 @@
                     targetGroup.add(model);
                 },
                 undefined,
-                (err) => {
-                    console.log(`GLB info for ${url}`);
-                }
+                (err) => {}
             );
         }
 
-        // Load tree.glb models from assets/models/
+        // Load models directly from assets/models/
         loadGLB('/assets/models/tree.glb', [-2.0, 1.5, -10.5], [1.3, 1.3, 1.3]);
         loadGLB('/assets/models/tree.glb', [9.5, 1.5, -4.5], [1.2, 1.2, 1.2]);
         loadGLB('/assets/models/treePine.glb', [-8.0, 1.5, -7.5], [1.4, 1.4, 1.4]);
@@ -1197,38 +1195,71 @@
             setTimeout(() => t.remove(), 1900);
         }
 
-        // Robust Keyboard Event Listener
-        const moveState = { forward: false, backward: false, left: false, right: false };
+        // ==========================================================================
+        // ROBUST PROFESSIONAL GAME INPUT CONTROLLER (Zero Sticky Keys)
+        // ==========================================================================
+        const activeMoveDirections = new Set();
 
-        function updateKeyStatus(e, isPressed) {
+        function handleKeyEvent(e, isKeyDown) {
             const code = e.code || '';
             const key = (e.key || '').toLowerCase();
 
+            let matched = false;
+
+            // Forward
             if (code === 'KeyW' || key === 'w' || key === 'ไ' || key === 'ำ' || code === 'ArrowUp') {
-                moveState.forward = isPressed;
+                if (isKeyDown) activeMoveDirections.add('forward');
+                else activeMoveDirections.delete('forward');
+                matched = true;
             }
+            // Backward
             if (code === 'KeyS' || key === 's' || key === 'ห' || code === 'ArrowDown') {
-                moveState.backward = isPressed;
+                if (isKeyDown) activeMoveDirections.add('backward');
+                else activeMoveDirections.delete('backward');
+                matched = true;
             }
+            // Left
             if (code === 'KeyA' || key === 'a' || key === 'ฟ' || code === 'ArrowLeft') {
-                moveState.left = isPressed;
+                if (isKeyDown) activeMoveDirections.add('left');
+                else activeMoveDirections.delete('left');
+                matched = true;
             }
+            // Right
             if (code === 'KeyD' || key === 'd' || key === 'ก' || code === 'ArrowRight') {
-                moveState.right = isPressed;
+                if (isKeyDown) activeMoveDirections.add('right');
+                else activeMoveDirections.delete('right');
+                matched = true;
             }
 
-            if (isPressed && (code === 'KeyE' || key === 'e' || key === 'ฎ' || code === 'Space')) {
+            // Action
+            if (isKeyDown && (code === 'KeyE' || key === 'e' || key === 'ฎ' || code === 'Space')) {
                 window.triggerAction();
+                matched = true;
+            }
+
+            if (matched && gameState.mode === 'exploring') {
+                e.preventDefault();
             }
         }
 
         window.addEventListener('keydown', (e) => {
             try { window.initAudio(); } catch(err){}
-            updateKeyStatus(e, true);
+            handleKeyEvent(e, true);
         });
 
         window.addEventListener('keyup', (e) => {
-            updateKeyStatus(e, false);
+            handleKeyEvent(e, false);
+        });
+
+        // Clear all active keys when window loses focus or document hides
+        window.addEventListener('blur', () => {
+            activeMoveDirections.clear();
+        });
+        window.addEventListener('focus', () => {
+            activeMoveDirections.clear();
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) activeMoveDirections.clear();
         });
 
         window.triggerAction = function() {
@@ -1278,7 +1309,7 @@
                 window.openMarket();
             } else if (activeTarget.type === 'boat_is1') {
                 const q1 = gameState.quests[1][0].done;
-                const q2 = gameState.quests[1][1].done;
+                const q2 = gameState.quests[1][0].done;
                 if (!gameState.unlockedIslands.includes(2)) {
                     if (!q1 || !q2) {
                         showToast('⚠️ ต้องทำเควสต์เก็บผัก 6 ชิ้น และตอบ Quiz ให้ผ่านก่อน!');
@@ -1361,10 +1392,10 @@
 
             // Exploring Mode Character Movement
             const moveInput = new THREE.Vector2();
-            if (moveState.forward) moveInput.y += 1;
-            if (moveState.backward) moveInput.y -= 1;
-            if (moveState.left) moveInput.x -= 1;
-            if (moveState.right) moveInput.x += 1;
+            if (activeMoveDirections.has('forward')) moveInput.y += 1;
+            if (activeMoveDirections.has('backward')) moveInput.y -= 1;
+            if (activeMoveDirections.has('left')) moveInput.x -= 1;
+            if (activeMoveDirections.has('right')) moveInput.x += 1;
 
             const isMoving = moveInput.lengthSq() > 0.01;
             if (gameState.mode === 'exploring' && isMoving) {
