@@ -29,7 +29,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: #2b2353; /* Deep Indigo / Purple */
+            background: #2b2353;
             z-index: 9999;
             display: none;
             opacity: 0;
@@ -132,7 +132,7 @@
 
         /* Standard In-Game UI Overrides */
         #title-screen { z-index: 100; }
-        .btn-primary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout, #coastal-guide-banner {
+        .btn-primary, .btn-secondary, .btn-google, .seed-chip, .btn-close, .quiz-option-btn, #action-prompt, .btn-logout, #coastal-guide-banner {
             cursor: pointer !important;
             touch-action: manipulation;
             user-select: none;
@@ -181,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>Vibrant Balanced World</span>
+                3D Mini Farm Island Archipelago • <span>KayKit Adventurers 3D Characters</span>
             </div>
         </div>
     </div>
@@ -194,10 +194,14 @@
         <div class="title-card">
             <span class="brand-badge">🌴 COASTAL WORLD 3D ARCHIPELAGO</span>
             <h1 class="game-title">Mini Farm Island</h1>
-            <p class="game-subtitle">สำรวจหมู่เกาะชายฝั่ง ปลูกผักผลไม้ ล่องเรือข้ามฟาก และสร้างฟาร์มในฝัน</p>
+            <p class="game-subtitle">สำรวจหมู่เกาะชายฝั่ง เลือกตัวละครนักผจญภัย ปลูกผัก และล่องเรือข้ามฟาก</p>
             
             <button class="btn-primary" id="btn-start-game" onclick="window.startGame()">
                 🚀 เริ่มต้นสำรวจเกาะ (START)
+            </button>
+
+            <button class="btn-secondary" onclick="window.openCharacterSelect()">
+                🧙‍♂️ เลือกตัวละคร (3D Characters)
             </button>
             
             <button class="btn-google" id="btn-google-login" onclick="window.startGoogleLogin()">
@@ -259,6 +263,10 @@
                         <span class="hud-icon">📦</span>
                         <span id="inventory-count">0 ชิ้น</span>
                     </div>
+                    <div class="hud-pill" onclick="window.openCharacterSelect()" title="เปลี่ยนตัวละคร 3D">
+                        <span class="hud-icon">🧙‍♂️</span>
+                        <span id="current-char-name">Knight</span>
+                    </div>
                 </div>
 
                 <div class="hud-pill" id="hud-auth-status" style="display: none; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.95); gap: 8px;">
@@ -291,6 +299,18 @@
     </div>
 
     <!-- 3. MODALS -->
+    <!-- Character Select Modal -->
+    <div class="modal-overlay" id="character-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">🧙‍♂️ เลือกตัวละครนักผจญภัย (3D Adventurers)</h2>
+            <p style="color: #7f8c8d; font-size: 0.88rem;">เลือกฮีโร่ที่คุณชื่นชอบเพื่อออกสำรวจเกาะฟาร์ม</p>
+            
+            <div class="char-grid" id="char-selection-grid"></div>
+
+            <button class="btn-close" onclick="document.getElementById('character-modal').style.display='none'">ปิด</button>
+        </div>
+    </div>
+
     <!-- Market Modal -->
     <div class="modal-overlay" id="market-modal">
         <div class="modal-content">
@@ -348,8 +368,65 @@
     <!-- GAME ENGINE SCRIPT -->
     <script>
     // ==========================================================================
-    // GLOBAL DEFINITIONS & GAME STATE
+    // GLOBAL DEFINITIONS & CHARACTER CONFIGURATIONS
     // ==========================================================================
+    const CHARACTERS = {
+        'Knight': {
+            id: 'Knight',
+            name: 'Knight (อัศวินเกราะ)',
+            shortName: 'Knight 🛡️',
+            desc: 'ผู้พิทักษ์แห่งอาณาจักรชายฝั่ง',
+            modelUrl: '/assets/characters/Knight.glb',
+            iconUrl: '/assets/samples/knight.png',
+            scale: 0.95
+        },
+        'Barbarian': {
+            id: 'Barbarian',
+            name: 'Barbarian (นักรบป่า)',
+            shortName: 'Barbarian 🪓',
+            desc: 'จอมพลังแห่งป่าโบราณ',
+            modelUrl: '/assets/characters/Barbarian.glb',
+            iconUrl: '/assets/samples/barbarian.png',
+            scale: 0.95
+        },
+        'Mage': {
+            id: 'Mage',
+            name: 'Mage (จอมเวท)',
+            shortName: 'Mage 🧙‍♂️',
+            desc: 'ผู้ควบคุมมนต์คาถาธรรมชาติ',
+            modelUrl: '/assets/characters/Mage.glb',
+            iconUrl: '/assets/samples/mage.png',
+            scale: 0.95
+        },
+        'Ranger': {
+            id: 'Ranger',
+            name: 'Ranger (เรนเจอร์)',
+            shortName: 'Ranger 🏹',
+            desc: 'นักล่าพืชพันธุ์และผลไม้',
+            modelUrl: '/assets/characters/Ranger.glb',
+            iconUrl: '/assets/samples/ranger.png',
+            scale: 0.95
+        },
+        'Rogue': {
+            id: 'Rogue',
+            name: 'Rogue (นักผจญภัย)',
+            shortName: 'Rogue 🗡️',
+            desc: 'ผู้คล่องแคล่วและว่องไว',
+            modelUrl: '/assets/characters/Rogue.glb',
+            iconUrl: '/assets/samples/rogue.png',
+            scale: 0.95
+        },
+        'Rogue_Hooded': {
+            id: 'Rogue_Hooded',
+            name: 'Rogue (Hooded)',
+            shortName: 'Hooded 🥷',
+            desc: 'จอมโจรลึกลับในเงามืด',
+            modelUrl: '/assets/characters/Rogue_Hooded.glb',
+            iconUrl: '/assets/samples/rogue.png',
+            scale: 0.95
+        }
+    };
+
     const ISLAND_CONFIGS = {
         1: {
             id: 1,
@@ -375,10 +452,13 @@
         }
     };
 
+    const savedChar = localStorage.getItem('coastal_character') || 'Knight';
+
     const gameState = {
         mode: 'intro',
         currentIsland: 1,
         unlockedIslands: [1],
+        selectedCharacter: savedChar,
         player: { name: 'Explorer', money: 100, is1HarvestCount: 0, is2HarvestCount: 0 },
         inventory: { tomato: 0, carrot: 0, cabbage: 0, corn: 0, strawberry: 0, watermelon: 0, pineapple: 0, dragonfruit: 0 },
         selectedSeed: 'tomato',
@@ -386,6 +466,7 @@
         bannerIndex: 0,
         banners: [
             { main: "Open the map to quickly navigate and discover places to go", sub: "แตะเพื่อเปิดแผนที่และดูภาพรวมของหมู่เกาะ 🗺️", action: "map" },
+            { main: "Choose your favorite 3D character to explore the farm island", sub: "แตะปุ่มเลือกตัวละครเพื่อเปลี่ยนฮีโร่ของคุณ 🧙‍♂️", action: "character" },
             { main: "Plant seeds and harvest crops to earn gold coins", sub: "เดินไปที่แปลงดินเพื่อปลูกและเก็บเกี่ยวผลผลิต 🌱", action: "focus_plot" },
             { main: "Help the robot answer math quiz for 1.6x growth water buff", sub: "คุยกับหุ่นยนต์ที่บ่อน้ำเพื่อรับบัฟน้ำเร่งโต 🤖💧", action: "focus_robot" },
             { main: "Save 250 🪙 to repair ferry boat and sail to Tropical Fruit Island", sub: "สะสมเงินแล้วไปที่ท่าเรือเพื่อซ่อมเรือข้ามฟาก ⛵", action: "focus_boat" }
@@ -456,6 +537,55 @@
         }
     };
 
+    window.openCharacterSelect = function() {
+        try { window.sfx.click(); } catch(e){}
+        const grid = document.getElementById('char-selection-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        Object.keys(CHARACTERS).forEach(charKey => {
+            const c = CHARACTERS[charKey];
+            const card = document.createElement('div');
+            card.className = `char-card ${gameState.selectedCharacter === charKey ? 'selected' : ''}`;
+            card.innerHTML = `
+                <img src="${c.iconUrl}" class="char-portrait" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'50\\' height=\\'50\\' fill=\\'%233498db\\'><rect width=\\'50\\' height=\\'50\\' fill=\\'%23ecf0f1\\'/><text x=\\'25\\' y=\\'32\\' font-size=\\'24\\' text-anchor=\\'middle\\'>🧙‍♂️</text></svg>'">
+                <div class="char-name">${c.name}</div>
+                <div class="char-desc">${c.desc}</div>
+            `;
+            card.onclick = () => {
+                window.selectCharacter(charKey);
+            };
+            grid.appendChild(card);
+        });
+
+        document.getElementById('character-modal').style.display = 'flex';
+    };
+
+    window.selectCharacter = function(charKey) {
+        try { window.sfx.click(); } catch(e){}
+        gameState.selectedCharacter = charKey;
+        localStorage.setItem('coastal_character', charKey);
+
+        const currentNameEl = document.getElementById('current-char-name');
+        if (currentNameEl) currentNameEl.innerText = CHARACTERS[charKey].shortName;
+
+        if (window.load3DCharacter) {
+            window.load3DCharacter(charKey);
+        }
+
+        const cards = document.querySelectorAll('.char-card');
+        cards.forEach((c, idx) => {
+            const k = Object.keys(CHARACTERS)[idx];
+            if (k === charKey) c.classList.add('selected');
+            else c.classList.remove('selected');
+        });
+
+        showToast(`เลือกตัวละคร ${CHARACTERS[charKey].name} สำเร็จ! ✨`);
+        setTimeout(() => {
+            document.getElementById('character-modal').style.display = 'none';
+        }, 400);
+    };
+
     window.startGoogleLogin = async function() {
         try { if(window.initAudio) window.initAudio(); } catch(e){}
         if (supabaseClient) {
@@ -482,6 +612,8 @@
         
         if (currentBanner.action === 'map') {
             document.getElementById('map-modal').style.display = 'flex';
+        } else if (currentBanner.action === 'character') {
+            window.openCharacterSelect();
         } else if (currentBanner.action === 'focus_plot') {
             showToast('🌱 มุ่งหน้าไปที่แปลงดินเพื่อเริ่มทำฟาร์ม!');
         } else if (currentBanner.action === 'focus_robot') {
@@ -551,10 +683,10 @@
             sail: () => { try { if(synthSail) synthSail.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n"); } catch(e){} }
         };
 
-        // Scene, Renderer & Rich Colors (Zero Fog Washout)
+        // Scene, Renderer & Rich Colors
         const container = document.getElementById('game-canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x3498db); // Deep Beautiful Sky Blue
+        scene.background = new THREE.Color(0x3498db);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -568,7 +700,6 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        // Normal Balanced Tone Mapping
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
@@ -766,7 +897,7 @@
         loadGLB('/assets/models/tree_pine.glb', -8.5, -6.8, 6.2, 0.8);
         loadGLB('/assets/models/tree_pine.glb', -11.5, -3.5, 5.5, 1.2);
 
-        // Rich Warm Golden & Orange Autumn Foliage
+        // Warm Golden & Orange Autumn Foliage
         loadGLB('/assets/models/tree_round_orange.glb', 10.5, -7.5, 5.0, 1.1);
         loadGLB('/assets/models/tree_round_yellow.glb', 11.5, -3.0, 4.8, -0.6);
         loadGLB('/assets/models/tree_round_orange.glb', 9.5, 5.5, 4.5, 0.3);
@@ -792,21 +923,19 @@
         const worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
-        // ==========================================================
-        // SOLID, RICH & VIBRANT COASTAL WORLD MATERIALS
-        // ==========================================================
-        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6, flatShading: true }); // Solid Rich Green
-        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.7, flatShading: true }); // Warm Golden Beach
-        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x16a085, roughness: 0.6, flatShading: true }); // Tropical Mint
+        // Materials
+        const matGrassVibrant1 = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6, flatShading: true });
+        const matSandVibrant1 = new THREE.MeshStandardMaterial({ color: 0xf1c40f, roughness: 0.7, flatShading: true });
+        const matGrassVibrant2 = new THREE.MeshStandardMaterial({ color: 0x16a085, roughness: 0.6, flatShading: true });
         const matSandVibrant2 = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.7, flatShading: true });
         
-        const matCobble = new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.65, flatShading: true }); // Clean Stone Paving
-        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xe84393, roughness: 0.6, flatShading: true }); // Pink Cliff
-        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xe17055, roughness: 0.6, flatShading: true }); // Coral Peach Gym Mat
-        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.5 }); // Emerald Brand Kiosk
+        const matCobble = new THREE.MeshStandardMaterial({ color: 0xdfe4ea, roughness: 0.65, flatShading: true });
+        const matCoralPink = new THREE.MeshStandardMaterial({ color: 0xe84393, roughness: 0.6, flatShading: true });
+        const matPeachPad = new THREE.MeshStandardMaterial({ color: 0xe17055, roughness: 0.6, flatShading: true });
+        const matCoastalGreen = new THREE.MeshStandardMaterial({ color: 0x00b894, roughness: 0.5 });
         
         const matNordicWood = new THREE.MeshStandardMaterial({ color: 0xb7791f, roughness: 0.6 });
-        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.5, flatShading: true }); // Red Barn Roof
+        const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.5, flatShading: true });
         const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xf5f6fa, roughness: 0.5 });
         const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.5 });
         const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ecc71, roughness: 0.6, flatShading: true });
@@ -837,23 +966,19 @@
         createCobbleRoad(-1.8, -0.5, 3.2, 1.8, -0.35);
         createCobbleRoad(-5.5, 0.8, 4.0, 1.8, -0.4);
 
-        // Coastal White Round Plaza Pad
         const plazaCircle = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.06, 32), matCobble);
         plazaCircle.position.set(0, 1.52, 4.8); plazaCircle.receiveShadow = true;
         is1Group.add(plazaCircle);
 
-        // Coastal Peach Exercise Mat
         const exerciseMat = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.04, 3.2), matPeachPad);
         exerciseMat.position.set(4.8, 1.52, 4.2); exerciseMat.receiveShadow = true;
         is1Group.add(exerciseMat);
 
-        // Dumbbells
         const matWeights = new THREE.MeshStandardMaterial({ color: 0x00cec9, roughness: 0.3 });
         const dumbbell = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.8, 12), matWeights);
         dumbbell.rotation.z = Math.PI / 2; dumbbell.position.set(4.8, 1.62, 4.8); dumbbell.castShadow = true;
         is1Group.add(dumbbell);
 
-        // Coastal World Green Pavilion
         const pavilionGroup = new THREE.Group();
         pavilionGroup.position.set(-3.5, 1.5, 4.5);
         const pavStep = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.15, 2.2), matCobble);
@@ -865,7 +990,6 @@
         pavilionGroup.add(pavStep, pavSign, pavArch);
         is1Group.add(pavilionGroup);
 
-        // Green Bushes
         const matShrub = new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.6, flatShading: true });
         function addShrub(x, z, s=1.0) {
             const sh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6 * s, 1), matShrub);
@@ -877,7 +1001,6 @@
         addShrub(5.5, 6.2, 1.3);
         addShrub(-5.2, -2.5, 1.1);
 
-        // Pier 1
         const pier1 = new THREE.Group();
         pier1.position.set(0, 0.35, 11.8);
         for (let i = 0; i < 7; i++) {
@@ -888,7 +1011,6 @@
         }
         is1Group.add(pier1);
 
-        // Nordic Barn
         const barnGroup = new THREE.Group();
         barnGroup.position.set(-4.5, 1.5, -8.0);
         const barnBody = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.6, 3.4), matNordicWall);
@@ -900,7 +1022,6 @@
         barnGroup.add(barnBody, barnRoof, chimney);
         is1Group.add(barnGroup);
 
-        // Windmill
         const windmillGroup = new THREE.Group();
         windmillGroup.position.set(-8.5, 2.6, 0);
         const millTower = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.9, 4.5, 12), matNordicWall);
@@ -920,7 +1041,6 @@
         windmillGroup.add(millTower, millDome, bladesGroup);
         is1Group.add(windmillGroup);
 
-        // Stall 1
         const stall1 = new THREE.Group();
         stall1.position.set(2.8, 1.5, 7.5);
         const counter1 = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.95, 1.3), matNordicWood);
@@ -990,46 +1110,108 @@
             clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
 
-        // 5. Stylized Cute Bean Character
+        // ==========================================================================
+        // 5. 3D KAYKIT CHARACTER LOADER & ANIMATION SYSTEM
+        // ==========================================================================
         const charGroup = new THREE.Group();
         charGroup.position.set(0, 1.5, 8.5);
         scene.add(charGroup);
 
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.5 });
-        const matShirt = new THREE.MeshStandardMaterial({ color: 0x00cec9, roughness: 0.5 });
-        const matPants = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.6 });
-        const matHat = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.5 });
+        const modelHolder = new THREE.Group();
+        charGroup.add(modelHolder);
 
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.45), matShirt);
-        torso.position.y = 0.85; torso.castShadow = true;
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.5), matSkin);
-        head.position.y = 1.5; head.castShadow = true;
-        
-        // Cute Glasses
-        const matGlasses = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
-        const glassL = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.16, 12), matGlasses);
-        glassL.position.set(0.15, 1.52, 0.27);
-        const glassR = glassL.clone(); glassR.position.x = -0.15;
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x2c3e50 });
-        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat);
-        eyeL.position.set(0.15, 1.52, 0.26);
-        const eyeR = eyeL.clone(); eyeR.position.x = -0.15;
+        let current3DModel = null;
+        let charMixer = null;
+        let animClips = {};
+        let activeAction = null;
+        let isMovingAnim = false;
 
-        const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 14), matHat);
-        hatBrim.position.y = 1.8;
-        const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.35, 14), matHat);
-        hatTop.position.y = 1.98;
+        // Fallback Stylized Character Mesh
+        function createFallbackModel() {
+            const grp = new THREE.Group();
+            const matS = new THREE.MeshStandardMaterial({ color: 0xf39c12, roughness: 0.5 });
+            const matSh = new THREE.MeshStandardMaterial({ color: 0x00cec9, roughness: 0.5 });
+            const matP = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.6 });
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, 0.45), matSh); torso.position.y = 0.85; torso.castShadow = true;
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.5), matS); head.position.y = 1.5; head.castShadow = true;
+            const legL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.55, 0.26), matP); legL.position.set(0.2, 0.3, 0); legL.castShadow = true;
+            const legR = legL.clone(); legR.position.x = -0.2;
+            const armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.55, 0.2), matSh); armL.position.set(0.48, 0.9, 0); armL.castShadow = true;
+            const armR = armL.clone(); armR.position.x = -0.48;
+            grp.add(torso, head, legL, legR, armL, armR);
+            return grp;
+        }
 
-        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.55, 0.26), matPants);
-        legL.position.set(0.2, 0.3, 0); legL.castShadow = true;
-        const legR = legL.clone(); legR.position.x = -0.2;
-        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.55, 0.2), matShirt);
-        armL.position.set(0.48, 0.9, 0); armL.castShadow = true;
-        const armR = armL.clone(); armR.position.x = -0.48;
+        // Load Basic Movement Animations from KayKit Rig
+        loader.load(
+            '/assets/animations/Rig_Medium_MovementBasic.glb',
+            (gltf) => {
+                gltf.animations.forEach(clip => {
+                    animClips[clip.name] = clip;
+                });
+                // Once animations loaded, load the current character
+                window.load3DCharacter(gameState.selectedCharacter);
+            },
+            undefined,
+            (err) => {
+                // Fallback to loading character directly
+                window.load3DCharacter(gameState.selectedCharacter);
+            }
+        );
 
-        const modelGroup = new THREE.Group();
-        modelGroup.add(torso, head, eyeL, eyeR, glassL, glassR, hatBrim, hatTop, legL, legR, armL, armR);
-        charGroup.add(modelGroup);
+        window.load3DCharacter = function(charKey) {
+            const conf = CHARACTERS[charKey];
+            if (!conf) return;
+
+            loader.load(
+                conf.modelUrl,
+                (gltf) => {
+                    while(modelHolder.children.length > 0) {
+                        modelHolder.remove(modelHolder.children[0]);
+                    }
+
+                    current3DModel = gltf.scene;
+                    const s = conf.scale || 0.95;
+                    current3DModel.scale.set(s, s, s);
+
+                    current3DModel.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+
+                    modelHolder.add(current3DModel);
+
+                    // Re-bind AnimationMixer
+                    charMixer = new THREE.AnimationMixer(current3DModel);
+
+                    // Combine any animations inside the character GLB + external Rig animations
+                    const allClips = [ ...(gltf.animations || []), ...Object.values(animClips) ];
+                    
+                    let idleClip = allClips.find(c => /idle/i.test(c.name)) || allClips[0];
+                    let walkClip = allClips.find(c => /walk|run/i.test(c.name)) || allClips[1] || idleClip;
+
+                    if (idleClip) {
+                        const idleAction = charMixer.clipAction(idleClip);
+                        idleAction.play();
+                        activeAction = idleAction;
+                    }
+
+                    current3DModel._walkClip = walkClip;
+                    current3DModel._idleClip = idleClip;
+                },
+                undefined,
+                (err) => {
+                    // Fallback
+                    while(modelHolder.children.length > 0) {
+                        modelHolder.remove(modelHolder.children[0]);
+                    }
+                    current3DModel = createFallbackModel();
+                    modelHolder.add(current3DModel);
+                }
+            );
+        };
 
         // 6. Robot & Well
         const wellRobotGroup = new THREE.Group();
@@ -1165,6 +1347,10 @@
             if (invDisplay) invDisplay.innerText = `${total} ชิ้น`;
 
             if (islandNameEl) islandNameEl.innerText = ISLAND_CONFIGS[gameState.currentIsland].name;
+
+            const curChar = CHARACTERS[gameState.selectedCharacter];
+            const currentNameEl = document.getElementById('current-char-name');
+            if (currentNameEl && curChar) currentNameEl.innerText = curChar.shortName;
 
             if (buffIndicator) {
                 buffIndicator.style.display = gameState.robot.buffActive ? 'flex' : 'none';
@@ -1533,6 +1719,10 @@
             const delta = Math.min(clock.getDelta(), 0.1);
             const elapsed = clock.getElapsedTime();
 
+            if (charMixer) {
+                charMixer.update(delta);
+            }
+
             for (let i = 0; i < waveVertices.length; i++) {
                 const v = waveVertices[i];
                 posAttr.setZ(i, Math.sin(v.ang + elapsed * v.speed * 80) * v.amp);
@@ -1566,7 +1756,7 @@
                 const nbx = (1-nextT)*(1-nextT)*p0.x + 2*(1-nextT)*nextT*p1.x + nextT*nextT*p2.x;
                 const nbz = (1-nextT)*(1-nextT)*p0.z + 2*(1-nextT)*nextT*p1.z + nextT*nextT*p2.z;
                 ferryBoat.rotation.y = Math.atan2(nbx - bx, nbz - bz);
-                modelGroup.rotation.y = ferryBoat.rotation.y;
+                modelHolder.rotation.y = ferryBoat.rotation.y;
 
                 emitWake(ferryBoat.position);
 
@@ -1619,16 +1809,30 @@
                 charGroup.position.y = groundY;
 
                 const targetRot = Math.atan2(moveDir.x, moveDir.z);
-                modelGroup.rotation.y = THREE.MathUtils.lerp(modelGroup.rotation.y, targetRot, 0.35);
+                modelHolder.rotation.y = THREE.MathUtils.lerp(modelHolder.rotation.y, targetRot, 0.35);
 
-                const t = elapsed * 15;
-                legL.rotation.x = Math.sin(t) * 0.75; legR.rotation.x = -Math.sin(t) * 0.75;
-                armL.rotation.x = -Math.sin(t) * 0.75; armR.rotation.x = -Math.sin(t) * 0.75;
+                // Animation transition to walking
+                if (charMixer && current3DModel && current3DModel._walkClip && !isMovingAnim) {
+                    isMovingAnim = true;
+                    if (activeAction) activeAction.fadeOut(0.2);
+                    const walkAction = charMixer.clipAction(current3DModel._walkClip);
+                    walkAction.reset().fadeIn(0.2).play();
+                    activeAction = walkAction;
+                }
+
                 emitDust(charGroup.position);
             } else if (gameState.mode === 'exploring') {
-                legL.rotation.x = 0; legR.rotation.x = 0; armL.rotation.x = 0; armR.rotation.x = 0;
                 const groundY = getTerrainElevation(charGroup.position.x, charGroup.position.z);
                 charGroup.position.y = groundY;
+
+                // Animation transition to idle
+                if (charMixer && current3DModel && current3DModel._idleClip && isMovingAnim) {
+                    isMovingAnim = false;
+                    if (activeAction) activeAction.fadeOut(0.2);
+                    const idleAction = charMixer.clipAction(current3DModel._idleClip);
+                    idleAction.reset().fadeIn(0.2).play();
+                    activeAction = idleAction;
+                }
             }
 
             // Crops Update
