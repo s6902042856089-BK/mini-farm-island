@@ -1302,8 +1302,6 @@
 
         worldGroup.add(is2Group);
 
-        worldGroup.add(is2Group);
-
         // --- 3. ASSEMBLE SHARED FERRY BOAT ---
         const ferryBoat = new THREE.Group();
         const bHull = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.85, 4.2), matNordicWood);
@@ -1339,6 +1337,7 @@
 
         let current3DModel = null;
         let charMixer = null;
+        const mixers = [];
         let animClips = {};
         let activeAction = null;
         let isMovingAnim = false;
@@ -1443,7 +1442,7 @@
         robotMesh.position.set(1.4, 0, 0.4);
         wellRobotGroup.add(robotMesh);
 
-        gltfLoader.load('/assets/characters/Mage.glb', (gltf) => {
+        loader.load('/assets/characters/Mage.glb', (gltf) => {
             const npc = gltf.scene;
             npc.scale.set(0.9, 0.9, 0.9);
             npc.rotation.y = -Math.PI / 4;
@@ -1960,6 +1959,9 @@
             if (charMixer) {
                 charMixer.update(delta);
             }
+            if (mixers && mixers.length > 0) {
+                mixers.forEach(m => m.update(delta));
+            }
 
             // Keep Directional Sunlight centered over the active area for maximum shadow precision
             sunLight.target.position.set(charGroup.position.x, charGroup.position.y, charGroup.position.z);
@@ -1971,7 +1973,6 @@
             }
             posAttr.needsUpdate = true;
 
-            bladesGroup.rotation.z += delta * 1.5;
             clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 80) c.mesh.position.x = -80; });
             emitChimneySmoke(new THREE.Vector3(-4.5 - 1.3, 4.9, -8.0 - 0.9));
 
