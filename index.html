@@ -1116,16 +1116,18 @@
         }
 
         const obstacles = [
-            { x: -4.5, z: -8.0, radius: 2.6 },
-            { x: -8.5, z: 0, radius: 2.4 },
-            { x: 2.8, z: 7.5, radius: 1.8 },
-            { x: -2.5, z: 2.5, radius: 1.5 },
-            { x: 58, z: -12, radius: 2.2 },
-            { x: -3.5, z: 4.5, radius: 2.0 }
+            { x: 5.5, z: -6.5, radius: 2.2 },   // Farmhouse
+            { x: -8.5, z: -0.5, radius: 2.2 },  // Hill Windmill
+            { x: -3.2, z: 2.8, radius: 1.4 },   // Well
+            { x: 4.8, z: 6.2, radius: 1.8 },    // Market Shop
+            { x: -6.5, z: -9.5, radius: 1.6 },  // Nature Tree
+            { x: -9.8, z: -6.5, radius: 1.6 },  // Pine Tree Large
+            { x: 58, z: -12, radius: 2.2 },     // Island 2 Market
+            { x: -4.2, z: 4.5, radius: 1.2 }    // Rest Bench
         ];
 
         // ==========================================================================
-        // 3. GLTF MODEL LOADER & ARCHITECTURAL TREE PLACEMENT
+        // 3. GLTF MODEL LOADER & 5-ZONE BALANCED ISLAND COMPOSITION
         // ==========================================================================
         const loader = new THREE.GLTFLoader();
 
@@ -1158,50 +1160,61 @@
         }
 
         // ==========================================================
-        // 3. KAYKIT FOREST NATURE & HALLOWEENBITS PROPS DECORATIONS
+        // 3. STRUCTURED 5-ZONE ISLAND 1 LAYOUT & SCALE HIERARCHY
         // ==========================================================
-        // ==========================================================
-        // 3. PERFECT PROPORTIONS & ZERO OVERLAPPING SCENE (KAYKIT 3D)
-        // ==========================================================
-        // Island 1: Pine & Leafy Trees (Tall Grand Nature)
-        loadGLB('/assets/nature/Tree_2_A_Color1.gltf', -5.5, -11.5, 2.8, 0.4);
-        loadGLB('/assets/nature/Tree_2_B_Color1.gltf', -1.5, -12.0, 2.6, -0.3);
-        loadGLB('/assets/nature/Tree_2_C_Color1.gltf', -8.5, -6.8, 2.8, 0.8);
-        loadGLB('/assets/nature/Tree_2_D_Color1.gltf', -11.5, -3.5, 2.5, 1.2);
+        const ISLAND_1_LAYOUT = {
+            // Zone A: Main Plaza & Primary Landmark
+            landmarkArch: { url: '/assets/props/arch.gltf', x: 0, z: -1.2, scale: 1.15, rotY: 0 },
+            well: { url: '/assets/medieval/buildings/red/building_well_red.gltf', x: -3.2, z: 2.8, scale: 0.75, rotY: 0 },
 
-        // Autumn Warm Trees
-        loadGLB('/assets/props/tree_pine_orange_large.gltf', 11.0, -7.5, 2.7, 1.1);
-        loadGLB('/assets/props/tree_pine_yellow_large.gltf', 11.5, -3.0, 2.5, -0.6);
-        loadGLB('/assets/props/tree_pine_orange_medium.gltf', 9.5, 5.5, 2.4, 0.3);
-        loadGLB('/assets/nature/Tree_4_A_Color1.gltf', -11.0, 5.5, 2.8, -1.2);
+            // Zone B: Home Zone (Back-Right)
+            farmhouse: { url: '/assets/medieval/buildings/red/building_home_A_red.gltf', x: 5.5, z: -6.5, scale: 0.90, rotY: -0.35 },
+            homeTreeBack: { url: '/assets/nature/Tree_2_B_Color1.gltf', x: 7.8, z: -8.5, scale: 0.70, rotY: 0.6 },
+            homeTreePine: { url: '/assets/props/tree_pine_yellow_large.gltf', x: 3.0, z: -9.8, scale: 0.85, rotY: -0.4 },
+            homeBarrel: { url: '/assets/medieval/decoration/props/barrel.gltf', x: 3.8, z: -5.2, scale: 0.28, rotY: 0.4 },
+            homePumpkin: { url: '/assets/props/pumpkin_orange_small.gltf', x: 4.2, z: -4.8, scale: 0.20, rotY: 0.2 },
 
-        // Rocks & Bushes
-        loadGLB('/assets/nature/Rock_1_A_Color1.gltf', 11.8, 2.0, 1.6, 0.5);
-        loadGLB('/assets/nature/Rock_2_A_Color1.gltf', -11.8, -5.5, 1.5, -0.8);
-        loadGLB('/assets/nature/Bush_1_A_Color1.gltf', -2.2, 4.8, 1.2, 0);
-        loadGLB('/assets/nature/Bush_1_B_Color1.gltf', 2.2, 4.8, 1.2, 0.5);
+            // Zone C: Farm Zone Supporting Props (Mid-Right)
+            farmWheelbarrow: { url: '/assets/medieval/decoration/props/wheelbarrow.gltf', x: 8.2, z: 2.8, scale: 0.35, rotY: -0.8 },
+            farmSack: { url: '/assets/medieval/decoration/props/sack.gltf', x: 8.6, z: 1.8, scale: 0.30, rotY: 0.3 },
+            farmBush: { url: '/assets/nature/Bush_1_A_Color1.gltf', x: 8.8, z: -1.2, scale: 0.32, rotY: 0.5 },
 
-        // GRAND KAYKIT BUILDINGS (True Giant Architectural Scale)
-        loadGLB('/assets/medieval/buildings/red/building_market_red.gltf', 5.5, 6.2, 4.8, Math.PI); // Grand Market Shop (Huge!)
-        loadGLB('/assets/medieval/buildings/red/building_home_A_red.gltf', -4.8, -7.8, 5.0, 0.4);   // Grand Farmhouse
-        loadGLB('/assets/medieval/buildings/red/building_windmill_red.gltf', -8.5, 0.0, 5.5, 0.0); // Towering Hill Windmill
-        loadGLB('/assets/medieval/buildings/red/building_well_red.gltf', -2.5, 2.5, 2.6, 0.0);     // Wide Stone Well
+            // Zone D: Market Zone (Front-Right / Near Dock - Clustered!)
+            marketShop: { url: '/assets/medieval/buildings/red/building_market_red.gltf', x: 4.8, z: 6.2, scale: 0.75, rotY: Math.PI * 0.85 },
+            marketCrateBig: { url: '/assets/medieval/decoration/props/crate_A_big.gltf', x: 3.2, z: 5.2, scale: 0.35, rotY: 0.2 },
+            marketBarrel: { url: '/assets/medieval/decoration/props/barrel.gltf', x: 3.6, z: 4.6, scale: 0.28, rotY: -0.5 },
+            marketSack: { url: '/assets/medieval/decoration/props/sack.gltf', x: 2.8, z: 5.8, scale: 0.25, rotY: 0.8 },
+            marketPumpkinOrange: { url: '/assets/props/pumpkin_orange.gltf', x: 5.8, z: 4.8, scale: 0.22, rotY: 0.3 },
+            marketPumpkinYellow: { url: '/assets/props/pumpkin_yellow.gltf', x: 6.2, z: 5.2, scale: 0.18, rotY: 0.8 },
 
-        // Slender Lanterns & Grand Gateway
-        loadGLB('/assets/props/post_lantern.gltf', 1.6, 11.2, 0.28, 0);       // Slender pier lamp
-        loadGLB('/assets/props/post_lantern.gltf', -1.6, 11.2, 0.28, Math.PI);// Slender pier lamp
-        loadGLB('/assets/props/arch.gltf', 1.8, 3.2, 1.2, 0);                  // Grand Stone walkway arch
-        loadGLB('/assets/props/bench.gltf', -2.8, 5.8, 1.0, Math.PI / 2);      // Park bench
+            // Zone E: Nature Zone & Hilltop Windmill (Back-Left)
+            windmillHill: { url: '/assets/medieval/buildings/red/building_windmill_red.gltf', x: -8.5, z: -0.5, scale: 0.85, rotY: 0.3 },
+            naturePineLarge: { url: '/assets/props/tree_pine_orange_large.gltf', x: -9.8, z: -6.5, scale: 0.90, rotY: 1.1 },
+            natureTreeLarge: { url: '/assets/nature/Tree_2_A_Color1.gltf', x: -6.5, z: -9.5, scale: 0.88, rotY: 0.4 },
+            natureTreeMed: { url: '/assets/nature/Tree_2_C_Color1.gltf', x: -10.5, z: 3.5, scale: 0.68, rotY: 0.8 },
+            natureTreeSmall: { url: '/assets/nature/Tree_4_A_Color1.gltf', x: -5.0, z: -11.0, scale: 0.45, rotY: -0.5 },
+            natureRock1: { url: '/assets/nature/Rock_1_A_Color1.gltf', x: -10.2, z: -3.2, scale: 0.52, rotY: 0.4 },
+            natureRock2: { url: '/assets/nature/Rock_2_A_Color1.gltf', x: -9.2, z: -4.0, scale: 0.38, rotY: -0.6 },
+            natureRock3: { url: '/assets/nature/Rock_1_A_Color1.gltf', x: -8.5, z: -4.6, scale: 0.24, rotY: 1.2 },
+            natureBush1: { url: '/assets/nature/Bush_1_A_Color1.gltf', x: -7.2, z: -7.5, scale: 0.40, rotY: 0.1 },
+            natureBush2: { url: '/assets/nature/Bush_1_B_Color1.gltf', x: -6.5, z: -8.0, scale: 0.28, rotY: 0.7 },
 
-        // Small, Cute Decorative Props (Proportional)
-        loadGLB('/assets/dungeon/chest_gold.gltf', 1.8, 12.0, 0.8, -0.4);
-        loadGLB('/assets/dungeon/sword_shield_gold.gltf', -3.2, 4.5, 1.0, 0);
-        loadGLB('/assets/medieval/decoration/props/crate_A_big.gltf', 7.5, 5.8, 0.75, 0.2);
-        loadGLB('/assets/medieval/decoration/props/barrel.gltf', 7.2, 6.8, 0.75, 0);
-        loadGLB('/assets/medieval/decoration/props/sack.gltf', 3.8, 5.5, 0.75, 0.5);
-        loadGLB('/assets/medieval/decoration/props/wheelbarrow.gltf', 6.2, 0.5, 0.9, -0.8);
-        loadGLB('/assets/props/pumpkin_orange.gltf', 7.6, 4.8, 0.18, 0.3);
-        loadGLB('/assets/props/pumpkin_yellow.gltf', 3.8, -3.8, 0.18, 0.8);
+            // Zone F: Rest Zone (Mid-Left)
+            restBench: { url: '/assets/props/bench.gltf', x: -4.2, z: 4.5, scale: 0.65, rotY: Math.PI / 3 },
+            restTree: { url: '/assets/props/tree_pine_orange_medium.gltf', x: -6.2, z: 5.8, scale: 0.70, rotY: 0.3 },
+            restSwordShield: { url: '/assets/dungeon/sword_shield_gold.gltf', x: -5.2, z: 3.8, scale: 0.28, rotY: 0.1 },
+            restBush: { url: '/assets/nature/Bush_1_A_Color1.gltf', x: -3.6, z: 5.6, scale: 0.30, rotY: 0.4 },
+
+            // Zone G: Dock & Pier Entrance
+            dockLanternLeft: { url: '/assets/props/post_lantern.gltf', x: -1.6, z: 10.8, scale: 0.28, rotY: 0 },
+            dockLanternRight: { url: '/assets/props/post_lantern.gltf', x: 1.6, z: 10.8, scale: 0.28, rotY: Math.PI },
+            dockGoldChest: { url: '/assets/dungeon/chest_gold.gltf', x: 1.8, z: 11.8, scale: 0.35, rotY: -0.4 }
+        };
+
+        // Load all Island 1 Layout Items
+        Object.values(ISLAND_1_LAYOUT).forEach(item => {
+            loadGLB(item.url, item.x, item.z, item.scale, item.rotY);
+        });
 
         // Island 2: Tropical Trees, Fruit Market & Nature
         loadGLB('/assets/models/tree_palm.glb', 55 - 9.5, -10 + 6.5, 6.0, 0.5);
@@ -1233,7 +1246,7 @@
         const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x1e90ff, roughness: 0.70, metalness: 0.0 });
         const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.75, metalness: 0.0, flatShading: true });
 
-        // --- 1. ASSEMBLE ISLAND 1 TERRAIN & ROADS ---
+        // --- 1. ASSEMBLE ISLAND 1 TERRAIN & ORGANIC ROADS ---
         const is1Group = new THREE.Group();
         is1Group.position.set(0, 0, 0);
 
@@ -1252,16 +1265,32 @@
             p.position.set(x, 1.52, z); p.rotation.y = rot; p.receiveShadow = true;
             is1Group.add(p);
         }
-        createCobbleRoad(0, 8.5, 2.0, 3.5);
-        createCobbleRoad(0, 5.0, 1.8, 4.0);
-        createCobbleRoad(0, 1.5, 1.8, 3.5);
-        createCobbleRoad(1.8, -0.5, 3.0, 1.6, 0.35);
-        createCobbleRoad(-1.8, -0.5, 3.0, 1.6, -0.35);
-        createCobbleRoad(-5.5, 0.8, 3.5, 1.6, -0.4);
 
-        const plazaCircle = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.0, 0.05, 32), matCobble);
-        plazaCircle.position.set(0, 1.52, 4.8); plazaCircle.receiveShadow = true;
+        // Main Plaza Circular Hub (Center Zone A)
+        const plazaCircle = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 2.8, 0.05, 32), matCobble);
+        plazaCircle.position.set(0, 1.52, 3.5); plazaCircle.receiveShadow = true;
         is1Group.add(plazaCircle);
+
+        // Organic Y-Shape / S-Curve Pathway Network
+        // South: Dock to Plaza
+        createCobbleRoad(0, 9.8, 2.0, 2.6, 0);
+        createCobbleRoad(0.3, 7.5, 1.8, 2.6, -0.12);
+        createCobbleRoad(0.2, 5.5, 1.8, 2.4, 0.08);
+
+        // East: Plaza to Farm Zone
+        createCobbleRoad(2.0, 2.6, 2.2, 1.5, -0.32);
+        createCobbleRoad(3.8, 1.4, 2.0, 1.5, -0.45);
+
+        // Northeast: Plaza through Stone Arch to Home Zone
+        createCobbleRoad(0, 0.5, 1.8, 2.2, 0);
+        createCobbleRoad(1.2, -1.8, 1.8, 2.4, 0.35);
+        createCobbleRoad(2.8, -3.8, 1.8, 2.4, 0.42);
+        createCobbleRoad(4.4, -5.4, 1.8, 2.0, 0.3);
+
+        // West: Plaza to Rest Zone & Hilltop Windmill
+        createCobbleRoad(-2.0, 3.8, 2.0, 1.5, 0.25);
+        createCobbleRoad(-4.0, 2.8, 2.0, 1.5, 0.4);
+        createCobbleRoad(-6.2, 1.4, 2.0, 1.5, 0.5);
 
         // Pier 1
         const pier1 = new THREE.Group();
@@ -1329,7 +1358,7 @@
         // 5. 3D KAYKIT CHARACTER LOADER & ANIMATION SYSTEM
         // ==========================================================================
         const charGroup = new THREE.Group();
-        charGroup.position.set(0, 1.5, 8.5);
+        charGroup.position.set(0, 1.5, 7.5);
         scene.add(charGroup);
 
         const modelHolder = new THREE.Group();
@@ -1433,19 +1462,19 @@
             );
         };
 
-        // 6. Farm Assistant NPC (3D Character standing beside the KayKit Well)
+        // 6. Farm Assistant NPC (3D Character standing beside the KayKit Well in Zone A)
         const wellRobotGroup = new THREE.Group();
-        wellRobotGroup.position.set(-2.5, 1.5, 2.5);
+        wellRobotGroup.position.set(-2.2, 1.5, 2.8);
         scene.add(wellRobotGroup);
 
         const robotMesh = new THREE.Group();
-        robotMesh.position.set(1.4, 0, 0.4);
+        robotMesh.position.set(0, 0, 0);
         wellRobotGroup.add(robotMesh);
 
         loader.load('/assets/characters/Mage.glb', (gltf) => {
             const npc = gltf.scene;
             npc.scale.set(0.9, 0.9, 0.9);
-            npc.rotation.y = -Math.PI / 4;
+            npc.rotation.y = -Math.PI / 3;
             npc.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
@@ -1466,7 +1495,7 @@
             }
         });
 
-        // 7. Farm Plots
+        // 7. Farm Plots (Organized in East Zone C with Natural Breathing Room)
         const allPlots = [];
         const matSoilDry = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.85 });
         const matSoilWet = new THREE.MeshStandardMaterial({ color: 0x4a2306, roughness: 0.7 });
@@ -1476,10 +1505,10 @@
             gridGroup.position.set(centerPos.x, centerPos.y, centerPos.z);
             scene.add(gridGroup);
 
-            const plotSize = 2.0, gap = 0.25;
+            const plotSize = 1.8, gap = 0.35;
             const COORDS = [
-                { c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 },
-                { c: 0, r: 1 }, { c: 1, r: 1 }, { c: 2, r: 1 }
+                { c: 0, r: 0, ox: 0, oz: 0 }, { c: 1, r: 0, ox: 0.05, oz: -0.05 }, { c: 2, r: 0, ox: -0.05, oz: 0.05 },
+                { c: 0, r: 1, ox: 0.05, oz: 0.05 }, { c: 1, r: 1, ox: 0, oz: 0 }, { c: 2, r: 1, ox: -0.05, oz: -0.05 }
             ];
 
             for (let i = 0; i < COORDS.length; i++) {
@@ -1490,7 +1519,7 @@
                 const soil = new THREE.Mesh(new THREE.BoxGeometry(plotSize - 0.2, 0.32, plotSize - 0.2), matSoilDry);
                 soil.position.y = 0.15; soil.receiveShadow = true;
                 pGrp.add(frame, soil);
-                pGrp.position.set((coord.c - 1) * (plotSize + gap), 0, (coord.r - 0.5) * (plotSize + gap));
+                pGrp.position.set((coord.c - 1) * (plotSize + gap) + coord.ox, 0, (coord.r - 0.5) * (plotSize + gap) + coord.oz);
                 gridGroup.add(pGrp);
 
                 allPlots.push({
@@ -1500,7 +1529,7 @@
             }
         }
 
-        buildPlotsForIsland(1, { x: 3.5, y: 1.5, z: -1.5 }, matNordicWood);
+        buildPlotsForIsland(1, { x: 6.0, y: 1.5, z: 0.5 }, matNordicWood);
         buildPlotsForIsland(2, { x: 55 + 3.5, y: 1.5, z: -10 + 2.5 }, matNordicWood);
 
         function createProgressBar() {
@@ -1974,7 +2003,7 @@
             posAttr.needsUpdate = true;
 
             clouds.forEach(c => { c.mesh.position.x += delta * c.speed; if (c.mesh.position.x > 80) c.mesh.position.x = -80; });
-            emitChimneySmoke(new THREE.Vector3(-4.5 - 1.3, 4.9, -8.0 - 0.9));
+            emitChimneySmoke(new THREE.Vector3(5.5 - 0.2, 4.2, -6.5 - 0.2));
 
             foamRing1.scale.setScalar(1.0 + Math.sin(elapsed * 2.5) * 0.02);
             foamRing2.scale.setScalar(1.0 + Math.sin(elapsed * 2.5 + 1) * 0.02);
@@ -2138,9 +2167,9 @@
                         minDist = dRob;
                         nearest = { type: 'robot', text: 'คุยกับหุ่นยนต์ 🤖', pos: wellRobotGroup.position };
                     }
-                    const dMkt = pPos.distanceTo(new THREE.Vector3(2.8, 1.5, 7.5));
+                    const dMkt = pPos.distanceTo(new THREE.Vector3(3.8, 1.5, 5.5));
                     if (dMkt < minDist + 0.8) {
-                        nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(2.8, 1.5, 7.5) };
+                        nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(3.8, 1.5, 5.5) };
                     }
                     const dBoat = pPos.distanceTo(new THREE.Vector3(0, 0.5, 12.0));
                     if (dBoat < minDist + 1.2) {
