@@ -181,7 +181,7 @@
         <div class="loading-footer">
             <div class="spinner-ring"></div>
             <div class="loading-disclaimer">
-                3D Mini Farm Island Archipelago • <span>Stylized 3D Low-Poly World</span>
+                3D Mini Farm Island Archipelago • <span>Architecturally Proportioned 3D World</span>
             </div>
         </div>
     </div>
@@ -446,7 +446,7 @@
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        let cameraRadius = 8.5;
+        let cameraRadius = 9.5;
         let cameraTheta = 0;
         let cameraPhi = 0.55;
         let isDraggingCam = false;
@@ -556,17 +556,93 @@
         }
 
         // ==========================================================================
-        // 3. GLTF MODEL LOADER (tree_pine, tree_round_orange, tree_round_yellow, tree_palm)
+        // 4. ACCURATE 3D TERRAIN ELEVATION & OBSTACLES (Zero Sinking & Zero Clipping)
+        // ==========================================================================
+        function getTerrainElevation(x, z) {
+            // 1. Island 1 (Starter Island)
+            const d1 = Math.hypot(x, z);
+            if (d1 <= 17.0) {
+                // Windmill Hill plateau & slope at (-8.5, 0)
+                const dHill = Math.hypot(x - (-8.5), z - 0);
+                if (dHill <= 4.2) {
+                    return 2.6; // Top of the hill
+                } else if (dHill <= 5.5) {
+                    const t = (dHill - 4.2) / 1.3;
+                    return 2.6 - t * 1.1; // Smooth slope from 2.6 to 1.5
+                }
+
+                // Pier 1 dock (starts only past z = 11.5)
+                if (Math.abs(x) <= 2.0 && z >= 11.5 && z <= 15.5) {
+                    return 0.45;
+                }
+
+                // Main Island 1 Grass & Roads (all pathways and ground are 1.5)
+                if (d1 <= 13.5) {
+                    return 1.5;
+                }
+                // Beach Slope
+                if (d1 <= 16.0) {
+                    const t = (d1 - 13.5) / 2.5;
+                    return 1.5 - t * 1.1;
+                }
+                return 0.4;
+            }
+
+            // 2. Island 2 (Tropical Island at 55, -10)
+            const dx2 = x - 55, dz2 = z - (-10);
+            const d2 = Math.hypot(dx2, dz2);
+            if (d2 <= 18.0) {
+                // Cliff at (49, -16)
+                const dCliff = Math.hypot(x - 49, z - (-16));
+                if (dCliff <= 5.8) {
+                    return 3.6;
+                } else if (dCliff <= 7.2) {
+                    const t = (dCliff - 5.8) / 1.4;
+                    return 3.6 - t * 2.1;
+                }
+
+                // Pier 2 dock (44, -1)
+                const dDock2 = Math.hypot(x - 44, z - (-1));
+                if (dDock2 <= 3.2) {
+                    return 0.45;
+                }
+
+                // Main Grass
+                if (d2 <= 14.0) {
+                    return 1.5;
+                }
+                // Beach Slope
+                if (d2 <= 16.8) {
+                    const t = (d2 - 14.0) / 2.8;
+                    return 1.5 - t * 1.1;
+                }
+                return 0.4;
+            }
+
+            return -0.2; // Water
+        }
+
+        const obstacles = [
+            { x: -4.5, z: -8.0, radius: 2.6 },  // Nordic Barn House
+            { x: -8.5, z: 0, radius: 2.4 },     // Windmill Tower (prevents clipping into cylinder)
+            { x: 2.8, z: 7.5, radius: 1.8 },     // Market Stall
+            { x: -2.5, z: 2.5, radius: 1.5 },    // Well
+            { x: 58, z: -12, radius: 2.2 }       // Juice Bar
+        ];
+
+        // ==========================================================================
+        // 3. GLTF MODEL LOADER & ARCHITECTURALLY PROPORTIONED TREE PLACEMENT
         // ==========================================================================
         const loader = new THREE.GLTFLoader();
 
-        function loadGLB(url, pos, scale = [1, 1, 1], rotY = 0, targetGroup = scene) {
+        function loadGLB(url, x, z, scale = 1.0, rotY = 0, targetGroup = scene) {
+            const groundY = getTerrainElevation(x, z);
             loader.load(
                 url,
                 (gltf) => {
                     const model = gltf.scene;
-                    model.position.set(pos[0], pos[1], pos[2]);
-                    model.scale.set(scale[0], scale[1], scale[2]);
+                    model.position.set(x, groundY, z);
+                    model.scale.set(scale, scale, scale);
                     model.rotation.y = rotY;
 
                     model.traverse((obj) => {
@@ -579,31 +655,38 @@
                     targetGroup.add(model);
                 },
                 undefined,
-                (err) => {
-                    console.log('Model load error:', err);
-                }
+                (err) => {}
             );
         }
 
-        // Island 1: Pine & Autumn Round Trees (Scaled for lush prominence)
-        loadGLB('/assets/models/tree_pine.glb', [-2.0, 1.5, -10.5], [2.2, 2.2, 2.2]);
-        loadGLB('/assets/models/tree_pine.glb', [-8.0, 2.6, -7.5], [2.4, 2.4, 2.4]);
-        loadGLB('/assets/models/tree_pine.glb', [-10.5, 1.5, -4.5], [2.2, 2.2, 2.2]);
-        loadGLB('/assets/models/tree_round_orange.glb', [9.5, 1.5, -4.5], [2.0, 2.0, 2.0]);
-        loadGLB('/assets/models/tree_round_yellow.glb', [8.5, 1.5, 4.5], [2.0, 2.0, 2.0]);
-        loadGLB('/assets/models/tree_round_orange.glb', [-11.5, 1.5, 2.5], [1.8, 1.8, 1.8]);
+        // --- ISLAND 1: PROPORTIONAL NORDIC FOREST & AUTUMN TREES (Placed tastefully along edges/backdrop) ---
+        // 1. Majestic Pine Trees Behind the House & Windmill Hill Backdrop (Scale 5.5 - 6.5)
+        loadGLB('/assets/models/tree_pine.glb', -5.5, -11.5, 6.5, 0.4);
+        loadGLB('/assets/models/tree_pine.glb', -1.5, -12.0, 5.8, -0.3);
+        loadGLB('/assets/models/tree_pine.glb', -8.5, -6.8, 6.2, 0.8);
+        loadGLB('/assets/models/tree_pine.glb', -11.5, -3.5, 5.5, 1.2);
 
-        // Island 2: Tropical Palm Trees
-        loadGLB('/assets/models/tree_palm.glb', [55 - 7, 1.5, -10 + 6], [2.2, 2.2, 2.2]);
-        loadGLB('/assets/models/tree_palm.glb', [55 + 9, 1.5, -10 + 5], [2.4, 2.4, 2.4]);
-        loadGLB('/assets/models/tree_palm.glb', [55 + 8, 1.5, -10 - 8], [2.0, 2.0, 2.0]);
-        loadGLB('/assets/models/tree_palm.glb', [55 - 2, 1.5, -10 - 10], [2.2, 2.2, 2.2]);
+        // 2. Lush Round Autumn Trees Framing the North-East & South-West Edges (Scale 4.5 - 5.0)
+        loadGLB('/assets/models/tree_round_orange.glb', 10.5, -7.5, 4.8, 1.1);
+        loadGLB('/assets/models/tree_round_yellow.glb', 11.5, -3.0, 4.5, -0.6);
+        loadGLB('/assets/models/tree_round_orange.glb', 9.5, 5.5, 4.2, 0.3);
+        loadGLB('/assets/models/tree_round_yellow.glb', -11.0, 5.5, 4.5, -1.2);
 
-        // Props & Rocks
-        loadGLB('/assets/models/rocks.glb', [12.5, 0.3, 2.5], [2.5, 2.5, 2.5]);
-        loadGLB('/assets/models/rocks.glb', [-12.5, 0.3, -4.0], [2.5, 2.5, 2.5]);
-        loadGLB('/assets/models/flowers.glb', [6.0, 1.5, 3.0], [1.8, 1.8, 1.8]);
-        loadGLB('/assets/models/fence.glb', [3.5, 1.5, 0.8], [1.8, 1.8, 1.8]);
+        // 3. Natural Boulders, Flowers & Picket Fences
+        loadGLB('/assets/models/rocks.glb', 12.0, 2.0, 3.2, 0.5);
+        loadGLB('/assets/models/rocks.glb', -12.0, -5.5, 3.0, -0.8);
+        loadGLB('/assets/models/flowers.glb', -2.2, 4.8, 1.8, 0);
+        loadGLB('/assets/models/flowers.glb', 2.2, 4.8, 1.8, 0.5);
+        loadGLB('/assets/models/fence.glb', 3.5, -3.5, 2.0, 0);
+        loadGLB('/assets/models/fence.glb', 6.0, -3.5, 2.0, 0);
+
+        // --- ISLAND 2: TALL CURVING TROPICAL PALM TREES (Scale 5.5 - 6.5) ---
+        loadGLB('/assets/models/tree_palm.glb', 55 - 9.5, -10 + 6.5, 6.0, 0.5);
+        loadGLB('/assets/models/tree_palm.glb', 55 + 10.5, -10 + 4.5, 6.2, -0.8);
+        loadGLB('/assets/models/tree_palm.glb', 55 + 8.5, -10 - 8.5, 5.8, 1.5);
+        loadGLB('/assets/models/tree_palm.glb', 55 - 4.5, -10 - 11.5, 6.0, -1.2);
+        loadGLB('/assets/models/tree_palm.glb', 55 - 10.5, -10 - 4.5, 5.5, 2.1);
+        loadGLB('/assets/models/rocks.glb', 55 + 11.0, -10 - 1.0, 3.5, 1.2);
 
         // World Group for Island Terrains & Structures
         const worldGroup = new THREE.Group();
@@ -621,6 +704,7 @@
         const matNordicRoof = new THREE.MeshStandardMaterial({ color: 0xe17055, roughness: 0.55, flatShading: true });
         const matNordicWall = new THREE.MeshStandardMaterial({ color: 0xfff9e6, roughness: 0.5 });
         const matNordicBlue = new THREE.MeshStandardMaterial({ color: 0x0984e3, roughness: 0.55 });
+        const matPalmLeaf = new THREE.MeshStandardMaterial({ color: 0x1dd1a1, roughness: 0.65, flatShading: true });
 
         // --- 1. ASSEMBLE ISLAND 1 ---
         const is1Group = new THREE.Group();
@@ -756,81 +840,6 @@
             scene.add(cloud);
             clouds.push({ mesh: cloud, speed: 0.6 + Math.random() * 0.6 });
         }
-
-        // ==========================================================================
-        // 4. ACCURATE 3D TERRAIN ELEVATION & OBSTACLES (Zero Sinking & Zero Clipping)
-        // ==========================================================================
-        function getTerrainElevation(x, z) {
-            // 1. Island 1 (Starter Island)
-            const d1 = Math.hypot(x, z);
-            if (d1 <= 17.0) {
-                // Windmill Hill plateau & slope at (-8.5, 0)
-                const dHill = Math.hypot(x - (-8.5), z - 0);
-                if (dHill <= 4.2) {
-                    return 2.6; // Top of the hill
-                } else if (dHill <= 5.5) {
-                    const t = (dHill - 4.2) / 1.3;
-                    return 2.6 - t * 1.1; // Smooth slope from 2.6 to 1.5
-                }
-
-                // Pier 1 dock (starts only past z = 11.5)
-                if (Math.abs(x) <= 2.0 && z >= 11.5 && z <= 15.5) {
-                    return 0.45;
-                }
-
-                // Main Island 1 Grass & Roads (all pathways and ground are 1.5)
-                if (d1 <= 13.5) {
-                    return 1.5;
-                }
-                // Beach Slope
-                if (d1 <= 16.0) {
-                    const t = (d1 - 13.5) / 2.5;
-                    return 1.5 - t * 1.1;
-                }
-                return 0.4;
-            }
-
-            // 2. Island 2 (Tropical Island at 55, -10)
-            const dx2 = x - 55, dz2 = z - (-10);
-            const d2 = Math.hypot(dx2, dz2);
-            if (d2 <= 18.0) {
-                // Cliff at (49, -16)
-                const dCliff = Math.hypot(x - 49, z - (-16));
-                if (dCliff <= 5.8) {
-                    return 3.6;
-                } else if (dCliff <= 7.2) {
-                    const t = (dCliff - 5.8) / 1.4;
-                    return 3.6 - t * 2.1;
-                }
-
-                // Pier 2 dock (44, -1)
-                const dDock2 = Math.hypot(x - 44, z - (-1));
-                if (dDock2 <= 3.2) {
-                    return 0.45;
-                }
-
-                // Main Grass
-                if (d2 <= 14.0) {
-                    return 1.5;
-                }
-                // Beach Slope
-                if (d2 <= 16.8) {
-                    const t = (d2 - 14.0) / 2.8;
-                    return 1.5 - t * 1.1;
-                }
-                return 0.4;
-            }
-
-            return -0.2; // Water
-        }
-
-        const obstacles = [
-            { x: -4.5, z: -8.0, radius: 2.6 },  // Nordic Barn House
-            { x: -8.5, z: 0, radius: 2.4 },     // Windmill Tower (prevents clipping into cylinder)
-            { x: 2.8, z: 7.5, radius: 1.8 },     // Market Stall
-            { x: -2.5, z: 2.5, radius: 1.5 },    // Well
-            { x: 58, z: -12, radius: 2.2 }       // Juice Bar
-        ];
 
         // 5. Stylized Character
         const charGroup = new THREE.Group();
@@ -1058,7 +1067,7 @@
         });
         window.addEventListener('mouseup', () => { isDraggingCam = false; });
         window.addEventListener('wheel', (e) => {
-            cameraRadius = Math.max(5.0, Math.min(22.0, cameraRadius + e.deltaY * 0.01));
+            cameraRadius = Math.max(6.0, Math.min(24.0, cameraRadius + e.deltaY * 0.01));
         });
 
         // Touch Camera Drag
@@ -1594,14 +1603,14 @@
                 transitionProg += delta * 1.2;
                 const camX = charGroup.position.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
                 const camY = charGroup.position.y + cameraRadius * Math.sin(cameraPhi);
-                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
+                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.1);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
                 if (transitionProg >= 1.0) { gameState.mode = 'exploring'; showToast('ยินดีต้อนรับสู่เกาะฟาร์ม! ปลูกผักและทำเควสต์เพื่อปลดล็อกเรือข้ามฟาก 🌴'); }
             } else if (gameState.mode === 'exploring') {
                 const camX = charGroup.position.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
                 const camY = charGroup.position.y + cameraRadius * Math.sin(cameraPhi);
-                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
+                const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.15);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
             }
