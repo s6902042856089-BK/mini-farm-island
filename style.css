@@ -262,38 +262,63 @@ body, html {
 }
 
 /* ==========================================================
-   COASTAL WORLD EXACT NOTIFICATION & DISCOVERY BANNER
+   COASTAL WORLD DYNAMIC NOTIFICATION & NPC SPEECH BANNER
    ========================================================== */
 #coastal-guide-banner {
     position: absolute;
-    top: 22px;
+    top: 20px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-120px);
+    opacity: 0;
+    pointer-events: none;
     background: #ffffff;
     border-radius: 26px;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 8px 18px 8px 10px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1.5px solid rgba(52, 152, 219, 0.2);
+    padding: 8px 14px 8px 10px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     max-width: 520px;
     width: calc(100% - 40px);
     z-index: 80;
-    pointer-events: auto;
     cursor: pointer;
-    animation: bannerSlideDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s;
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.35s ease, box-shadow 0.25s;
     user-select: none;
+}
+
+#coastal-guide-banner.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
 }
 
 #coastal-guide-banner:hover {
     transform: translateX(-50%) translateY(-2px) scale(1.02);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), 0 6px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-@keyframes bannerSlideDown {
-    0% { transform: translateX(-50%) translateY(-60px) scale(0.9); opacity: 0; }
-    100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+.banner-close-btn {
+    background: #f1f5f9;
+    border: none;
+    color: #94a3b8;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.banner-close-btn:hover {
+    background: #fee2e2;
+    color: #ef4444;
 }
 
 .banner-icon-container {
