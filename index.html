@@ -516,6 +516,7 @@
                 <button class="lb-tab" id="tb-tab-add" onclick="window.switchTeacherTab('add')">➕ เพิ่มคำถามใหม่</button>
                 <button class="lb-tab" id="tb-tab-presets" onclick="window.switchTeacherTab('presets')">📦 ชุดข้อสอบสำเร็จรูป</button>
                 <button class="lb-tab" id="tb-tab-analytics" onclick="window.switchTeacherTab('analytics')">📊 สถิตินักเรียน</button>
+                <button class="lb-tab" id="tb-tab-builder" onclick="window.enterIslandEditorMode()" style="background: linear-gradient(135deg, rgba(238, 242, 255, 0.95), rgba(224, 231, 255, 0.95)); color: #4338ca; border-color: #818cf8; font-weight: 700;">🏝️ สตูดิโอออกแบบเกาะ 3D</button>
             </div>
 
             <!-- View 1: Question Bank Manager -->
@@ -606,6 +607,91 @@
             <div id="teacher-view-analytics" class="teacher-view" style="display: none;">
                 <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 12px;">📊 รายงานความก้าวหน้านักเรียนในห้องเรียน</h3>
                 <div id="teacher-student-table-container" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 10. 3D ISLAND BUILDER / WORLD EDITOR OVERLAY -->
+    <div id="island-editor-ui">
+        <!-- Top Toolbar -->
+        <div class="editor-toolbar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.6rem;">🏝️</span>
+                <div>
+                    <strong style="color: #1e293b; font-size: 1.05rem;">3D Island Builder Studio</strong>
+                    <div style="font-size: 0.75rem; color: #6366f1;">คลิกเลือกวัตถุบนเกาะเพื่อเลื่อน ปรับขนาด หรือหมุนได้อิสระ</div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <select id="ed-island-select" class="name-input-field" style="padding: 6px 12px; font-size: 0.85rem; width: auto;" onchange="window.switchEditorIsland(parseInt(this.value, 10))">
+                    <option value="1">🏝️ เกาะที่ 1 (ผักสวนครัว)</option>
+                    <option value="2">🌴 เกาะที่ 2 (ผลไม้เมืองร้อน)</option>
+                </select>
+
+                <button class="btn-primary" style="margin: 0; padding: 7px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #6366f1, #4f46e5);" onclick="window.toggleSpawnMenu()">
+                    ➕ เพิ่มวัตถุใหม่ (Spawn)
+                </button>
+
+                <button class="btn-primary" style="margin: 0; padding: 7px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #10b981, #059669);" onclick="window.saveCustomIslandLayout()">
+                    💾 บันทึกเกาะ (Save)
+                </button>
+
+                <button class="btn-secondary" style="margin: 0; padding: 7px 12px; font-size: 0.85rem;" onclick="window.resetIslandToDefault()" title="คืนค่าผังเกาะเริ่มต้น">
+                    🔄 รีเซ็ต
+                </button>
+
+                <button class="btn-secondary" style="margin: 0; padding: 7px 14px; font-size: 0.85rem; background: #f8fafc; color: #e11d48; font-weight: 700; border: 1.5px solid #fecdd3;" onclick="window.exitIslandEditorMode()">
+                    🎮 ทดลองเล่น (Play)
+                </button>
+            </div>
+        </div>
+
+        <!-- Spawn Palette Dropdown -->
+        <div class="editor-spawn-menu" id="editor-spawn-menu"></div>
+
+        <!-- Floating Inspector Panel (When an object is selected) -->
+        <div class="editor-inspector" id="editor-inspector">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px;">
+                <div>
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #6366f1; text-transform: uppercase;">Selected Prop</span>
+                    <h4 style="font-size: 0.95rem; color: #1e293b; margin: 0;" id="ed-prop-name">กังหันลมโบราณ</h4>
+                </div>
+                <button style="background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #94a3b8;" onclick="window.deselectEditorObject()">✕</button>
+            </div>
+
+            <!-- Position X Slider -->
+            <div class="editor-slider-group">
+                <label><span>🎯 ตำแหน่ง X (ซ้าย - ขวา):</span><span id="val-pos-x">0.0</span></label>
+                <input type="range" class="editor-slider" id="slider-pos-x" min="-18" max="18" step="0.2" value="0" oninput="window.onEditorTransformInput()">
+            </div>
+
+            <!-- Position Z Slider -->
+            <div class="editor-slider-group">
+                <label><span>🎯 ตำแหน่ง Z (หน้า - หลัง):</span><span id="val-pos-z">0.0</span></label>
+                <input type="range" class="editor-slider" id="slider-pos-z" min="-18" max="18" step="0.2" value="0" oninput="window.onEditorTransformInput()">
+            </div>
+
+            <!-- Scale Slider -->
+            <div class="editor-slider-group">
+                <label><span>📐 ขนาด (Scale):</span><span id="val-scale">1.0x</span></label>
+                <input type="range" class="editor-slider" id="slider-scale" min="0.2" max="8.0" step="0.1" value="1.0" oninput="window.onEditorTransformInput()">
+            </div>
+
+            <!-- Rotation Y Slider -->
+            <div class="editor-slider-group">
+                <label><span>🔄 การหมุน (0° - 360°):</span><span id="val-rot-y">0°</span></label>
+                <input type="range" class="editor-slider" id="slider-rot-y" min="0" max="360" step="5" value="0" oninput="window.onEditorTransformInput()">
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button class="btn-primary" style="margin: 0; padding: 8px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #3b82f6, #2563eb); flex: 1;" onclick="window.duplicateSelectedObject()">
+                    📋 คัดลอก
+                </button>
+                <button class="btn-primary" style="margin: 0; padding: 8px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #ef4444, #dc2626); flex: 1;" onclick="window.deleteSelectedObject()">
+                    🗑️ ลบวัตถุ
+                </button>
             </div>
         </div>
     </div>
@@ -2061,105 +2147,349 @@
         // ==========================================================================
         // 3. GLTF MODEL LOADER & 5-ZONE BALANCED ISLAND COMPOSITION
         // ==========================================================================
+        // ==========================================================================
+        // 3. 3D ISLAND BUILDER STUDIO ENGINE & DYNAMIC ASSET COMPOSITION
+        // ==========================================================================
         const loader = new THREE.GLTFLoader();
+        const raycaster = new THREE.Raycaster();
+        const mouse2D = new THREE.Vector2();
 
-        function loadGLB(url, x, z, scale = 1.0, rotY = 0, targetGroup = scene) {
-            const groundY = getTerrainElevation(x, z);
-            loader.load(
-                url,
-                (gltf) => {
-                    const model = gltf.scene;
-                    model.position.set(x, groundY, z);
-                    model.scale.set(scale, scale, scale);
-                    model.rotation.y = rotY;
+        const island1PropsGroup = new THREE.Group();
+        const island2PropsGroup = new THREE.Group();
+        scene.add(island1PropsGroup);
+        scene.add(island2PropsGroup);
 
-                    model.traverse((obj) => {
-                        if (obj.isMesh) {
-                            obj.castShadow = true;
-                            obj.receiveShadow = true;
-                            if (obj.material) {
-                                if (obj.material.metalness !== undefined) obj.material.metalness = 0.0;
-                                if (obj.material.roughness !== undefined && obj.material.roughness < 0.65) obj.material.roughness = 0.74;
-                            }
-                        }
-                    });
+        let selectedEditorObject = null;
+        let currentEditingIsland = 1;
+        const selectionBox = new THREE.BoxHelper(new THREE.Mesh(), 0x6366f1);
+        selectionBox.visible = false;
+        scene.add(selectionBox);
 
-                    targetGroup.add(model);
-                },
-                undefined,
-                (err) => {}
-            );
+        const SPAWN_CATALOG = [
+            { type: 'farmhouse', name: '🏠 โรงนา 2 ชั้น', url: '/assets/medieval/buildings/red/building_home_A_red.gltf', defaultScale: 4.8, defaultRotY: 0 },
+            { type: 'windmill', name: '🌾 กังหันลมโบราณ', url: '/assets/medieval/buildings/red/building_windmill_red.gltf', defaultScale: 5.2, defaultRotY: 0.3 },
+            { type: 'market', name: '⛵ ร้านค้าตลาด', url: '/assets/medieval/buildings/red/building_market_red.gltf', defaultScale: 4.2, defaultRotY: 2.6 },
+            { type: 'well', name: '🪨 บ่อน้ำหิน', url: '/assets/medieval/buildings/red/building_well_red.gltf', defaultScale: 2.4, defaultRotY: 0 },
+            { type: 'arch', name: '🏛️ ซุ้มประตูหิน', url: '/assets/props/arch.gltf', defaultScale: 1.2, defaultRotY: 0 },
+            { type: 'tree_pine_large', name: '🌲 ต้นสนใหญ่', url: '/assets/props/tree_pine_orange_large.gltf', defaultScale: 2.7, defaultRotY: 0 },
+            { type: 'tree_large', name: '🌳 ต้นไม้พุ่มใหญ่', url: '/assets/nature/Tree_2_A_Color1.gltf', defaultScale: 2.8, defaultRotY: 0 },
+            { type: 'tree_palm', name: '🌴 ต้นมะพร้าว', url: '/assets/models/tree_palm.glb', defaultScale: 6.0, defaultRotY: 0 },
+            { type: 'rock', name: '🪨 โขดหินธรรมชาติ', url: '/assets/nature/Rock_1_A_Color1.gltf', defaultScale: 1.4, defaultRotY: 0 },
+            { type: 'bush', name: '🌿 พุ่มไม้ใบเขียว', url: '/assets/nature/Bush_1_A_Color1.gltf', defaultScale: 1.1, defaultRotY: 0 },
+            { type: 'bench', name: '🪑 ม้านั่งพักผ่อน', url: '/assets/props/bench.gltf', defaultScale: 1.0, defaultRotY: 1.0 },
+            { type: 'crate', name: '📦 ลังไม้ผลผลิต', url: '/assets/medieval/decoration/props/crate_A_big.gltf', defaultScale: 0.75, defaultRotY: 0 },
+            { type: 'barrel', name: '🛢️ ถังไม้โบราณ', url: '/assets/medieval/decoration/props/barrel.gltf', defaultScale: 0.75, defaultRotY: 0 },
+            { type: 'pumpkin', name: '🎃 ฟักทองทองคำ', url: '/assets/props/pumpkin_orange.gltf', defaultScale: 0.22, defaultRotY: 0 },
+            { type: 'lantern', name: '💡 เสาโคมไฟ', url: '/assets/props/post_lantern.gltf', defaultScale: 0.28, defaultRotY: 0 },
+            { type: 'chest', name: '👑 หีบสมบัติทอง', url: '/assets/dungeon/chest_gold.gltf', defaultScale: 0.8, defaultRotY: 0 }
+        ];
+
+        const DEFAULT_ISLAND_1_ITEMS = [
+            { id: 'p_arch', type: 'arch', name: '🏛️ ซุ้มประตูหิน', url: '/assets/props/arch.gltf', x: 0, z: -1.2, scale: 1.2, rotY: 0 },
+            { id: 'p_well', type: 'well', name: '🪨 บ่อน้ำหิน', url: '/assets/medieval/buildings/red/building_well_red.gltf', x: -3.2, z: 2.8, scale: 2.4, rotY: 0 },
+            { id: 'p_farmhouse', type: 'farmhouse', name: '🏠 โรงนา 2 ชั้น', url: '/assets/medieval/buildings/red/building_home_A_red.gltf', x: 5.5, z: -6.5, scale: 4.8, rotY: -0.35 },
+            { id: 'p_homeTree', type: 'tree_large', name: '🌳 ต้นไม้พุ่มใหญ่', url: '/assets/nature/Tree_2_B_Color1.gltf', x: 7.8, z: -8.5, scale: 2.6, rotY: 0.6 },
+            { id: 'p_homePine', type: 'tree_pine_large', name: '🌲 ต้นสนใหญ่', url: '/assets/props/tree_pine_yellow_large.gltf', x: 3.0, z: -9.8, scale: 2.6, rotY: -0.4 },
+            { id: 'p_homeBarrel', type: 'barrel', name: '🛢️ ถังไม้โบราณ', url: '/assets/medieval/decoration/props/barrel.gltf', x: 3.8, z: -5.2, scale: 0.75, rotY: 0.4 },
+            { id: 'p_homePumpkin', type: 'pumpkin', name: '🎃 ฟักทองทองคำ', url: '/assets/props/pumpkin_orange_small.gltf', x: 4.2, z: -4.8, scale: 0.20, rotY: 0.2 },
+            { id: 'p_farmBush', type: 'bush', name: '🌿 พุ่มไม้', url: '/assets/nature/Bush_1_A_Color1.gltf', x: 8.8, z: -1.2, scale: 1.1, rotY: 0.5 },
+            { id: 'p_market', type: 'market', name: '⛵ ร้านค้าตลาด', url: '/assets/medieval/buildings/red/building_market_red.gltf', x: 4.8, z: 6.2, scale: 4.2, rotY: Math.PI * 0.85 },
+            { id: 'p_marketCrate', type: 'crate', name: '📦 ลังไม้', url: '/assets/medieval/decoration/props/crate_A_big.gltf', x: 3.2, z: 5.2, scale: 0.75, rotY: 0.2 },
+            { id: 'p_marketBarrel', type: 'barrel', name: '🛢️ ถังไม้', url: '/assets/medieval/decoration/props/barrel.gltf', x: 3.6, z: 4.6, scale: 0.75, rotY: -0.5 },
+            { id: 'p_windmill', type: 'windmill', name: '🌾 กังหันลมโบราณ', url: '/assets/medieval/buildings/red/building_windmill_red.gltf', x: -8.5, z: -0.5, scale: 5.2, rotY: 0.3 },
+            { id: 'p_naturePine', type: 'tree_pine_large', name: '🌲 ต้นสนใหญ่', url: '/assets/props/tree_pine_orange_large.gltf', x: -9.8, z: -6.5, scale: 2.7, rotY: 1.1 },
+            { id: 'p_natureTree', type: 'tree_large', name: '🌳 ต้นไม้ใหญ่', url: '/assets/nature/Tree_2_A_Color1.gltf', x: -6.5, z: -9.5, scale: 2.8, rotY: 0.4 },
+            { id: 'p_natureRock1', type: 'rock', name: '🪨 โขดหิน', url: '/assets/nature/Rock_1_A_Color1.gltf', x: -10.2, z: -3.2, scale: 1.5, rotY: 0.4 },
+            { id: 'p_bench', type: 'bench', name: '🪑 ม้านั่ง', url: '/assets/props/bench.gltf', x: -4.2, z: 4.5, scale: 1.0, rotY: Math.PI / 3 },
+            { id: 'p_lanternL', type: 'lantern', name: '💡 โคมไฟท่าเรือ', url: '/assets/props/post_lantern.gltf', x: -1.6, z: 10.8, scale: 0.28, rotY: 0 },
+            { id: 'p_lanternR', type: 'lantern', name: '💡 โคมไฟท่าเรือ', url: '/assets/props/post_lantern.gltf', x: 1.6, z: 10.8, scale: 0.28, rotY: Math.PI },
+            { id: 'p_dockChest', type: 'chest', name: '👑 หีบสมบัติ', url: '/assets/dungeon/chest_gold.gltf', x: 1.8, z: 11.8, scale: 0.8, rotY: -0.4 }
+        ];
+
+        const DEFAULT_ISLAND_2_ITEMS = [
+            { id: 'p2_palm1', type: 'tree_palm', name: '🌴 ต้นมะพร้าว #1', url: '/assets/models/tree_palm.glb', x: 55 - 9.5, z: -10 + 6.5, scale: 6.0, rotY: 0.5 },
+            { id: 'p2_palm2', type: 'tree_palm', name: '🌴 ต้นมะพร้าว #2', url: '/assets/models/tree_palm.glb', x: 55 + 10.5, z: -10 + 4.5, scale: 6.0, rotY: -0.8 },
+            { id: 'p2_palm3', type: 'tree_palm', name: '🌴 ต้นมะพร้าว #3', url: '/assets/models/tree_palm.glb', x: 55 + 8.5, z: -10 - 8.5, scale: 5.8, rotY: 1.5 },
+            { id: 'p2_palm4', type: 'tree_palm', name: '🌴 ต้นมะพร้าว #4', url: '/assets/models/tree_palm.glb', x: 55 - 4.5, z: -10 - 11.5, scale: 6.0, rotY: -1.2 },
+            { id: 'p2_rock', type: 'rock', name: '🪨 โขดหินชายหาด', url: '/assets/nature/Rock_1_B_Color1.gltf', x: 55 + 11.0, z: -10 - 1.0, scale: 1.6, rotY: 1.2 },
+            { id: 'p2_market', type: 'market', name: '⛵ ร้านค้าตลาดเกาะ 2', url: '/assets/medieval/buildings/red/building_market_red.gltf', x: 58, z: -12, scale: 4.8, rotY: 0.0 },
+            { id: 'p2_barrel', type: 'barrel', name: '🛢️ ถังไม้', url: '/assets/medieval/decoration/props/barrel.gltf', x: 56.5, z: -11.5, scale: 0.75, rotY: 0.4 },
+            { id: 'p2_chest', type: 'chest', name: '👑 หีบสมบัติเกาะ 2', url: '/assets/dungeon/chest.gltf', x: 55 + 2.5, z: -10 + 2.0, scale: 0.8, rotY: 0.5 },
+            { id: 'p2_lantern', type: 'lantern', name: '💡 โคมไฟท่าเรือเกาะ 2', url: '/assets/props/post_lantern.gltf', x: 55 - 9.5, z: -10 + 7.5, scale: 0.28, rotY: -1.0 }
+        ];
+
+        function loadPropItem(item, targetGroup) {
+            const groundY = getTerrainElevation(item.x, item.z);
+            loader.load(item.url, (gltf) => {
+                const model = gltf.scene;
+                model.position.set(item.x, groundY, item.z);
+                const s = item.scale || 1.0;
+                model.scale.set(s, s, s);
+                model.rotation.y = item.rotY || 0;
+
+                model.userData = {
+                    id: item.id || ('prop_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)),
+                    type: item.type,
+                    name: item.name || 'Prop Object',
+                    url: item.url,
+                    scale: s,
+                    rotY: item.rotY || 0,
+                    islandId: targetGroup === island1PropsGroup ? 1 : 2
+                };
+
+                model.traverse((obj) => {
+                    if (obj.isMesh) {
+                        obj.castShadow = true;
+                        obj.receiveShadow = true;
+                        obj.userData.parentModel = model;
+                    }
+                });
+
+                targetGroup.add(model);
+            });
         }
 
-        // ==========================================================
-        // 3. STRUCTURED 5-ZONE ISLAND 1 LAYOUT & AUTHENTIC PROPORTIONS
-        // ==========================================================
-        const ISLAND_1_LAYOUT = {
-            // Zone A: Main Plaza & Primary Landmark
-            landmarkArch: { url: '/assets/props/arch.gltf', x: 0, z: -1.2, scale: 1.2, rotY: 0 },
-            well: { url: '/assets/medieval/buildings/red/building_well_red.gltf', x: -3.2, z: 2.8, scale: 2.4, rotY: 0 },
+        function loadIslandProps(islandId) {
+            const targetGroup = islandId === 1 ? island1PropsGroup : island2PropsGroup;
+            while(targetGroup.children.length > 0) targetGroup.remove(targetGroup.children[0]);
 
-            // Zone B: Home Zone (Back-Right) - Grand 2-Story Farmhouse
-            farmhouse: { url: '/assets/medieval/buildings/red/building_home_A_red.gltf', x: 5.5, z: -6.5, scale: 4.8, rotY: -0.35 },
-            homeTreeBack: { url: '/assets/nature/Tree_2_B_Color1.gltf', x: 7.8, z: -8.5, scale: 2.6, rotY: 0.6 },
-            homeTreePine: { url: '/assets/props/tree_pine_yellow_large.gltf', x: 3.0, z: -9.8, scale: 2.6, rotY: -0.4 },
-            homeBarrel: { url: '/assets/medieval/decoration/props/barrel.gltf', x: 3.8, z: -5.2, scale: 0.75, rotY: 0.4 },
-            homePumpkin: { url: '/assets/props/pumpkin_orange_small.gltf', x: 4.2, z: -4.8, scale: 0.20, rotY: 0.2 },
+            let items = null;
+            const saved = localStorage.getItem('coastal_island_layout_' + islandId);
+            if (saved) {
+                try { items = JSON.parse(saved); } catch(e){}
+            }
+            if (!items || items.length === 0) {
+                items = islandId === 1 ? DEFAULT_ISLAND_1_ITEMS : DEFAULT_ISLAND_2_ITEMS;
+            }
 
-            // Zone C: Farm Zone Supporting Props (Mid-Right)
-            farmWheelbarrow: { url: '/assets/medieval/decoration/props/wheelbarrow.gltf', x: 8.2, z: 2.8, scale: 0.9, rotY: -0.8 },
-            farmSack: { url: '/assets/medieval/decoration/props/sack.gltf', x: 8.6, z: 1.8, scale: 0.75, rotY: 0.3 },
-            farmBush: { url: '/assets/nature/Bush_1_A_Color1.gltf', x: 8.8, z: -1.2, scale: 1.1, rotY: 0.5 },
+            items.forEach(item => loadPropItem(item, targetGroup));
+        }
 
-            // Zone D: Market Zone (Front-Right / Near Dock - Authentic Market Stall)
-            marketShop: { url: '/assets/medieval/buildings/red/building_market_red.gltf', x: 4.8, z: 6.2, scale: 4.2, rotY: Math.PI * 0.85 },
-            marketCrateBig: { url: '/assets/medieval/decoration/props/crate_A_big.gltf', x: 3.2, z: 5.2, scale: 0.75, rotY: 0.2 },
-            marketBarrel: { url: '/assets/medieval/decoration/props/barrel.gltf', x: 3.6, z: 4.6, scale: 0.75, rotY: -0.5 },
-            marketSack: { url: '/assets/medieval/decoration/props/sack.gltf', x: 2.8, z: 5.8, scale: 0.75, rotY: 0.8 },
-            marketPumpkinOrange: { url: '/assets/props/pumpkin_orange.gltf', x: 5.8, z: 4.8, scale: 0.22, rotY: 0.3 },
-            marketPumpkinYellow: { url: '/assets/props/pumpkin_yellow.gltf', x: 6.2, z: 5.2, scale: 0.18, rotY: 0.8 },
+        // Initialize Props for Both Islands
+        loadIslandProps(1);
+        loadIslandProps(2);
 
-            // Zone E: Nature Zone & Hilltop Windmill (Back-Left - Towering Landmark)
-            windmillHill: { url: '/assets/medieval/buildings/red/building_windmill_red.gltf', x: -8.5, z: -0.5, scale: 5.2, rotY: 0.3 },
-            naturePineLarge: { url: '/assets/props/tree_pine_orange_large.gltf', x: -9.8, z: -6.5, scale: 2.7, rotY: 1.1 },
-            natureTreeLarge: { url: '/assets/nature/Tree_2_A_Color1.gltf', x: -6.5, z: -9.5, scale: 2.8, rotY: 0.4 },
-            natureTreeMed: { url: '/assets/nature/Tree_2_C_Color1.gltf', x: -10.5, z: 3.5, scale: 2.4, rotY: 0.8 },
-            natureTreeSmall: { url: '/assets/nature/Tree_4_A_Color1.gltf', x: -5.0, z: -11.0, scale: 2.0, rotY: -0.5 },
-            natureRock1: { url: '/assets/nature/Rock_1_A_Color1.gltf', x: -10.2, z: -3.2, scale: 1.5, rotY: 0.4 },
-            natureRock2: { url: '/assets/nature/Rock_2_A_Color1.gltf', x: -9.2, z: -4.0, scale: 1.1, rotY: -0.6 },
-            natureRock3: { url: '/assets/nature/Rock_1_A_Color1.gltf', x: -8.5, z: -4.6, scale: 0.7, rotY: 1.2 },
-            natureBush1: { url: '/assets/nature/Bush_1_A_Color1.gltf', x: -7.2, z: -7.5, scale: 1.2, rotY: 0.1 },
-            natureBush2: { url: '/assets/nature/Bush_1_B_Color1.gltf', x: -6.5, z: -8.0, scale: 0.9, rotY: 0.7 },
+        // ==========================================================================
+        // 3D ISLAND BUILDER INTERACTION HANDLERS
+        // ==========================================================================
+        window.enterIslandEditorMode = function() {
+            try { window.sfx.click(); } catch(e){}
+            document.getElementById('teacher-dashboard-modal').style.display = 'none';
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('title-screen').style.display = 'none';
+            document.getElementById('island-editor-ui').style.display = 'flex';
 
-            // Zone F: Rest Zone (Mid-Left)
-            restBench: { url: '/assets/props/bench.gltf', x: -4.2, z: 4.5, scale: 1.0, rotY: Math.PI / 3 },
-            restTree: { url: '/assets/props/tree_pine_orange_medium.gltf', x: -6.2, z: 5.8, scale: 2.4, rotY: 0.3 },
-            restSwordShield: { url: '/assets/dungeon/sword_shield_gold.gltf', x: -5.2, z: 3.8, scale: 0.9, rotY: 0.1 },
-            restBush: { url: '/assets/nature/Bush_1_A_Color1.gltf', x: -3.6, z: 5.6, scale: 1.0, rotY: 0.4 },
+            gameState.mode = 'editing_island';
+            currentEditingIsland = gameState.currentIsland;
+            document.getElementById('ed-island-select').value = currentEditingIsland.toString();
 
-            // Zone G: Dock & Pier Entrance
-            dockLanternLeft: { url: '/assets/props/post_lantern.gltf', x: -1.6, z: 10.8, scale: 0.28, rotY: 0 },
-            dockLanternRight: { url: '/assets/props/post_lantern.gltf', x: 1.6, z: 10.8, scale: 0.28, rotY: Math.PI },
-            dockGoldChest: { url: '/assets/dungeon/chest_gold.gltf', x: 1.8, z: 11.8, scale: 0.8, rotY: -0.4 }
+            // Set Overhead Creative View Camera
+            cameraRadius = 18.0;
+            cameraPhi = 0.85;
+            cameraTheta = 0;
+
+            renderSpawnMenu();
+            showToast('เข้าสู่ 3D Island Builder Studio แล้ว! คลิกที่วัตถุเพื่อเริ่มปรับแต่ง 🏝️✨');
         };
 
-        // Load all Island 1 Layout Items
-        Object.values(ISLAND_1_LAYOUT).forEach(item => {
-            loadGLB(item.url, item.x, item.z, item.scale, item.rotY);
-        });
+        window.exitIslandEditorMode = function() {
+            try { window.sfx.click(); } catch(e){}
+            window.deselectEditorObject();
+            document.getElementById('island-editor-ui').style.display = 'none';
+            document.getElementById('hud').style.display = 'flex';
+            gameState.mode = 'exploring';
+            cameraRadius = 9.5;
+            cameraPhi = 0.55;
+            showToast('กลับสู่โหมดการเล่นเกมแล้ว! 🎮');
+        };
 
-        // Island 2: Tropical Trees, Fruit Market & Nature
-        loadGLB('/assets/models/tree_palm.glb', 55 - 9.5, -10 + 6.5, 6.0, 0.5);
-        loadGLB('/assets/models/tree_palm.glb', 55 + 10.5, -10 + 4.5, 6.0, -0.8);
-        loadGLB('/assets/models/tree_palm.glb', 55 + 8.5, -10 - 8.5, 5.8, 1.5);
-        loadGLB('/assets/models/tree_palm.glb', 55 - 4.5, -10 - 11.5, 6.0, -1.2);
-        loadGLB('/assets/models/tree_palm.glb', 55 - 10.5, -10 - 4.5, 5.5, 2.1);
-        loadGLB('/assets/nature/Rock_1_B_Color1.gltf', 55 + 11.0, -10 - 1.0, 1.6, 1.2);
-        loadGLB('/assets/nature/Bush_1_C_Color1.gltf', 55 - 6.0, -10 + 7.5, 1.2, 0.8);
-        loadGLB('/assets/medieval/buildings/red/building_market_red.gltf', 58, -12, 4.8, 0.0);
-        loadGLB('/assets/medieval/decoration/props/barrel.gltf', 56.5, -11.5, 0.75, 0.4);
-        loadGLB('/assets/dungeon/chest.gltf', 55 + 2.5, -10 + 2.0, 0.8, 0.5);
-        loadGLB('/assets/props/post_lantern.gltf', 55 - 9.5, -10 + 7.5, 0.28, -1.0);
+        window.switchEditorIsland = function(islandId) {
+            currentEditingIsland = islandId;
+            window.deselectEditorObject();
+            if (islandId === 1) {
+                modelHolder.position.set(0, 1.5, 0);
+            } else {
+                modelHolder.position.set(55, 1.5, -10);
+            }
+            showToast(`เปลี่ยนมุมมองไปยัง ${ISLAND_CONFIGS[islandId].name} 🏝️`);
+        };
+
+        function renderSpawnMenu() {
+            const menu = document.getElementById('editor-spawn-menu');
+            if (!menu) return;
+            menu.innerHTML = '';
+            SPAWN_CATALOG.forEach(asset => {
+                const card = document.createElement('div');
+                card.className = 'spawn-asset-card';
+                card.innerHTML = `
+                    <div style="font-size: 1.6rem;">${asset.name.split(' ')[0]}</div>
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #1e293b;">${asset.name.split(' ').slice(1).join(' ')}</div>
+                `;
+                card.onclick = () => {
+                    window.spawnAsset(asset);
+                    menu.style.display = 'none';
+                };
+                menu.appendChild(card);
+            });
+        }
+
+        window.toggleSpawnMenu = function() {
+            try { window.sfx.click(); } catch(e){}
+            const menu = document.getElementById('editor-spawn-menu');
+            if (!menu) return;
+            menu.style.display = menu.style.display === 'grid' ? 'none' : 'grid';
+        };
+
+        window.spawnAsset = function(asset) {
+            const targetGroup = currentEditingIsland === 1 ? island1PropsGroup : island2PropsGroup;
+            const centerOffset = currentEditingIsland === 1 ? { x: 0, z: 0 } : { x: 55, z: -10 };
+            const spawnX = centerOffset.x + (Math.random() * 4 - 2);
+            const spawnZ = centerOffset.z + (Math.random() * 4 - 2);
+
+            const item = {
+                id: 'prop_' + Date.now(),
+                type: asset.type,
+                name: asset.name,
+                url: asset.url,
+                x: spawnX,
+                z: spawnZ,
+                scale: asset.defaultScale,
+                rotY: asset.defaultRotY
+            };
+
+            loadPropItem(item, targetGroup);
+            showToast(`วาง ${asset.name} ลงบนเกาะเรียบร้อย! ✨`);
+        };
+
+        window.selectEditorObject = function(model) {
+            if (!model) return;
+            selectedEditorObject = model;
+            selectionBox.setFromObject(model);
+            selectionBox.visible = true;
+
+            const inspector = document.getElementById('editor-inspector');
+            const nameEl = document.getElementById('ed-prop-name');
+            const posXSlider = document.getElementById('slider-pos-x');
+            const posZSlider = document.getElementById('slider-pos-z');
+            const scaleSlider = document.getElementById('slider-scale');
+            const rotYSlider = document.getElementById('slider-rot-y');
+
+            if (nameEl) nameEl.innerText = model.userData?.name || 'Prop Model';
+
+            const centerOffset = currentEditingIsland === 1 ? 0 : 55;
+            const centerOffsetZ = currentEditingIsland === 1 ? 0 : -10;
+
+            if (posXSlider) posXSlider.value = (model.position.x - centerOffset).toFixed(1);
+            if (posZSlider) posZSlider.value = (model.position.z - centerOffsetZ).toFixed(1);
+            if (scaleSlider) scaleSlider.value = model.scale.x.toFixed(1);
+            
+            let deg = Math.round(model.rotation.y * 180 / Math.PI) % 360;
+            if (deg < 0) deg += 360;
+            if (rotYSlider) rotYSlider.value = deg;
+
+            document.getElementById('val-pos-x').innerText = (model.position.x - centerOffset).toFixed(1);
+            document.getElementById('val-pos-z').innerText = (model.position.z - centerOffsetZ).toFixed(1);
+            document.getElementById('val-scale').innerText = model.scale.x.toFixed(1) + 'x';
+            document.getElementById('val-rot-y').innerText = deg + '°';
+
+            if (inspector) inspector.style.display = 'flex';
+        };
+
+        window.deselectEditorObject = function() {
+            selectedEditorObject = null;
+            selectionBox.visible = false;
+            const inspector = document.getElementById('editor-inspector');
+            if (inspector) inspector.style.display = 'none';
+        };
+
+        window.onEditorTransformInput = function() {
+            if (!selectedEditorObject) return;
+
+            const centerOffset = currentEditingIsland === 1 ? 0 : 55;
+            const centerOffsetZ = currentEditingIsland === 1 ? 0 : -10;
+
+            const posX = parseFloat(document.getElementById('slider-pos-x').value) + centerOffset;
+            const posZ = parseFloat(document.getElementById('slider-pos-z').value) + centerOffsetZ;
+            const scale = parseFloat(document.getElementById('slider-scale').value);
+            const rotDeg = parseFloat(document.getElementById('slider-rot-y').value);
+
+            selectedEditorObject.position.x = posX;
+            selectedEditorObject.position.z = posZ;
+            selectedEditorObject.position.y = getTerrainElevation(posX, posZ);
+
+            selectedEditorObject.scale.set(scale, scale, scale);
+            selectedEditorObject.rotation.y = rotDeg * Math.PI / 180;
+
+            if (selectedEditorObject.userData) {
+                selectedEditorObject.userData.scale = scale;
+                selectedEditorObject.userData.rotY = selectedEditorObject.rotation.y;
+            }
+
+            document.getElementById('val-pos-x').innerText = (posX - centerOffset).toFixed(1);
+            document.getElementById('val-pos-z').innerText = (posZ - centerOffsetZ).toFixed(1);
+            document.getElementById('val-scale').innerText = scale.toFixed(1) + 'x';
+            document.getElementById('val-rot-y').innerText = rotDeg + '°';
+
+            selectionBox.setFromObject(selectedEditorObject);
+        };
+
+        window.duplicateSelectedObject = function() {
+            if (!selectedEditorObject) return;
+            const data = selectedEditorObject.userData;
+            const newItem = {
+                id: 'prop_' + Date.now(),
+                type: data.type,
+                name: data.name + ' (สำเนา)',
+                url: data.url,
+                x: selectedEditorObject.position.x + 1.2,
+                z: selectedEditorObject.position.z + 1.2,
+                scale: selectedEditorObject.scale.x,
+                rotY: selectedEditorObject.rotation.y
+            };
+            const targetGroup = currentEditingIsland === 1 ? island1PropsGroup : island2PropsGroup;
+            loadPropItem(newItem, targetGroup);
+            showToast('คัดลอกวัตถุสำเร็จ! 📋✨');
+        };
+
+        window.deleteSelectedObject = function() {
+            if (!selectedEditorObject) return;
+            const targetGroup = currentEditingIsland === 1 ? island1PropsGroup : island2PropsGroup;
+            targetGroup.remove(selectedEditorObject);
+            window.deselectEditorObject();
+            showToast('ลบวัตถุออกจากเกาะเรียบร้อย 🗑️');
+        };
+
+        window.saveCustomIslandLayout = function() {
+            const targetGroup = currentEditingIsland === 1 ? island1PropsGroup : island2PropsGroup;
+            const layoutData = [];
+
+            targetGroup.children.forEach(child => {
+                if (child.userData && child.userData.url) {
+                    layoutData.push({
+                        id: child.userData.id,
+                        type: child.userData.type,
+                        name: child.userData.name,
+                        url: child.userData.url,
+                        x: parseFloat(child.position.x.toFixed(2)),
+                        z: parseFloat(child.position.z.toFixed(2)),
+                        scale: parseFloat(child.scale.x.toFixed(2)),
+                        rotY: parseFloat(child.rotation.y.toFixed(3))
+                    });
+                }
+            });
+
+            localStorage.setItem('coastal_island_layout_' + currentEditingIsland, JSON.stringify(layoutData));
+            showToast(`💾 บันทึกผังเกาะที่ ${currentEditingIsland} (${layoutData.length} วัตถุ) สำเร็จ! ✨`);
+        };
+
+        window.resetIslandToDefault = function() {
+            if (confirm(`ต้องการรีเซ็ตผังเกาะที่ ${currentEditingIsland} กลับเป็นค่าเริ่มต้นหรือไม่?`)) {
+                localStorage.removeItem('coastal_island_layout_' + currentEditingIsland);
+                loadIslandProps(currentEditingIsland);
+                window.deselectEditorObject();
+                showToast(`รีเซ็ตเกาะที่ ${currentEditingIsland} กลับสู่ผังเริ่มต้นเรียบร้อย! 🔄✨`);
+            }
+        };
 
         // World Group for Island Terrains & Structures
         const worldGroup = new THREE.Group();
@@ -2581,11 +2911,13 @@
         updateUI();
         window.updateBannerUI();
 
-        // 360 Camera Drag Handlers
+        // 360 Camera Drag & 3D Editor Click Selection
+        let mouseStartPos = { x: 0, y: 0 };
         window.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen') || e.target.closest('#coastal-guide-banner')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen') || e.target.closest('#coastal-guide-banner') || e.target.closest('.editor-toolbar') || e.target.closest('.editor-inspector') || e.target.closest('.editor-spawn-menu')) return;
             isDraggingCam = true;
             prevMousePos = { x: e.clientX, y: e.clientY };
+            mouseStartPos = { x: e.clientX, y: e.clientY };
         });
         window.addEventListener('mousemove', (e) => {
             if (!isDraggingCam) return;
@@ -2598,13 +2930,39 @@
         });
         window.addEventListener('mouseup', () => { isDraggingCam = false; });
         window.addEventListener('wheel', (e) => {
-            cameraRadius = Math.max(6.0, Math.min(24.0, cameraRadius + e.deltaY * 0.01));
+            cameraRadius = Math.max(6.0, Math.min(28.0, cameraRadius + e.deltaY * 0.01));
+        });
+
+        // 3D Object Click Picker in Editor Mode
+        window.addEventListener('click', (e) => {
+            if (gameState.mode !== 'editing_island') return;
+            if (e.target.closest('.editor-toolbar') || e.target.closest('.editor-inspector') || e.target.closest('.editor-spawn-menu') || e.target.closest('.modal-overlay')) return;
+
+            const dist = Math.hypot(e.clientX - mouseStartPos.x, e.clientY - mouseStartPos.y);
+            if (dist > 6) return; // User was dragging camera, not clicking
+
+            mouse2D.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse2D.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse2D, camera);
+            const targetGroup = currentEditingIsland === 1 ? island1PropsGroup : island2PropsGroup;
+            const intersects = raycaster.intersectObjects(targetGroup.children, true);
+
+            if (intersects.length > 0) {
+                let hitObj = intersects[0].object;
+                while (hitObj.parent && hitObj.parent !== targetGroup) {
+                    hitObj = hitObj.parent;
+                }
+                window.selectEditorObject(hitObj);
+            } else {
+                window.deselectEditorObject();
+            }
         });
 
         // Touch Camera Drag
         let touchStartCam = { x: 0, y: 0 };
         window.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen') || e.target.closest('#coastal-guide-banner')) return;
+            if (e.target.closest('#hud') || e.target.closest('.modal-overlay') || e.target.closest('#title-screen') || e.target.closest('#loading-screen') || e.target.closest('#coastal-guide-banner') || e.target.closest('.editor-toolbar') || e.target.closest('.editor-inspector') || e.target.closest('.editor-spawn-menu')) return;
             if (e.touches.length === 1) {
                 isDraggingCam = true;
                 touchStartCam = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -3206,6 +3564,17 @@
                 const camZ = charGroup.position.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
                 camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.15);
                 camera.lookAt(charGroup.position.x, charGroup.position.y + 1.2, charGroup.position.z);
+            } else if (gameState.mode === 'editing_island') {
+                const targetCenter = currentEditingIsland === 1 ? new THREE.Vector3(0, 1.5, 0) : new THREE.Vector3(55, 1.5, -10);
+                const camX = targetCenter.x + cameraRadius * Math.sin(cameraTheta) * Math.cos(cameraPhi);
+                const camY = targetCenter.y + cameraRadius * Math.sin(cameraPhi);
+                const camZ = targetCenter.z + cameraRadius * Math.cos(cameraTheta) * Math.cos(cameraPhi);
+                camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.15);
+                camera.lookAt(targetCenter.x, targetCenter.y, targetCenter.z);
+
+                if (selectedEditorObject) {
+                    selectionBox.setFromObject(selectedEditorObject);
+                }
             }
 
             renderer.render(scene, camera);
