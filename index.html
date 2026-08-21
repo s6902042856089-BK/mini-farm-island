@@ -1856,7 +1856,7 @@
                 updated_at: new Date().toISOString()
             }).then(({ error }) => {
                 if (!error) console.log('Teacher questions synced to Supabase Cloud');
-            });
+            }).catch(() => {});
         }
     };
 
@@ -2855,7 +2855,7 @@ Tutoring Principles:
                     updated_at: new Date().toISOString()
                 }).then(({ error }) => {
                     if (!error) console.log(`Island ${currentEditingIsland} layout synced to Supabase Cloud`);
-                });
+                }).catch(() => {});
             }
 
             showToast(`💾 บันทึกผังเกาะที่ ${currentEditingIsland} (${layoutData.length} วัตถุ) ซิงค์สู่ทุกคนแล้ว! ✨`);
