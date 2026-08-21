@@ -907,29 +907,113 @@
         const googleName = meta.full_name || meta.name || user.email?.split('@')[0] || 'Explorer';
         const avatarUrl = meta.avatar_url;
 
-        if (!localStorage.getItem('coastal_player_name_custom') && googleName) {
-            gameState.player.name = googleName;
-            localStorage.setItem('coastal_player_name', googleName);
+        // Check database for players/{uid} or profiles/{uid}
+        let isExistingPlayer = false;
+        let playerData = null;
+
+        if (supabaseClient) {
+            try {
+                let { data, error } = await supabaseClient.from('profiles').select('*').eq('id', user.id).maybeSingle();
+                if (!data) {
+                    const res = await supabaseClient.from('players').select('*').eq('id', user.id).maybeSingle();
+                    if (res.data) data = res.data;
+                }
+                if (data && !error && data.player_name) {
+                    isExistingPlayer = true;
+                    playerData = data;
+                }
+            } catch(e) {
+                console.warn('DB check error:', e);
+            }
+        }
+
+        // Also check if localStorage has this UID saved
+        if (!isExistingPlayer && localStorage.getItem('coastal_player_name_custom') && localStorage.getItem('coastal_player_uid') === user.id) {
+            isExistingPlayer = true;
         }
 
         const titleLogged = document.getElementById('title-logged-in-info');
         const titleName = document.getElementById('title-user-name');
         const titleAvatar = document.getElementById('title-user-avatar-badge');
         const landingGoogleBtn = document.getElementById('btn-landing-google');
+        const btnStart = document.getElementById('btn-start-game');
 
         if (titleLogged) titleLogged.style.display = 'block';
-        if (titleName) titleName.innerText = gameState.player.name;
+        if (landingGoogleBtn) landingGoogleBtn.style.display = 'none';
         if (titleAvatar && avatarUrl) {
             titleAvatar.innerHTML = `<img src="${avatarUrl}" style="width:22px;height:22px;border-radius:50%;vertical-align:middle;">`;
         }
-        if (landingGoogleBtn) landingGoogleBtn.style.display = 'none';
 
-        const hudAuth = document.getElementById('hud-auth-status');
-        const hudName = document.getElementById('hud-player-name');
-        if (hudAuth) hudAuth.style.display = 'flex';
-        if (hudName) hudName.innerText = gameState.player.name;
+        if (isExistingPlayer) {
+            // ==========================================
+            // CASE 2: EXISTING PLAYER (ผู้เล่นเดิม)
+            // ==========================================
+            console.log('Existing player recognized:', playerData || gameState.player.name);
+            if (playerData) {
+                if (playerData.player_name) gameState.player.name = playerData.player_name;
+                if (playerData.character_class && CHARACTERS[playerData.character_class]) {
+                    gameState.selectedCharacter = playerData.character_class;
+                    if (window.load3DCharacter) window.load3DCharacter(playerData.character_class);
+                }
+                if (typeof playerData.money === 'number') gameState.player.money = playerData.money;
+                if (Array.isArray(playerData.unlocked_islands)) gameState.unlockedIslands = playerData.unlocked_islands;
+                if (typeof playerData.total_harvests === 'number') gameState.player.is1HarvestCount = playerData.total_harvests;
+            }
 
-        await loadCloudSave(user.id);
+            localStorage.setItem('coastal_player_name', gameState.player.name);
+            localStorage.setItem('coastal_character', gameState.selectedCharacter);
+            localStorage.setItem('coastal_player_uid', user.id);
+
+            if (titleName) {
+                titleName.innerHTML = `<strong style="color:#2980b9;">${gameState.player.name}</strong> • ${gameState.player.money} 🪙 • เกาะที่ ${gameState.unlockedIslands.length}`;
+            }
+
+            if (btnStart) {
+                btnStart.innerHTML = `🎮 เล่นต่อ (Continue Adventure) • ${gameState.player.name}`;
+                btnStart.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+                btnStart.onclick = () => window.startGame();
+            }
+
+            const hudAuth = document.getElementById('hud-auth-status');
+            const hudName = document.getElementById('hud-player-name');
+            if (hudAuth) hudAuth.style.display = 'flex';
+            if (hudName) hudName.innerText = gameState.player.name;
+
+            updateUI();
+            showToast(`ยินดีต้อนรับกลับ ${gameState.player.name}! ข้อมูลถูกโหลดแล้ว 🌴✨`);
+
+        } else {
+            // ==========================================
+            // CASE 1: NEW PLAYER (ผู้เล่นใหม่)
+            // Flow: Google Login -> สร้างโปรไฟล์ -> ตั้งชื่อ -> เลือกตัวละคร -> Tutorial -> เข้าเกม
+            // ==========================================
+            console.log('New player detected: starting Onboarding flow');
+            localStorage.setItem('coastal_player_uid', user.id);
+            gameState.player.name = googleName;
+            gameState.tutorial.completed = false;
+            gameState.tutorial.step1 = false;
+            gameState.tutorial.step2 = false;
+            gameState.tutorial.step3 = false;
+            gameState.tutorial.step4 = false;
+            localStorage.removeItem('coastal_tutorial_completed');
+
+            if (titleName) {
+                titleName.innerHTML = `<strong style="color:#e67e22;">${googleName}</strong> (ผู้เล่นใหม่) • กำลังสร้างโปรไฟล์...`;
+            }
+
+            // Pre-fill Name in Character Studio
+            const nameInput = document.getElementById('player-name-input');
+            if (nameInput) nameInput.value = googleName;
+            const liveName = document.getElementById('studio-live-nametag');
+            if (liveName) liveName.innerText = googleName;
+
+            showToast(`เข้าสู่ระบบสำเร็จ! กรุณาสร้างโปรไฟล์และเลือกตัวละครของคุณ ✨`);
+
+            // Automatically open Character Creation Studio Modal
+            setTimeout(() => {
+                window.openCharacterStudio();
+            }, 600);
+        }
     }
 
     window.startGoogleLogin = async function() {
@@ -953,6 +1037,7 @@
         try { if(window.initAudio) window.initAudio(); } catch(e){}
         if (supabaseClient) { try { await supabaseClient.auth.signOut(); } catch(e){} }
         localStorage.removeItem('coastal_player_name_custom');
+        localStorage.removeItem('coastal_player_uid');
         window.location.hash = '';
         window.location.href = window.location.origin + window.location.pathname;
     };
@@ -966,22 +1051,26 @@
         localStorage.setItem('coastal_harvest_count', totalHarvests);
 
         if (supabaseClient && currentUser) {
+            const totalHarvests = (gameState.player.is1HarvestCount || 0) + (gameState.player.is2HarvestCount || 0);
+            const profileData = {
+                id: currentUser.id,
+                email: currentUser.email,
+                player_name: gameState.player.name,
+                character_class: gameState.selectedCharacter,
+                money: gameState.player.money,
+                unlocked_islands: gameState.unlockedIslands,
+                islands_count: gameState.unlockedIslands.length,
+                total_harvests: totalHarvests,
+                avatar_url: currentUser.user_metadata?.avatar_url || null,
+                updated_at: new Date().toISOString()
+            };
+
             try {
-                const profileData = {
-                    id: currentUser.id,
-                    email: currentUser.email,
-                    player_name: gameState.player.name,
-                    character_class: gameState.selectedCharacter,
-                    money: gameState.player.money,
-                    unlocked_islands: gameState.unlockedIslands,
-                    islands_count: gameState.unlockedIslands.length,
-                    total_harvests: totalHarvests,
-                    avatar_url: currentUser.user_metadata?.avatar_url || null,
-                    updated_at: new Date().toISOString()
-                };
                 await supabaseClient.from('profiles').upsert(profileData);
             } catch(e) {
-                console.warn('Cloud save fallback to localStorage:', e);
+                try {
+                    await supabaseClient.from('players').upsert(profileData);
+                } catch(err) {}
             }
         }
     };
@@ -989,7 +1078,11 @@
     async function loadCloudSave(userId) {
         if (!supabaseClient || !userId) return;
         try {
-            const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+            let { data, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).maybeSingle();
+            if (!data) {
+                const res = await supabaseClient.from('players').select('*').eq('id', userId).maybeSingle();
+                if (res.data) data = res.data;
+            }
             if (data && !error) {
                 if (data.player_name) gameState.player.name = data.player_name;
                 if (data.character_class && CHARACTERS[data.character_class]) {
