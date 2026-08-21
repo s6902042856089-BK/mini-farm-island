@@ -1104,11 +1104,46 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA';
     let currentUser = null;
 
+    window.fetchCloudConfigs = async function() {
+        if (!supabaseClient) return;
+        try {
+            // 1. Fetch Teacher Questions from Cloud
+            const resQ = await supabaseClient.from('game_configs').select('*').eq('config_key', 'teacher_questions').maybeSingle();
+            if (resQ?.data?.data && Array.isArray(resQ.data.data) && resQ.data.data.length > 0) {
+                localStorage.setItem('coastal_teacher_questions', JSON.stringify(resQ.data.data));
+                teacherQuestions = resQ.data.data;
+                if (window.renderTeacherQuestions) window.renderTeacherQuestions();
+                console.log('Loaded teacher questions from Supabase Cloud:', teacherQuestions.length);
+            }
+
+            // 2. Fetch Island 1 Layout from Cloud
+            const res1 = await supabaseClient.from('game_configs').select('*').eq('config_key', 'island_layout_1').maybeSingle();
+            if (res1?.data?.data && Array.isArray(res1.data.data)) {
+                localStorage.setItem('coastal_island_layout_1', JSON.stringify(res1.data.data));
+                if (window.loadIslandProps) window.loadIslandProps(1);
+                console.log('Loaded Island 1 layout from Supabase Cloud');
+            }
+
+            // 3. Fetch Island 2 Layout from Cloud
+            const res2 = await supabaseClient.from('game_configs').select('*').eq('config_key', 'island_layout_2').maybeSingle();
+            if (res2?.data?.data && Array.isArray(res2.data.data)) {
+                localStorage.setItem('coastal_island_layout_2', JSON.stringify(res2.data.data));
+                if (window.loadIslandProps) window.loadIslandProps(2);
+                console.log('Loaded Island 2 layout from Supabase Cloud');
+            }
+        } catch(e) {
+            console.log('Cloud config sync notice:', e);
+        }
+    };
+
     window.initSupabaseAuth = function() {
         if (window.supabase) {
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('Supabase client initialized');
+
+                // Immediately pull active teacher island & questions for all users
+                window.fetchCloudConfigs();
 
                 supabaseClient.auth.getSession().then(({ data }) => {
                     if (data?.session?.user) {
@@ -1732,9 +1767,56 @@
             active: true
         };
 
-        teacherQuestions.unshift(newQ);
+    window.syncTeacherQuestionsToCloud = function() {
         localStorage.setItem('coastal_teacher_questions', JSON.stringify(teacherQuestions));
-        showToast('บันทึกคำถามลงคลังข้อสอบสำเร็จ! 💾✨');
+        if (supabaseClient) {
+            supabaseClient.from('game_configs').upsert({
+                config_key: 'teacher_questions',
+                data: teacherQuestions,
+                updated_at: new Date().toISOString()
+            }).then(({ error }) => {
+                if (!error) console.log('Teacher questions synced to Supabase Cloud');
+            });
+        }
+    };
+
+    window.saveTeacherQuestion = function() {
+        const text = (document.getElementById('q-text-input')?.value || '').trim();
+        const subject = document.getElementById('q-subject-input')?.value || 'science';
+        const optA = (document.getElementById('q-opt-a')?.value || '').trim();
+        const optB = (document.getElementById('q-opt-b')?.value || '').trim();
+        const optC = (document.getElementById('q-opt-c')?.value || '').trim();
+        const optD = (document.getElementById('q-opt-d')?.value || '').trim();
+        const hint = (document.getElementById('q-hint-input')?.value || '').trim();
+        const correctVal = document.querySelector('input[name="q-correct"]:checked')?.value || '0';
+        const correctIndex = parseInt(correctVal, 10);
+
+        if (!text || !optA || !optB) {
+            showToast('⚠️ กรุณากรอกโจทย์และตัวเลือกอย่างน้อย 2 ข้อ');
+            return;
+        }
+
+        const subjectLabels = {
+            'science': '🌿 วิทย์ & เกษตร',
+            'math': '🧮 คณิต',
+            'english': '🇬🇧 อังกฤษ',
+            'general': '💡 ทั่วไป'
+        };
+
+        const newQ = {
+            id: 'q_' + Date.now(),
+            subject: subject,
+            subjectLabel: subjectLabels[subject] || '💡 ทั่วไป',
+            question: text,
+            options: [optA, optB, optC || '-', optD || '-'],
+            correctIndex: correctIndex,
+            hint: hint,
+            active: true
+        };
+
+        teacherQuestions.unshift(newQ);
+        window.syncTeacherQuestionsToCloud();
+        showToast('บันทึกคำถามลงคลังข้อสอบและซิงค์ Cloud สำเร็จ! 💾✨');
         window.switchTeacherTab('questions');
     };
 
@@ -1742,7 +1824,7 @@
         const q = teacherQuestions.find(item => item.id === id);
         if (q) {
             q.active = !q.active;
-            localStorage.setItem('coastal_teacher_questions', JSON.stringify(teacherQuestions));
+            window.syncTeacherQuestionsToCloud();
             window.renderTeacherQuestions();
             showToast(`${q.active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'} คำถามเรียบร้อย ✨`);
         }
@@ -1750,7 +1832,7 @@
 
     window.deleteTeacherQuestion = function(id) {
         teacherQuestions = teacherQuestions.filter(item => item.id !== id);
-        localStorage.setItem('coastal_teacher_questions', JSON.stringify(teacherQuestions));
+        window.syncTeacherQuestionsToCloud();
         window.renderTeacherQuestions();
         showToast('ลบคำถามออกจากคลังเรียบร้อย 🗑️');
     };
@@ -1785,8 +1867,8 @@
                     teacherQuestions.push(Object.assign({}, q, { id: 'q_' + Math.random().toString(36).substr(2, 9) }));
                 }
             });
-            localStorage.setItem('coastal_teacher_questions', JSON.stringify(teacherQuestions));
-            showToast(`ติดตั้ง "${pack.title}" เรียบร้อยแล้ว! 📦✨`);
+            window.syncTeacherQuestionsToCloud();
+            showToast(`ติดตั้ง "${pack.title}" และซิงค์ Cloud เรียบร้อย! 📦✨`);
             window.switchTeacherTab('questions');
         }
     };
@@ -2459,6 +2541,8 @@
             showToast('ลบวัตถุออกจากเกาะเรียบร้อย 🗑️');
         };
 
+        window.loadIslandProps = loadIslandProps;
+
         window.saveCustomIslandLayout = function() {
             const targetGroup = currentEditingIsland === 1 ? island1PropsGroup : island2PropsGroup;
             const layoutData = [];
@@ -2479,12 +2563,26 @@
             });
 
             localStorage.setItem('coastal_island_layout_' + currentEditingIsland, JSON.stringify(layoutData));
-            showToast(`💾 บันทึกผังเกาะที่ ${currentEditingIsland} (${layoutData.length} วัตถุ) สำเร็จ! ✨`);
+
+            if (supabaseClient) {
+                supabaseClient.from('game_configs').upsert({
+                    config_key: 'island_layout_' + currentEditingIsland,
+                    data: layoutData,
+                    updated_at: new Date().toISOString()
+                }).then(({ error }) => {
+                    if (!error) console.log(`Island ${currentEditingIsland} layout synced to Supabase Cloud`);
+                });
+            }
+
+            showToast(`💾 บันทึกผังเกาะที่ ${currentEditingIsland} (${layoutData.length} วัตถุ) ซิงค์สู่ทุกคนแล้ว! ✨`);
         };
 
         window.resetIslandToDefault = function() {
             if (confirm(`ต้องการรีเซ็ตผังเกาะที่ ${currentEditingIsland} กลับเป็นค่าเริ่มต้นหรือไม่?`)) {
                 localStorage.removeItem('coastal_island_layout_' + currentEditingIsland);
+                if (supabaseClient) {
+                    supabaseClient.from('game_configs').delete().eq('config_key', 'island_layout_' + currentEditingIsland);
+                }
                 loadIslandProps(currentEditingIsland);
                 window.deselectEditorObject();
                 showToast(`รีเซ็ตเกาะที่ ${currentEditingIsland} กลับสู่ผังเริ่มต้นเรียบร้อย! 🔄✨`);
