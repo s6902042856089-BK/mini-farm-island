@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌴</text></svg>">
     <title>Coastal Farm Island 3D 🌴🌱</title>
     
     <!-- Google Fonts -->
@@ -775,6 +776,21 @@
     <!-- GAME ENGINE SCRIPT -->
     <script>
     // ==========================================================================
+    // 0. GLOBAL TOAST NOTIFICATION HANDLER (AVAILABLE FROM BOOT)
+    // ==========================================================================
+    window.showToast = function(txt) {
+        try {
+            const t = document.createElement('div');
+            t.className = 'floating-toast';
+            t.innerText = txt;
+            document.body.appendChild(t);
+            setTimeout(() => t.classList.add('fade'), 1400);
+            setTimeout(() => t.remove(), 1900);
+        } catch(e){}
+    };
+    function showToast(txt) { window.showToast(txt); }
+
+    // ==========================================================================
     // GLOBAL DEFINITIONS & CHARACTER CONFIGURATIONS
     // ==========================================================================
     const CHARACTERS = {
@@ -1180,35 +1196,46 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA';
     let currentUser = null;
 
+    const ADMIN_EMAILS = [
+        's6902042856089@email.kmutnb.ac.th',
+        'kittisak bunkad'
+    ];
+
+    window.isCurrentUserAdmin = function() {
+        if (!currentUser) return false;
+        const email = (currentUser.email || '').toLowerCase();
+        const metaName = (currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '').toLowerCase();
+        const playerName = (gameState.player.name || '').toLowerCase();
+
+        return ADMIN_EMAILS.some(admin => email.includes(admin) || metaName.includes(admin) || playerName.includes(admin));
+    };
+
     window.fetchCloudConfigs = async function() {
         if (!supabaseClient) return;
         try {
-            // 1. Fetch Teacher Questions from Cloud
-            const resQ = await supabaseClient.from('game_configs').select('*').eq('config_key', 'teacher_questions').maybeSingle();
+            // 1. Fetch Teacher Questions from Cloud (Silent)
+            const resQ = await supabaseClient.from('game_configs').select('*').eq('config_key', 'teacher_questions').maybeSingle().catch(() => null);
             if (resQ?.data?.data && Array.isArray(resQ.data.data) && resQ.data.data.length > 0) {
                 localStorage.setItem('coastal_teacher_questions', JSON.stringify(resQ.data.data));
                 teacherQuestions = resQ.data.data;
                 if (window.renderTeacherQuestions) window.renderTeacherQuestions();
-                console.log('Loaded teacher questions from Supabase Cloud:', teacherQuestions.length);
             }
 
-            // 2. Fetch Island 1 Layout from Cloud
-            const res1 = await supabaseClient.from('game_configs').select('*').eq('config_key', 'island_layout_1').maybeSingle();
+            // 2. Fetch Island 1 Layout from Cloud (Silent)
+            const res1 = await supabaseClient.from('game_configs').select('*').eq('config_key', 'island_layout_1').maybeSingle().catch(() => null);
             if (res1?.data?.data && Array.isArray(res1.data.data)) {
                 localStorage.setItem('coastal_island_layout_1', JSON.stringify(res1.data.data));
                 if (window.loadIslandProps) window.loadIslandProps(1);
-                console.log('Loaded Island 1 layout from Supabase Cloud');
             }
 
-            // 3. Fetch Island 2 Layout from Cloud
-            const res2 = await supabaseClient.from('game_configs').select('*').eq('config_key', 'island_layout_2').maybeSingle();
+            // 3. Fetch Island 2 Layout from Cloud (Silent)
+            const res2 = await supabaseClient.from('game_configs').select('*').eq('config_key', 'island_layout_2').maybeSingle().catch(() => null);
             if (res2?.data?.data && Array.isArray(res2.data.data)) {
                 localStorage.setItem('coastal_island_layout_2', JSON.stringify(res2.data.data));
                 if (window.loadIslandProps) window.loadIslandProps(2);
-                console.log('Loaded Island 2 layout from Supabase Cloud');
             }
         } catch(e) {
-            console.log('Cloud config sync notice:', e);
+            // Silent fallback to localStorage
         }
     };
 
@@ -1225,7 +1252,7 @@
                     if (data?.session?.user) {
                         onUserAuthenticated(data.session.user);
                     }
-                });
+                }).catch(() => {});
 
                 supabaseClient.auth.onAuthStateChange((event, session) => {
                     if (session?.user) {
@@ -1233,7 +1260,7 @@
                     }
                 });
             } catch(e) {
-                console.warn('Supabase init error:', e);
+                // Silent fallback
             }
         }
     };
@@ -1244,24 +1271,24 @@
         const googleName = meta.full_name || meta.name || user.email?.split('@')[0] || 'Explorer';
         const avatarUrl = meta.avatar_url;
 
-        // Check database for players/{uid} or profiles/{uid}
+        const isAdmin = window.isCurrentUserAdmin();
+
+        // Check database for players/{uid} or profiles/{uid} (Silent)
         let isExistingPlayer = false;
         let playerData = null;
 
         if (supabaseClient) {
             try {
-                let { data, error } = await supabaseClient.from('profiles').select('*').eq('id', user.id).maybeSingle();
+                let { data } = await supabaseClient.from('profiles').select('*').eq('id', user.id).maybeSingle().catch(() => ({ data: null }));
                 if (!data) {
-                    const res = await supabaseClient.from('players').select('*').eq('id', user.id).maybeSingle();
-                    if (res.data) data = res.data;
+                    const res = await supabaseClient.from('players').select('*').eq('id', user.id).maybeSingle().catch(() => ({ data: null }));
+                    if (res?.data) data = res.data;
                 }
-                if (data && !error && data.player_name) {
+                if (data && data.player_name) {
                     isExistingPlayer = true;
                     playerData = data;
                 }
-            } catch(e) {
-                console.warn('DB check error:', e);
-            }
+            } catch(e) {}
         }
 
         // Also check if localStorage has this UID saved
@@ -1281,11 +1308,39 @@
             titleAvatar.innerHTML = `<img src="${avatarUrl}" style="width:22px;height:22px;border-radius:50%;vertical-align:middle;">`;
         }
 
-        if (isExistingPlayer) {
+        if (isAdmin) {
             // ==========================================
-            // CASE 2: EXISTING PLAYER (ผู้เล่นเดิม)
+            // CASE 0: ADMIN / TEACHER (อาจารย์กิตติศักดิ์ บุญกาด)
             // ==========================================
-            console.log('Existing player recognized:', playerData || gameState.player.name);
+            console.log('👑 Admin user logged in:', user.email);
+            gameState.player.name = 'KITTISAK BUNKAD';
+            localStorage.setItem('coastal_player_name', 'KITTISAK BUNKAD');
+            localStorage.setItem('coastal_player_uid', user.id);
+
+            if (titleName) {
+                titleName.innerHTML = `<strong style="color:#b45309;">👑 อ.กิตติศักดิ์ บุญกาด (Admin)</strong> • ${gameState.player.money} 🪙`;
+            }
+
+            if (btnStart) {
+                btnStart.innerHTML = `🎮 เข้าสู่เกาะ (Admin Mode) • KITTISAK`;
+                btnStart.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
+                btnStart.onclick = () => window.startGame();
+            }
+
+            const hudAuth = document.getElementById('hud-auth-status');
+            const hudName = document.getElementById('hud-player-name');
+            if (hudAuth) hudAuth.style.display = 'flex';
+            if (hudName) hudName.innerHTML = `<span style="color:#d97706; font-weight:800;">👑 อ.กิตติศักดิ์ (Admin)</span>`;
+
+            if (typeof updateUI === 'function') updateUI();
+            else if (typeof window.updateUI === 'function') window.updateUI();
+            window.showToast(`👑 ยินดีต้อนรับอาจารย์กิตติศักดิ์! เข้าสู่ระบบในฐานะ Admin เรียบร้อย ✨`);
+
+        } else if (isExistingPlayer) {
+            // ==========================================
+            // CASE 2: EXISTING STUDENT (นักเรียนเดิม)
+            // ==========================================
+            console.log('Existing student recognized:', playerData || gameState.player.name);
             if (playerData) {
                 if (playerData.player_name) gameState.player.name = playerData.player_name;
                 if (playerData.character_class && CHARACTERS[playerData.character_class]) {
@@ -1318,14 +1373,14 @@
 
             if (typeof updateUI === 'function') updateUI();
             else if (typeof window.updateUI === 'function') window.updateUI();
-            showToast(`ยินดีต้อนรับกลับ ${gameState.player.name}! ข้อมูลถูกโหลดแล้ว 🌴✨`);
+            window.showToast(`ยินดีต้อนรับกลับ ${gameState.player.name}! ข้อมูลถูกโหลดแล้ว 🌴✨`);
 
         } else {
             // ==========================================
-            // CASE 1: NEW PLAYER (ผู้เล่นใหม่)
+            // CASE 1: NEW STUDENT (นักเรียนใหม่)
             // Flow: Google Login -> สร้างโปรไฟล์ -> ตั้งชื่อ -> เลือกตัวละคร -> Tutorial -> เข้าเกม
             // ==========================================
-            console.log('New player detected: starting Onboarding flow');
+            console.log('New student detected: starting Onboarding flow');
             localStorage.setItem('coastal_player_uid', user.id);
             gameState.player.name = googleName;
             gameState.tutorial.completed = false;
@@ -1336,7 +1391,7 @@
             localStorage.removeItem('coastal_tutorial_completed');
 
             if (titleName) {
-                titleName.innerHTML = `<strong style="color:#e67e22;">${googleName}</strong> (ผู้เล่นใหม่) • กำลังสร้างโปรไฟล์...`;
+                titleName.innerHTML = `<strong style="color:#e67e22;">${googleName}</strong> (นักเรียนใหม่) • กำลังสร้างโปรไฟล์...`;
             }
 
             // Pre-fill Name in Character Studio
@@ -1345,7 +1400,7 @@
             const liveName = document.getElementById('studio-live-nametag');
             if (liveName) liveName.innerText = googleName;
 
-            showToast(`เข้าสู่ระบบสำเร็จ! กรุณาสร้างโปรไฟล์และเลือกตัวละครของคุณ ✨`);
+            window.showToast(`เข้าสู่ระบบสำเร็จ! กรุณาสร้างโปรไฟล์และเลือกตัวละครของคุณ ✨`);
 
             // Automatically open Character Creation Studio Modal
             setTimeout(() => {
@@ -1674,6 +1729,11 @@
 
     window.openTeacherLogin = function() {
         try { window.sfx.click(); } catch(e){}
+        if (window.isCurrentUserAdmin()) {
+            window.openTeacherDashboard();
+            window.showToast('👑 ยินดีต้อนรับอาจารย์กิตติศักดิ์! เข้าสู่ระบบหลังบ้านสำเร็จ ✨');
+            return;
+        }
         const modal = document.getElementById('teacher-login-modal');
         const pinInput = document.getElementById('teacher-pin-input');
         if (pinInput) pinInput.value = '';
