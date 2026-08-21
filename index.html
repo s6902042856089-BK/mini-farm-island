@@ -321,6 +321,10 @@
                         <span class="hud-icon">🏆</span>
                         <span style="font-weight: 700; color: #713f12;">อันดับ</span>
                     </div>
+                    <div class="hud-pill" onclick="window.openNPCChat()" title="คุยกับ AERO AI ผู้ช่วยประจำเกาะ" style="background: linear-gradient(135deg, rgba(238, 242, 255, 0.95), rgba(224, 231, 255, 0.95)); border-color: #818cf8; color: #4338ca; font-weight: 700;">
+                        <span class="hud-icon">🧙‍♂️</span>
+                        <span>คุยกับ AI</span>
+                    </div>
                     <div class="hud-pill" onclick="window.openTeacherLogin()" title="ระบบหลังบ้านคุณครู (Teacher Admin)" style="background: rgba(99, 102, 241, 0.15); border-color: #818cf8; color: #4338ca;">
                         <span class="hud-icon">🎓</span>
                         <span style="font-weight: 700;">ครู</span>
@@ -607,6 +611,53 @@
             <div id="teacher-view-analytics" class="teacher-view" style="display: none;">
                 <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 12px;">📊 รายงานความก้าวหน้านักเรียนในห้องเรียน</h3>
                 <div id="teacher-student-table-container" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 11. NPC AI ASSISTANT & HINT CHATBOX MODAL -->
+    <div class="modal-overlay" id="npc-chat-modal">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="chat-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.8rem;">🧙‍♂️</span>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #ffffff;">AERO AI - ผู้พิทักษ์และที่ปรึกษาเกาะ</h3>
+                        <div style="font-size: 0.75rem; color: #a5b4fc; display: flex; align-items: center; gap: 4px;">
+                            <span style="width: 7px; height: 7px; background: #4ade80; border-radius: 50%; display: inline-block;"></span>
+                            พร้อมตอบคำถาม & แนะนำคำใบ้บทเรียน
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-close" style="margin: 0; padding: 4px 10px; background: rgba(255,255,255,0.2); color: #ffffff;" onclick="document.getElementById('npc-chat-modal').style.display='none'">✕</button>
+            </div>
+
+            <!-- Quick Hint Chips -->
+            <div class="chat-quick-chips">
+                <button class="chat-chip" onclick="window.sendQuickChatMessage('💡 ขอคำใบ้เควสต์ตอนนี้หน่อยครับ')">💡 ขอคำใบ้เควสต์</button>
+                <button class="chat-chip" onclick="window.sendQuickChatMessage('🌱 ผักอะไรขายได้เงินเยอะที่สุด?')">🌱 ผักอะไรขายดีสุด?</button>
+                <button class="chat-chip" onclick="window.sendQuickChatMessage('💧 ช่วยอธิบายการสังเคราะห์ด้วยแสงของพืชหน่อย')">🌿 การสังเคราะห์แสง</button>
+                <button class="chat-chip" onclick="window.sendQuickChatMessage('⛵ ทำยังไงถึงจะได้ปลดล็อกเรือไปเกาะที่ 2?')">⛵ ปลดล็อกเรือข้ามฟาก</button>
+            </div>
+
+            <!-- Chat Messages Area -->
+            <div class="chat-messages-container" id="chat-messages-box">
+                <div class="chat-bubble npc">
+                    🧙‍♂️ <strong>AERO:</strong> สวัสดีจ้านักผจญภัย! ข้าคือ <strong>AERO</strong> ผู้พิทักษ์และจอมเวทประจำเกาะฟาร์ม 🌴✨<br>
+                    เจ้าสามารถถามคำใบ้เควสต์, วิธีปลูกผัก, เทคนิคหาเงิน, หรือบทเรียนวิทยาศาสตร์และคณิตศาสตร์กับข้าได้ตลอดเวลาเลยนะ! มีอะไรให้ข้าช่วยไหม?
+                </div>
+                <div class="chat-typing-indicator" id="chat-typing-indicator">
+                    🧙‍♂️ AERO กำลังคิดคำตอบ... 💭
+                </div>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <div class="chat-input-bar">
+                <input type="text" class="chat-input" id="chat-user-input" placeholder="💬 พิมพ์คุยกับ AERO หรือขอคำใบ้..." onkeydown="if(event.key==='Enter') window.sendUserChatMessage()">
+                <button class="btn-primary" style="width: auto; margin: 0; padding: 10px 18px; font-size: 0.9rem; background: linear-gradient(135deg, #4f46e5, #3730a3);" onclick="window.sendUserChatMessage()">
+                    🚀 ส่ง
+                </button>
             </div>
         </div>
     </div>
@@ -1885,6 +1936,179 @@
                 </tbody>
             </table>
         `;
+    };
+
+    // ==========================================================================
+    // 12. AERO AI NPC TUTOR & HINT CHAT ENGINE (GEMINI POWERED)
+    // ==========================================================================
+    const AERO_AI_CONFIG = {
+        apiKey: localStorage.getItem('coastal_ai_key') || atob("QVEuQWI4Uk42S3lnUVJjRVRJZnk5M2YwcEkzZE9QRklTVl9ZN1gzcFB5Tjllc29LU1dwZUE="),
+        model: "gemini-1.5-flash",
+        isThinking: false
+    };
+
+    window.openNPCChat = function(customGreeting = null) {
+        try { if(window.initAudio) window.initAudio(); } catch(e){}
+        try { if(window.sfx) window.sfx.click(); } catch(e){}
+        const modal = document.getElementById('npc-chat-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+
+        if (customGreeting) {
+            window.appendChatBubble('npc', customGreeting);
+        }
+        setTimeout(() => {
+            const input = document.getElementById('chat-user-input');
+            if (input) input.focus();
+        }, 150);
+    };
+
+    window.appendChatBubble = function(role, message) {
+        const box = document.getElementById('chat-messages-box');
+        const typing = document.getElementById('chat-typing-indicator');
+        if (!box) return;
+
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${role}`;
+        
+        if (role === 'npc') {
+            bubble.innerHTML = `🧙‍♂️ <strong>AERO:</strong> ${message}`;
+        } else {
+            bubble.innerHTML = `<strong>${gameState.player.name || 'คุณ'}:</strong> ${message}`;
+        }
+
+        if (typing) {
+            box.insertBefore(bubble, typing);
+        } else {
+            box.appendChild(bubble);
+        }
+
+        box.scrollTop = box.scrollHeight;
+    };
+
+    window.sendQuickChatMessage = function(promptText) {
+        const input = document.getElementById('chat-user-input');
+        if (input) input.value = promptText;
+        window.sendUserChatMessage();
+    };
+
+    window.sendUserChatMessage = async function() {
+        const input = document.getElementById('chat-user-input');
+        if (!input) return;
+        const text = input.value.trim();
+        if (!text || AERO_AI_CONFIG.isThinking) return;
+
+        input.value = '';
+        window.appendChatBubble('user', text);
+        try { if(window.sfx) window.sfx.click(); } catch(e){}
+
+        // Show typing indicator
+        const typing = document.getElementById('chat-typing-indicator');
+        if (typing) typing.style.display = 'block';
+        AERO_AI_CONFIG.isThinking = true;
+
+        const box = document.getElementById('chat-messages-box');
+        if (box) box.scrollTop = box.scrollHeight;
+
+        try {
+            const aiReply = await window.callAeroAI(text);
+            if (typing) typing.style.display = 'none';
+            AERO_AI_CONFIG.isThinking = false;
+            window.appendChatBubble('npc', aiReply);
+            try { if(window.sfx) window.sfx.correct(); } catch(e){}
+        } catch (err) {
+            if (typing) typing.style.display = 'none';
+            AERO_AI_CONFIG.isThinking = false;
+            const fallbackReply = window.getAeroLocalFallback(text);
+            window.appendChatBubble('npc', fallbackReply);
+        }
+    };
+
+    window.callAeroAI = async function(userPrompt) {
+        const p = gameState.player;
+        const curIsland = ISLAND_CONFIGS[gameState.currentIsland]?.name || 'เกาะที่ 1';
+        const quests = (gameState.quests[gameState.currentIsland] || []).map(q => `${q.title} (${q.done ? 'สำเร็จแล้ว' : 'ยังไม่เสร็จ'})`).join(', ');
+
+        const systemPrompt = `You are AERO, a kind, wise, and enthusiastic magical guardian & learning tutor on Coastal Farm Island (เกม 3D เกาะฟาร์มอัจฉริยะ).
+Current Player Info:
+- Name: ${p.name || 'นักผจญภัย'}
+- Gold: ${p.money} 🪙
+- Current Island: ${curIsland}
+- Active Quests: ${quests}
+- Unlocked Islands: ${gameState.unlockedIslands.length} เกาะ
+
+Instructions:
+- Always reply in friendly, polite, encouraging Thai (ภาษาไทยน่ารัก สุภาพ เป็นกันเอง มีอิโมจิ 🧙‍♂️✨🌱💧).
+- Give smart, helpful hints about farming (carrot 4s, corn 8s, strawberry 10s, watermelon 14s, pineapple 18s), quest guidance, math/science quiz explanations, or island secrets.
+- Keep responses concise and easy for students to read (around 2-4 sentences).`;
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AERO_AI_CONFIG.model}:generateContent?key=${AERO_AI_CONFIG.apiKey}`;
+
+        const reqBody = {
+            contents: [
+                {
+                    parts: [
+                        { text: systemPrompt + "\n\nStudent Question: " + userPrompt }
+                    ]
+                }
+            ],
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 350
+            }
+        };
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reqBody)
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!replyText) throw new Error("Empty AI reply");
+        return replyText.trim();
+    };
+
+    window.getAeroLocalFallback = function(userPrompt) {
+        const query = userPrompt.toLowerCase();
+        const p = gameState.player;
+
+        if (query.includes('เควสต์') || query.includes('ภารกิจ') || query.includes('hint') || query.includes('ใบ้')) {
+            const qList = gameState.quests[gameState.currentIsland] || [];
+            const unDone = qList.filter(q => !q.done);
+            if (unDone.length > 0) {
+                return `คำใบ้เควสต์ตอนนี้: "${unDone[0].title}" 💡 เดินไปทำภารกิจที่แปลงผักหรือบ่อน้ำ แล้วเจ้าจะได้รับเหรียญทองรางวัลตอบแทนนะ! ✨`;
+            } else {
+                return `ยินดีด้วยนะ! เจ้าทำเควสต์ของเกาะนี้ครบหมดแล้ว 🎉 ถ้ามีเงินครบ 250🪙 เดินไปที่ท่าเรือแล้วออกเรือไปเกาะที่ 2 ได้เลย! ⛵`;
+            }
+        }
+
+        if (query.includes('เงิน') || query.includes('ขาย') || query.includes('รวย')) {
+            return `วิธีหาเงินให้เร็วที่สุดคือ: ปลูกผักโตไวแล้วนำไปขายที่ร้านค้าริมตลาด 🛒 และอย่าลืมมาตอบควิซที่บ่อน้ำเพื่อรับบัฟน้ำเร่งโต 1.6x นะจ๊ะ! 💧🪙`;
+        }
+
+        if (query.includes('ผัก') || query.includes('ปลูก') || query.includes('ผลไม้')) {
+            return `ในเกาะนี้มีพืชให้ปลูกมากมายเลย! เช่น แครอท 🥕 (โตไว 4วิ), ข้าวโพด 🌽 (8วิ), แตงโม 🍉 (14วิ) และเกาะที่ 2 จะมีสับปะรด 🍍 และแก้วมังกร 🐉 ปลูกแล้วรอเก็บเกี่ยวไปขายนะ! 🌱`;
+        }
+
+        if (query.includes('เรือ') || query.includes('เกาะ 2') || query.includes('เกาะที่ 2')) {
+            return `การปลดล็อกเรือข้ามฟากไปเกาะผลไม้ (เกาะ 2): เจ้าต้องทำเควสต์เกาะ 1 ให้ครบและสะสมเงินให้ได้ 250 🪙 จากนั้นเดินไปที่สะพานท่าเรือด้านหน้าได้เลย! ⛵🌴`;
+        }
+
+        if (query.includes('สังเคราะห์') || query.includes('แสง') || query.includes('วิทย์') || query.includes('npk')) {
+            return `ความรู้วิทยาศาสตร์: พืชสังเคราะห์ด้วยแสงโดยใช้ **คลอโรฟิลล์ (สารสีเขียว)** ดูดกลืนแสงแดดร่วมกับก๊าซ CO2 และน้ำ เพื่อสร้างน้ำตาลและคายออกซิเจน (O2) ออกมา! 🌿☀️`;
+        }
+
+        if (query.includes('คณิต') || query.includes('บวก') || query.includes('คูณ') || query.includes('เลข')) {
+            return `สูตรคณิตง่ายๆ: ผลผลิตรวม = (จำนวนแปลง) × (จำนวนต้นต่อแปลง) เช่น 6 แปลง แปลงละ 8 ต้น จะได้ 6 × 8 = 48 ชิ้นจ้า! 🧮✨`;
+        }
+
+        return `ข้าเข้าใจแล้วจ้า ${p.name || 'นักผจญภัย'}! 🧙‍♂️ เจ้าสามารถสำรวจเกาะ ปลูกผัก ทำเควสต์ และตอบปริศนาบทเรียนเพื่อรับรางวัลได้เสมอ มีอะไรสงสัยถามข้าได้ตลอดเวลานะ! 🌴✨`;
     };
 
     // Dynamic Notification & NPC Dialogue Handlers
