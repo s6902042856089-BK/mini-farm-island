@@ -1944,8 +1944,8 @@
     // 12. AERO AI NPC TUTOR & HINT CHAT ENGINE (GEMINI POWERED)
     // ==========================================================================
     const AERO_AI_CONFIG = {
-        apiKey: localStorage.getItem('coastal_ai_key') || atob("QVEuQWI4Uk42S3lnUVJjRVRJZnk5M2YwcEkzZE9QRklTVl9ZN1gzcFB5Tjllc29LU1dwZUE="),
-        model: "gemini-1.5-flash",
+        apiKey: localStorage.getItem('coastal_ai_key') || atob("QVEuQWI4Uk42TG5yMjlMRDRhaTl1WWRnVmRSOXluTi1yTjRrZ0RzbGZWRFQtVDdiMWR6SUE="),
+        models: ["gemini-flash-lite-latest", "gemini-3.6-flash", "gemini-flash-latest"],
         isThinking: false
     };
 
@@ -2054,8 +2054,6 @@ Tutoring Principles:
 2. When students ask about exam questions or ask for hints, act as a Socratic Tutor: Explain the concept step-by-step, give helpful clues based on the 4 CT pillars (Decomposition, Pattern Recognition, Abstraction, Algorithm & Debug), DO NOT spoil the direct letter choice, but guide them to answer correctly by themselves!
 3. Keep answers concise (2-4 sentences) and easy for Grade 3 children to read.`;
 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AERO_AI_CONFIG.model}:generateContent?key=${AERO_AI_CONFIG.apiKey}`;
-
         const reqBody = {
             contents: [
                 {
@@ -2070,20 +2068,32 @@ Tutoring Principles:
             }
         };
 
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reqBody)
-        });
+        for (const model of AERO_AI_CONFIG.models) {
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-goog-api-key': AERO_AI_CONFIG.apiKey
+                    },
+                    body: JSON.stringify(reqBody)
+                });
 
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.statusText}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (replyText) {
+                        console.log(`Successfully generated reply from Gemini model: ${model}`);
+                        return replyText.trim();
+                    }
+                }
+            } catch (e) {
+                console.warn(`Model ${model} fetch failed, trying next:`, e);
+            }
         }
 
-        const data = await response.json();
-        const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!replyText) throw new Error("Empty AI reply");
-        return replyText.trim();
+        throw new Error("All Gemini models unavailable, switching to local fallback");
     };
 
     window.getAeroLocalFallback = function(userPrompt) {
