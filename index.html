@@ -1248,6 +1248,47 @@
                 // Immediately pull active teacher island & questions for all users
                 window.fetchCloudConfigs();
 
+                // ⚡ Realtime Live Sync: When Admin saves island/questions, students see updates instantly!
+                try {
+                    supabaseClient
+                        .channel('game_configs_realtime_sync')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'game_configs' }, (payload) => {
+                            console.log('⚡ Realtime Cloud update received:', payload);
+                            const rec = payload?.new;
+                            if (rec && rec.config_key) {
+                                if (rec.config_key.startsWith('island_layout_')) {
+                                    const islandId = parseInt(rec.config_key.replace('island_layout_', ''));
+                                    if (Array.isArray(rec.data)) {
+                                        localStorage.setItem('coastal_island_layout_' + islandId, JSON.stringify(rec.data));
+                                        if (window.loadIslandProps) {
+                                            window.loadIslandProps(islandId);
+                                        }
+                                        if (gameState.mode !== 'editing_island') {
+                                            window.showToast(`🏝️ ผังเกาะที่ ${islandId} อัปเดตสดๆ จากคุณครูแล้ว! ✨`);
+                                        }
+                                    }
+                                } else if (rec.config_key === 'teacher_questions') {
+                                    if (Array.isArray(rec.data)) {
+                                        teacherQuestions = rec.data;
+                                        localStorage.setItem('coastal_teacher_questions', JSON.stringify(teacherQuestions));
+                                        if (window.renderTeacherQuestions) window.renderTeacherQuestions();
+                                        if (gameState.mode !== 'editing_island') {
+                                            window.showToast(`🎓 คลังข้อสอบได้รับการอัปเดตจากคุณครูแล้ว! 💡`);
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                        .subscribe();
+                } catch(rtErr) {
+                    console.warn('Realtime channel notice:', rtErr);
+                }
+
+                // Window focus sync check
+                window.addEventListener('focus', () => {
+                    if (window.fetchCloudConfigs) window.fetchCloudConfigs();
+                });
+
                 supabaseClient.auth.getSession().then(({ data }) => {
                     if (data?.session?.user) {
                         onUserAuthenticated(data.session.user);
@@ -2630,10 +2671,12 @@ Tutoring Principles:
 
             items.forEach(item => loadPropItem(item, targetGroup));
         }
+        window.loadIslandProps = loadIslandProps;
 
-        // Initialize Props for Both Islands
+        // Initialize Props for Both Islands & sync cloud configs
         loadIslandProps(1);
         loadIslandProps(2);
+        if (window.fetchCloudConfigs) window.fetchCloudConfigs();
 
         // ==========================================================================
         // 3D ISLAND BUILDER INTERACTION HANDLERS
