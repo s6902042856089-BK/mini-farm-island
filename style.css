@@ -1253,3 +1253,134 @@ body, html {
     border-radius: 18px;
     box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
 }
+
+/* ==========================================================
+   TEACHER DASHBOARD & QUESTION MANAGEMENT STYLING
+   ========================================================== */
+.subject-chip {
+    padding: 6px 14px;
+    border-radius: 14px;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.subject-chip:hover {
+    border-color: #818cf8;
+    color: #4f46e5;
+}
+
+.subject-chip.active {
+    background: #4f46e5;
+    color: #ffffff;
+    border-color: #4f46e5;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+}
+
+.teacher-q-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.teacher-q-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.teacher-q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.teacher-q-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    font-size: 0.82rem;
+    margin-top: 4px;
+}
+
+.teacher-q-opt {
+    padding: 6px 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.teacher-q-opt.correct {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #047857;
+    font-weight: 700;
+}
+
+.btn-toggle-active {
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-toggle-active.on {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.btn-toggle-active.off {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.preset-pack-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.preset-pack-card:hover {
+    background: #ffffff;
+    border-color: #6366f1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.12);
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.analytics-table th {
+    background: #f1f5f9;
+    padding: 10px 12px;
+    color: #475569;
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+.analytics-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
