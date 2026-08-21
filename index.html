@@ -270,34 +270,18 @@
 
     <!-- 5. IN-GAME HUD OVERLAY -->
     <div id="hud">
-        <!-- EXACT COASTAL WORLD GUIDE & NOTIFICATION BANNER -->
-        <div id="coastal-guide-banner" onclick="window.onBannerClick()">
-            <div class="banner-icon-container">
-                <svg class="banner-pin-svg" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="22" cy="44" rx="14" ry="5.5" fill="#e67e22"/>
-                    <ellipse cx="22" cy="42" rx="14" ry="5.5" fill="#f39c12"/>
-                    <ellipse cx="22" cy="41" rx="12" ry="4.5" fill="#f1c40f"/>
-                    <path d="M22 38C15 26 10 20 10 14C10 7.37 15.37 2 22 2C28.63 2 34 7.37 34 14C34 20 29 26 22 38Z" fill="#2980b9" opacity="0.2"/>
-                    <path d="M22 36C16 25 11 19 11 13C11 6.92 15.92 2 22 2C28.08 2 33 6.92 33 13C33 19 28 25 22 36Z" fill="url(#pinGradient)"/>
-                    <circle cx="22" cy="13" r="5.5" fill="#ffffff"/>
-                    <path d="M15 8C17 4.5 20 3.5 23 3.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                    <defs>
-                        <linearGradient id="pinGradient" x1="11" y1="2" x2="33" y2="36" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#00cec9"/>
-                            <stop offset="1" stop-color="#0984e3"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
+        <!-- DYNAMIC NOTIFICATION & NPC SPEECH BANNER -->
+        <div id="coastal-guide-banner" class="" onclick="window.onBannerClick()">
+            <div class="banner-icon-container" id="banner-icon-badge">
+                <span id="banner-emoji-icon" style="font-size: 1.8rem;">🧙‍♂️</span>
             </div>
 
             <div class="banner-content">
-                <div class="banner-text" id="banner-main-text">Open the map to quickly navigate and discover places to go</div>
-                <div class="banner-subtext" id="banner-sub-text">แตะเพื่อเปิดแผนที่และดูตำแหน่งภารกิจ 🗺️</div>
+                <div class="banner-text" id="banner-main-text">🧙‍♂️ ผู้ดูแลเกาะ: "ยินดีต้อนรับสู่เกาะฟาร์ม!"</div>
+                <div class="banner-subtext" id="banner-sub-text">แตะที่นี่เพื่อตอบคำถาม หรือเดินไปคุยข้างบ่อน้ำ 💡</div>
             </div>
 
-            <div class="banner-action-btn">
-                <span class="banner-arrow-icon">→</span>
-            </div>
+            <button class="banner-close-btn" onclick="event.stopPropagation(); window.dismissBanner();" title="ปิดการแจ้งเตือน">✕</button>
         </div>
 
         <div class="hud-top-bar">
@@ -756,6 +740,9 @@
                         gameState.mode = 'transitioning';
                         transitionProg = 0;
                         initTutorialUI();
+                        setTimeout(() => {
+                            window.showNPCNotification('🌴 ยินดีต้อนรับสู่เกาะฟาร์ม!', 'สำรวจเกาะ ปลูกผัก และพูดคุยกับผู้ดูแลข้างบ่อน้ำ 🧭', '🌴', null, 5000);
+                        }, 1200);
                     }, 200);
                 } else {
                     if (ln) ln.innerText = prog;
@@ -767,6 +754,9 @@
             gameState.mode = 'transitioning';
             transitionProg = 0;
             initTutorialUI();
+            setTimeout(() => {
+                window.showNPCNotification('🌴 ยินดีต้อนรับสู่เกาะฟาร์ม!', 'สำรวจเกาะ ปลูกผัก และพูดคุยกับผู้ดูแลข้างบ่อน้ำ 🧭', '🌴', null, 5000);
+            }, 1200);
         }
     };
 
@@ -838,36 +828,53 @@
         window.location.href = window.location.origin + window.location.pathname;
     };
 
-    // Banner Guide Handlers
-    window.onBannerClick = function() {
-        try { window.sfx.click(); } catch(e){}
-        const currentBanner = gameState.banners[gameState.bannerIndex];
-        
-        if (currentBanner.action === 'map') {
-            document.getElementById('map-modal').style.display = 'flex';
-        } else if (currentBanner.action === 'character') {
-            window.openCharacterSelect();
-        } else if (currentBanner.action === 'focus_plot') {
-            showToast('🌱 มุ่งหน้าไปที่แปลงดินเพื่อเริ่มทำฟาร์ม!');
-        } else if (currentBanner.action === 'focus_robot') {
-            showToast('🤖 มุ่งหน้าไปที่บ่อน้ำเพื่อคุยกับหุ่นยนต์!');
-        } else if (currentBanner.action === 'focus_boat') {
-            showToast('⛵ มุ่งหน้าไปที่ท่าเรือทางทิศใต้!');
-        }
+    // Dynamic Notification & NPC Dialogue Handlers
+    let bannerHideTimer = null;
+    let currentBannerAction = null;
 
-        gameState.bannerIndex = (gameState.bannerIndex + 1) % gameState.banners.length;
-        window.updateBannerUI();
-    };
-
-    window.updateBannerUI = function() {
-        const banner = gameState.banners[gameState.bannerIndex];
+    window.showNPCNotification = function(mainText, subText, emoji = '🧙‍♂️', action = null, duration = 6500) {
+        const banner = document.getElementById('coastal-guide-banner');
         const mainEl = document.getElementById('banner-main-text');
         const subEl = document.getElementById('banner-sub-text');
-        if (mainEl && subEl && banner) {
-            mainEl.innerText = banner.main;
-            subEl.innerText = banner.sub;
+        const emojiEl = document.getElementById('banner-emoji-icon');
+        if (!banner || !mainEl) return;
+
+        mainEl.innerText = mainText;
+        if (subEl) subEl.innerText = subText || '';
+        if (emojiEl) emojiEl.innerText = emoji;
+        currentBannerAction = action;
+
+        banner.classList.add('visible');
+        if (bannerHideTimer) clearTimeout(bannerHideTimer);
+
+        if (duration > 0) {
+            bannerHideTimer = setTimeout(() => {
+                banner.classList.remove('visible');
+            }, duration);
         }
     };
+
+    window.dismissBanner = function() {
+        if (bannerHideTimer) clearTimeout(bannerHideTimer);
+        const banner = document.getElementById('coastal-guide-banner');
+        if (banner) banner.classList.remove('visible');
+    };
+
+    window.onBannerClick = function() {
+        try { window.sfx.click(); } catch(e){}
+        if (typeof currentBannerAction === 'function') {
+            currentBannerAction();
+        } else if (currentBannerAction === 'quiz') {
+            window.openQuiz();
+        } else if (currentBannerAction === 'market') {
+            window.openMarket();
+        } else if (currentBannerAction === 'map') {
+            document.getElementById('map-modal').style.display = 'flex';
+        }
+        window.dismissBanner();
+    };
+
+    window.updateBannerUI = function() {};
 
     window.fastTravel = function(islandId) {
         document.getElementById('map-modal').style.display = 'none';
@@ -2119,6 +2126,10 @@
                             p.progress = 1.0; p.state = 'ready';
                             p.group.remove(p.progressBar.group); p.progressBar = null;
                             p.cropMesh.scale.set(1.1, 1.1, 1.1);
+                            if (!p._harvestNotified) {
+                                p._harvestNotified = true;
+                                window.showNPCNotification('🌾 ผลผลิตของคุณโตเต็มที่แล้ว!', 'เดินไปที่แปลงผักแล้วกด [E] หรือแตะแปลงเพื่อเก็บเกี่ยว ✨', '🌱', null, 5000);
+                            }
                         } else {
                             const s = 0.15 + p.progress * 0.85;
                             p.cropMesh.scale.set(s, s, s);
@@ -2166,10 +2177,18 @@
                     if (dRob < minDist + 0.6) {
                         minDist = dRob;
                         nearest = { type: 'robot', text: 'คุยกับหุ่นยนต์ 🤖', pos: wellRobotGroup.position };
+                        if (!gameState._lastNpcNotify || Date.now() - gameState._lastNpcNotify > 18000) {
+                            gameState._lastNpcNotify = Date.now();
+                            window.showNPCNotification('🧙‍♂️ ผู้ดูแลเกาะ: "สวัสดีนักผจญภัย! เจ้าต้องการทายปริศนาเพื่อรับรางวัลหรือไม่?"', 'แตะที่นี่ หรือกด [E] ข้างบ่อน้ำเพื่อตอบคำถาม 💡', '🧙‍♂️', 'quiz', 6500);
+                        }
                     }
                     const dMkt = pPos.distanceTo(new THREE.Vector3(3.8, 1.5, 5.5));
                     if (dMkt < minDist + 0.8) {
                         nearest = { type: 'market', text: 'ตลาดริมท่าเรือ 🛒 (ขายของ)', pos: new THREE.Vector3(3.8, 1.5, 5.5) };
+                        if (!gameState._lastMktNotify || Date.now() - gameState._lastMktNotify > 22000) {
+                            gameState._lastMktNotify = Date.now();
+                            window.showNPCNotification('🛒 ตลาดริมทาง: "ยินดีต้อนรับ! นำผักและผลผลิตมาขายเป็นเหรียญทองได้นะ"', 'แตะที่นี่ หรือกด [E] เพื่อเปิดร้านค้า 🪙', '🛒', 'market', 6000);
+                        }
                     }
                     const dBoat = pPos.distanceTo(new THREE.Vector3(0, 0.5, 12.0));
                     if (dBoat < minDist + 1.2) {
