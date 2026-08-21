@@ -1733,40 +1733,6 @@
         });
     };
 
-    window.saveTeacherQuestion = function() {
-        const text = (document.getElementById('q-text-input')?.value || '').trim();
-        const subject = document.getElementById('q-subject-input')?.value || 'science';
-        const optA = (document.getElementById('q-opt-a')?.value || '').trim();
-        const optB = (document.getElementById('q-opt-b')?.value || '').trim();
-        const optC = (document.getElementById('q-opt-c')?.value || '').trim();
-        const optD = (document.getElementById('q-opt-d')?.value || '').trim();
-        const hint = (document.getElementById('q-hint-input')?.value || '').trim();
-        const correctVal = document.querySelector('input[name="q-correct"]:checked')?.value || '0';
-        const correctIndex = parseInt(correctVal, 10);
-
-        if (!text || !optA || !optB) {
-            showToast('⚠️ กรุณากรอกโจทย์และตัวเลือกอย่างน้อย 2 ข้อ');
-            return;
-        }
-
-        const subjectLabels = {
-            'science': '🌿 วิทย์ & เกษตร',
-            'math': '🧮 คณิต',
-            'english': '🇬🇧 อังกฤษ',
-            'general': '💡 ทั่วไป'
-        };
-
-        const newQ = {
-            id: 'q_' + Date.now(),
-            subject: subject,
-            subjectLabel: subjectLabels[subject] || '💡 ทั่วไป',
-            question: text,
-            options: [optA, optB, optC || '-', optD || '-'],
-            correctIndex: correctIndex,
-            hint: hint,
-            active: true
-        };
-
     window.syncTeacherQuestionsToCloud = function() {
         localStorage.setItem('coastal_teacher_questions', JSON.stringify(teacherQuestions));
         if (supabaseClient) {
