@@ -3458,6 +3458,20 @@ Instructions:
         const activeMoveDirections = new Set();
 
         function handleKeyEvent(e, isKeyDown) {
+            // Check if user is typing in any input field, text area, or chatbox
+            const activeEl = document.activeElement;
+            if (activeEl && (
+                activeEl.tagName === 'INPUT' || 
+                activeEl.tagName === 'TEXTAREA' || 
+                activeEl.isContentEditable ||
+                activeEl.closest('#npc-chat-modal') ||
+                activeEl.closest('.modal-content') ||
+                activeEl.closest('#island-editor-ui')
+            )) {
+                activeMoveDirections.clear();
+                return; // Let user type W, A, S, D, Space, E freely in text boxes!
+            }
+
             const code = e.code || '';
             const key = (e.key || '').toLowerCase();
 
