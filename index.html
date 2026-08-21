@@ -403,14 +403,39 @@
         </div>
     </div>
 
-    <!-- Quiz Modal -->
+    <!-- Quiz Modal with Real-time AI Hinting -->
     <div class="modal-overlay" id="quiz-modal">
-        <div class="modal-content">
-            <h2 class="modal-title">🤖 หุ่นยนต์ผู้ช่วยรดน้ำ</h2>
-            <p style="color: #7f8c8d; font-size: 0.9rem;">ตอบคำถามคณิตศาสตร์ให้ถูกต้องเพื่อรับบัฟน้ำเร่งโต 1.6x!</p>
+        <div class="modal-content" style="max-width: 520px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h2 class="modal-title" style="margin: 0; font-size: 1.25rem;">🤖 ปริศนาการคิดเชิงคำนวณ (CT Quiz)</h2>
+                <button class="btn-close" style="margin: 0; padding: 4px 10px;" onclick="document.getElementById('quiz-modal').style.display='none'">✕</button>
+            </div>
+            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px;">ตอบคำถามเพื่อรับบัฟน้ำเร่งโต 1.6x 💧 และเหรียญทอง 🪙</p>
+            
             <div class="quiz-question-box" id="quiz-question">12 + 15 = ?</div>
             <div class="quiz-options-grid" id="quiz-options"></div>
-            <button class="btn-close" onclick="document.getElementById('quiz-modal').style.display='none'">ปิด</button>
+
+            <!-- AI Stepped Scaffolding Hint Box -->
+            <div id="quiz-ai-hint-box" style="display: none; background: #eef2ff; border: 1.5px solid #c7d2fe; border-radius: 16px; padding: 12px 16px; margin-top: 12px; text-align: left; animation: fadeIn 0.25s ease;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #4338ca; font-size: 0.88rem;">
+                        <span>🧙‍♂️ AERO AI:</span>
+                        <span id="quiz-ai-hint-level" style="font-size: 0.72rem; background: #6366f1; color: white; padding: 2px 7px; border-radius: 8px;">คำใบ้ระดับ 1</span>
+                    </div>
+                    <span style="font-size: 0.72rem; color: #6366f1;">กดอีกครั้งเพื่อรับคำใบ้เพิ่ม</span>
+                </div>
+                <div id="quiz-ai-hint-text" style="font-size: 0.86rem; color: #334155; line-height: 1.45;"></div>
+            </div>
+
+            <!-- AI Hint Action Buttons -->
+            <div style="display: flex; gap: 8px; margin-top: 14px;">
+                <button class="btn-primary" style="margin: 0; flex: 1; padding: 10px 14px; font-size: 0.85rem; background: linear-gradient(135deg, #6366f1, #4f46e5);" onclick="window.requestQuizAIHint()">
+                    💡 ขอคำใบ้จาก AERO AI
+                </button>
+                <button class="btn-secondary" style="margin: 0; padding: 10px 14px; font-size: 0.85rem; border: 1.5px solid #c7d2fe; color: #4338ca; font-weight: 700;" onclick="window.openNPCChatFromQuiz()">
+                    💬 คุยกับ AI
+                </button>
+            </div>
         </div>
     </div>
 
@@ -528,10 +553,10 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                     <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="subject-filters">
                         <button class="subject-chip active" onclick="window.filterTeacherQuestions('all')">ทั้งหมด</button>
-                        <button class="subject-chip" onclick="window.filterTeacherQuestions('math')">🧮 คณิต</button>
-                        <button class="subject-chip" onclick="window.filterTeacherQuestions('science')">🌿 วิทย์ & เกษตร</button>
-                        <button class="subject-chip" onclick="window.filterTeacherQuestions('english')">🇬🇧 อังกฤษ</button>
-                        <button class="subject-chip" onclick="window.filterTeacherQuestions('general')">💡 ทั่วไป</button>
+                        <button class="subject-chip" onclick="window.filterTeacherQuestions('decomposition')">🧩 แยกย่อยปัญหา</button>
+                        <button class="subject-chip" onclick="window.filterTeacherQuestions('pattern')">🔍 หารูปแบบ</button>
+                        <button class="subject-chip" onclick="window.filterTeacherQuestions('abstraction')">🎯 คิดเชิงนามธรรม</button>
+                        <button class="subject-chip" onclick="window.filterTeacherQuestions('algorithm')">⚙️ อัลกอริทึม & ดีบัก</button>
                     </div>
                     <button class="btn-primary" style="width: auto; margin: 0; padding: 8px 16px; font-size: 0.85rem; background: linear-gradient(135deg, #6366f1, #4f46e5);" onclick="window.switchTeacherTab('add')">
                         ➕ เพิ่มข้อใหม่
@@ -542,21 +567,21 @@
 
             <!-- View 2: Add / Edit Question Form -->
             <div id="teacher-view-add" class="teacher-view" style="display: none;">
-                <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 12px;">📝 สร้าง / แก้ไขข้อสอบ</h3>
+                <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 12px;">📝 สร้าง / แก้ไขข้อสอบการคิดเชิงคำนวณ (CT ป.3)</h3>
                 <input type="hidden" id="q-edit-id" value="">
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <div>
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #475569;">หมวดหมู่วิชา</label>
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #475569;">มิติการคิดเชิงคำนวณ (Computational Thinking Pillar)</label>
                         <select id="q-subject-input" class="name-input-field" style="padding: 10px;">
-                            <option value="science" selected>🌿 วิทยาศาสตร์และพืชพรรณ (Science & Plants)</option>
-                            <option value="math">🧮 คณิตศาสตร์ (Math)</option>
-                            <option value="english">🇬🇧 คำศัพท์ภาษาอังกฤษ (English Vocabulary)</option>
-                            <option value="general">💡 ความรู้ทั่วไป / การเงิน (General & Economy)</option>
+                            <option value="decomposition" selected>🧩 การแยกส่วนประกอบ / แยกย่อยปัญหา (Decomposition)</option>
+                            <option value="pattern">🔍 การหารูปแบบและความสัมพันธ์ (Pattern Recognition)</option>
+                            <option value="abstraction">🎯 การคิดเชิงนามธรรม / คัดกรองสิ่งสำคัญ (Abstraction)</option>
+                            <option value="algorithm">⚙️ การออกแบบขั้นตอนวิธี & ตรวจหาข้อผิดพลาด (Algorithm & Debugging)</option>
                         </select>
                     </div>
                     <div>
                         <label style="font-weight: 600; font-size: 0.85rem; color: #475569;">โจทย์คำถาม</label>
-                        <input type="text" id="q-text-input" class="name-input-field" placeholder="เช่น มะเขือเทศจัดเป็นพืชประเภทใด? หรือ 15 + 27 = ?">
+                        <input type="text" id="q-text-input" class="name-input-field" placeholder="เช่น การแบ่งชิ้นส่วนของหุ่นยนต์รดน้ำเป็น แขน ล้อ ถังน้ำ เรียกว่าทักษะใด?">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
@@ -1558,99 +1583,76 @@
     window.initSupabaseAuth();
 
     // ==========================================================================
-    // TEACHER BACKOFFICE & DYNAMIC QUESTION ENGINE
+    // TEACHER BACKOFFICE & DYNAMIC QUESTION ENGINE (COMPUTATIONAL THINKING G3)
     // ==========================================================================
     const DEFAULT_TEACHER_QUESTIONS = [
         {
-            id: 'q_sci_1',
-            subject: 'science',
-            subjectLabel: '🌿 วิทย์ & เกษตร',
-            question: 'พืชสร้างอาหารเองได้ด้วยกระบวนการใด?',
-            options: ['การสังเคราะห์ด้วยแสง', 'การหายใจของราก', 'การคายน้ำทางใบ', 'การดูดซึมแร่ธาตุ'],
+            id: 'q_ct_dec_1',
+            subject: 'decomposition',
+            subjectLabel: '🧩 แยกย่อยปัญหา',
+            question: 'ถ้าต้องการทำภารกิจ "ซ่อมเรือข้ามฟากไปเกาะที่ 2" ข้อใดคือการแยกย่อยงาน (Decomposition) ที่ถูกต้องที่สุด?',
+            options: ['สะสมเงิน 250🪙 + เก็บผัก 6 ชิ้น + ตอบควิซ 1 ครั้ง', 'เดินไปยืนรอที่ท่าเรือเฉยๆ', 'ซื้อเมล็ดพันธุ์ทั้งหมดในร้านค้า', 'วิ่งรอบเกาะ 3 รอบ'],
             correctIndex: 0,
-            hint: 'พืชใช้คลอโรฟิลล์ร่วมกับแสงแดดและก๊าซคาร์บอนไดออกไซด์สร้างน้ำตาล',
+            hint: 'การแยกย่อยปัญหา คือการแบ่งเป้าหมายใหญ่ออกเป็นงานย่อยๆ ที่ต้องทำให้ครบจ้า',
             active: true
         },
         {
-            id: 'q_sci_2',
-            subject: 'science',
-            subjectLabel: '🌿 วิทย์ & เกษตร',
-            question: 'ธาตุอาหารหลัก 3 ชนิด (NPK) ของพืชคือข้อใด?',
-            options: ['ไนโตรเจน-ฟอสฟอรัส-โพแทสเซียม', 'แคลเซียม-แมกนีเซียม-กำมะถัน', 'เหล็ก-สังกะสี-ทองแดง', 'คาร์บอน-ไฮโดรเจน-ออกซิเจน'],
+            id: 'q_ct_pat_1',
+            subject: 'pattern',
+            subjectLabel: '🔍 หารูปแบบ',
+            question: 'สังเกตแปลงผัก: แครอท 🥕 ➔ ข้าวโพด 🌽 ➔ แครอท 🥕 ➔ ข้าวโพด 🌽 ➔ ... พืชแปลงถัดไปควรเป็นอะไร?',
+            options: ['แครอท 🥕', 'ข้าวโพด 🌽', 'แตงโม 🍉', 'สับปะรด 🍍'],
             correctIndex: 0,
-            hint: 'N (บำรุงใบ), P (บำรุงรากและดอก), K (บำรุงผลและเมล็ด)',
+            hint: 'ดูรูปแบบการสลับที่เกิดขึ้นซ้ำๆ ระหว่างแครอทกับข้าวโพดนะจ๊ะ',
             active: true
         },
         {
-            id: 'q_math_1',
-            subject: 'math',
-            subjectLabel: '🧮 คณิต',
-            question: 'ถ้าฟาร์มมีแปลงผัก 6 แปลง ปลูกแปลงละ 8 ต้น จะมีผักทั้งหมดกี่ต้น?',
-            options: ['48 ต้น', '42 ต้น', '54 ต้น', '56 ต้น'],
+            id: 'q_ct_abs_1',
+            subject: 'abstraction',
+            subjectLabel: '🎯 คิดเชิงนามธรรม',
+            question: 'ถ้าต้องการวาดแผนที่เส้นทางจาก "บ้าน" ไปยัง "ท่าเรือ" ข้อมูลใด "ไม่จำเป็น" ต้องใส่ลงในแผนที่?',
+            options: ['สีของก้อนเมฆบนท้องฟ้า', 'ตำแหน่งของบ้าน', 'ทางเดินหลักของเกาะ', 'ตำแหน่งของท่าเรือ'],
             correctIndex: 0,
-            hint: 'คำนวณจากสูตรการคูณ: 6 × 8 = 48 ต้น',
+            hint: 'การคิดเชิงนามธรรม คือการตัดสิ่งที่ไม่จำเป็นต่อการเดินทางออกไป',
             active: true
         },
         {
-            id: 'q_eng_1',
-            subject: 'english',
-            subjectLabel: '🇬🇧 อังกฤษ',
-            question: 'คำศัพท์ภาษาอังกฤษของคำว่า "เก็บเกี่ยวผลผลิต" คือข้อใด?',
-            options: ['Harvest', 'Plant', 'Water', 'Market'],
+            id: 'q_ct_alg_1',
+            subject: 'algorithm',
+            subjectLabel: '⚙️ อัลกอริทึม & ดีบัก',
+            question: 'ข้อใดเรียงลำดับขั้นตอน (Algorithm) การปลูกผักในฟาร์มได้ถูกต้องที่สุด?',
+            options: ['เตรียมดิน ➔ หยอดเมล็ด ➔ รดน้ำ ➔ เก็บเกี่ยว', 'เก็บเกี่ยว ➔ รดน้ำ ➔ หยอดเมล็ด ➔ เตรียมดิน', 'หยอดเมล็ด ➔ เก็บเกี่ยว ➔ เตรียมดิน ➔ รดน้ำ', 'รดน้ำ ➔ เก็บเกี่ยว ➔ เตรียมดิน ➔ หยอดเมล็ด'],
             correctIndex: 0,
-            hint: 'Harvest แปลว่า การเก็บเกี่ยวผลผลิตทางการเกษตร',
+            hint: 'อัลกอริทึมคือขั้นตอนที่ต้องทำจากจุดเริ่มต้นไปจนถึงผลลัพธ์ ลองคิดดูสิว่าต้องทำอะไรก่อนเป็นอันดับแรก',
             active: true
         },
         {
-            id: 'q_sci_3',
-            subject: 'science',
-            subjectLabel: '🌿 วิทย์ & เกษตร',
-            question: 'มะเขือเทศ (Tomato) ทางพฤกษศาสตร์จัดเป็นสิ่งใด?',
-            options: ['ผลไม้ (Fruit)', 'ราก (Root)', 'ลำต้น (Stem)', 'ใบ (Leaf)'],
+            id: 'q_ct_alg_2',
+            subject: 'algorithm',
+            subjectLabel: '⚙️ อัลกอริทึม & ดีบัก',
+            question: 'หุ่นยนต์ได้รับคำสั่ง: [เดินหน้า 2 ก้าว] ➔ [เลี้ยวขวา] ➔ [เดินหน้า 1 ก้าว] แต่หุ่นยนต์เดินชนต้นไม้ การหาจุดผิดนี้เรียกว่าอะไร?',
+            options: ['การตรวจหาข้อผิดพลาด (Debugging)', 'การปิดเครื่อง', 'การซื้อหุ่นยนต์ใหม่', 'การรดน้ำต้นไม้'],
             correctIndex: 0,
-            hint: 'มะเขือเทศเจริญมาจากรังไข่ของดอกและมีเมล็ดอยู่ข้างใน จึงจัดเป็นผลไม้',
+            hint: 'เมื่อโปรแกรมทำงานไม่ตรงตามที่ต้องการ การหาคำสั่งที่ผิดแล้วแก้ไข เรียกว่าการ Debug จ้า',
             active: true
         }
     ];
 
     const PRESET_PACKS = [
         {
-            id: 'pack_math_primary',
-            title: '🧮 คณิตศาสตร์รอบเกาะ (ป.1 - ป.3)',
-            desc: 'ชุดโจทย์การบวก ลบ คูณ และคำนวณผลผลิตฟาร์ม 5 ข้อ',
-            badge: '5 ข้อ',
+            id: 'pack_ct_grade3_full',
+            title: '🧩 ชุดข้อสอบการคิดเชิงคำนวณ ป.3 ครบ 4 มิติ (Standard CT)',
+            desc: 'ชุดข้อสอบครอบคลุมทั้ง 4 เสาหลัก: แยกย่อยปัญหา, หารูปแบบ, คิดเชิงนามธรรม, และอัลกอริทึม',
+            badge: '8 ข้อ',
             questions: [
-                { id: 'p_m1', subject: 'math', subjectLabel: '🧮 คณิต', question: 'ขายแครอท 5 หัว หัวละ 25 🪙 จะได้เงินทั้งหมดกี่เหรียญ?', options: ['125 🪙', '100 🪙', '150 🪙', '120 🪙'], correctIndex: 0, hint: '5 × 25 = 125 🪙', active: true },
-                { id: 'p_m2', subject: 'math', subjectLabel: '🧮 คณิต', question: 'มีเหรียญ 250 🪙 ซื้อตั๋วเรือ 180 🪙 จะเหลือเงินกี่เหรียญ?', options: ['70 🪙', '60 🪙', '80 🪙', '90 🪙'], correctIndex: 0, hint: '250 - 180 = 70 🪙', active: true },
-                { id: 'p_m3', subject: 'math', subjectLabel: '🧮 คณิต', question: 'แปลงผัก 4 แปลง เก็บมะเขือเทศได้แปลงละ 12 ลูก รวมทั้งหมดกี่ลูก?', options: ['48 ลูก', '44 ลูก', '52 ลูก', '40 ลูก'], correctIndex: 0, hint: '4 × 12 = 48 ลูก', active: true },
-                { id: 'p_m4', subject: 'math', subjectLabel: '🧮 คณิต', question: 'ข้าวโพด 3 ฝัก ฝักละ 120 🪙 รวมเป็นเงินเท่าใด?', options: ['360 🪙', '320 🪙', '400 🪙', '300 🪙'], correctIndex: 0, hint: '3 × 120 = 360 🪙', active: true },
-                { id: 'p_m5', subject: 'math', subjectLabel: '🧮 คณิต', question: 'ครึ่งหนึ่งของเหรียญ 500 🪙 คือกี่เหรียญ?', options: ['250 🪙', '200 🪙', '300 🪙', '150 🪙'], correctIndex: 0, hint: '500 ÷ 2 = 250 🪙', active: true }
-            ]
-        },
-        {
-            id: 'pack_science_plants',
-            title: '🌿 วิทยาศาสตร์การเกษตรและสิ่งแวดล้อม',
-            desc: 'ชุดความรู้การเจริญเติบโตของพืช ดิน น้ำ และวัฏจักรธรรมชาติ 5 ข้อ',
-            badge: '5 ข้อ',
-            questions: [
-                { id: 'p_s1', subject: 'science', subjectLabel: '🌿 วิทย์', question: 'ส่วนใดของพืชทำหน้าที่ดูดน้ำและแร่ธาตุจากดิน?', options: ['ราก (Root)', 'ลำต้น (Stem)', 'ใบ (Leaf)', 'ดอก (Flower)'], correctIndex: 0, hint: 'รากทำหน้าที่ยึดลำต้นและดูดน้ำ/แร่ธาตุส่งต่อไปยังส่วนต่างๆ', active: true },
-                { id: 'p_s2', subject: 'science', subjectLabel: '🌿 วิทย์', question: 'ก๊าซชนิดใดที่พืชดูดเข้าไปใช้ในกระบวนการสังเคราะห์ด้วยแสง?', options: ['คาร์บอนไดออกไซด์ (CO2)', 'ออกซิเจน (O2)', 'ไนโตรเจน', 'ฮีเลียม'], correctIndex: 0, hint: 'พืชดูด CO2 และคาย O2 (ออกซิเจน) ออกมาให้สิ่งมีชีวิตหายใจ', active: true },
-                { id: 'p_s3', subject: 'science', subjectLabel: '🌿 วิทย์', question: 'ดินชนิดใดอุ้มน้ำได้ดีที่สุด แต่ระบายน้ำช้า?', options: ['ดินเหนียว', 'ดินร่วน', 'ดินทราย', 'ดินลูกรัง'], correctIndex: 0, hint: 'ดินเหนียวมีอนุภาคเล็กละเอียด ทำให้อุ้มน้ำได้มากที่สุด', active: true },
-                { id: 'p_s4', subject: 'science', subjectLabel: '🌿 วิทย์', question: 'สารสีเขียวในใบพืชที่ช่วยดูดซับพลังงานแสงคืออะไร?', options: ['คลอโรฟิลล์ (Chlorophyll)', 'คาโรทีนอยด์', 'แอนโทไซยานิน', 'เซลลูโลส'], correctIndex: 0, hint: 'คลอโรฟิลล์เป็นรงควัตถุสีเขียวที่จำเป็นต่อการสร้างอาหาร', active: true },
-                { id: 'p_s5', subject: 'science', subjectLabel: '🌿 วิทย์', question: 'การรดน้ำต้นไม้ช่วงเวลาใดเหมาะสมที่สุดเพื่อป้องกันการระเหยเร็ว?', options: ['ช่วงเช้าตรู่หรือช่วงเย็น', 'ช่วงเที่ยงตรงแดดจัด', 'ช่วงบ่ายสองโมง', 'รดเฉพาะตอนกลางดึก'], correctIndex: 0, hint: 'เช้าตรู่หรือเย็น แดดไม่แรง พืชดูดน้ำได้เต็มที่ไม่สูญเสียน้ำเร็ว', active: true }
-            ]
-        },
-        {
-            id: 'pack_english_farm',
-            title: '🇬🇧 English Farming Vocabulary (ภาษาอังกฤษ)',
-            desc: 'ชุดคำศัพท์ภาษาอังกฤษเกี่ยวกับฟาร์ม ผักผลไม้ และการเกษตร 5 ข้อ',
-            badge: '5 ข้อ',
-            questions: [
-                { id: 'p_e1', subject: 'english', subjectLabel: '🇬🇧 อังกฤษ', question: 'What is the English word for "เมล็ดพันธุ์"?', options: ['Seed', 'Soil', 'Tree', 'Leaf'], correctIndex: 0, hint: 'Seed = เมล็ดพันธุ์', active: true },
-                { id: 'p_e2', subject: 'english', subjectLabel: '🇬🇧 อังกฤษ', question: 'What does "Windmill" mean in Thai?', options: ['กังหันลม', 'โรงนา', 'บ่อน้ำ', 'สะพานเรือ'], correctIndex: 0, hint: 'Windmill = กังหันลม (ใช้พลังงานลม)', active: true },
-                { id: 'p_e3', subject: 'english', subjectLabel: '🇬🇧 อังกฤษ', question: 'Which vegetable is orange and grows underground?', options: ['Carrot', 'Tomato', 'Cabbage', 'Corn'], correctIndex: 0, hint: 'Carrot = แครอทสีส้ม ปลูกอยู่ใต้ดิน', active: true },
-                { id: 'p_e4', subject: 'english', subjectLabel: '🇬🇧 อังกฤษ', question: '"Farmer" means someone who...?', options: ['Grows crops and animals', 'Sells books', 'Drives a taxi', 'Flies an airplane'], correctIndex: 0, hint: 'Farmer = ชาวนา / เกษตรกร', active: true },
-                { id: 'p_e5', subject: 'english', subjectLabel: '🇬🇧 อังกฤษ', question: 'What is the opposite of "Wet soil"?', options: ['Dry soil', 'Green soil', 'Cold soil', 'Big soil'], correctIndex: 0, hint: 'Dry = แห้ง (ตรงข้ามกับ Wet = เปียก)', active: true }
+                { id: 'p_ct1', subject: 'decomposition', subjectLabel: '🧩 แยกย่อยปัญหา', question: 'การสำรวจส่วนประกอบของ "หุ่นยนต์รดน้ำ" เป็น แขน ล้อ ถังน้ำ เซนเซอร์ เรียกว่าทักษะใด?', options: ['การแยกส่วนประกอบ (Decomposition)', 'การวาดรูปเหมือน', 'การลบข้อมูล', 'การคำนวณราคา'], correctIndex: 0, hint: 'การแยกชิ้นส่วนของสิ่งของออกเป็นชิ้นย่อยๆ คือการ Decomposition จ้า', active: true },
+                { id: 'p_ct2', subject: 'decomposition', subjectLabel: '🧩 แยกย่อยปัญหา', question: 'ถ้าจะจัดงานเลี้ยงผลไม้ในฟาร์ม ข้อใดคือการแยกย่อยงานที่ดีที่สุด?', options: ['เตรียมสถานที่ + จัดหาผลไม้ + เชิญเพื่อนๆ', 'นั่งรอให้งานเริ่ม', 'กินผลไม้ทั้งหมดคนเดียว', 'ปิดประตูบ้าน'], correctIndex: 0, hint: 'แบ่งงานใหญ่ออกเป็นงานย่อยๆ 3 ส่วน', active: true },
+                { id: 'p_ct3', subject: 'pattern', subjectLabel: '🔍 หารูปแบบ', question: 'พืช A โตใน 4 วิ, พืช B โตใน 8 วิ, พืช C โตใน 12 วิ พืช D น่าจะโตในกี่วินาที?', options: ['16 วินาที (เพิ่มทีละ 4)', '14 วินาที', '15 วินาที', '20 วินาที'], correctIndex: 0, hint: 'สังเกตรูปแบบตัวเลข 4, 8, 12 เพิ่มขึ้นทีละเท่าไร?', active: true },
+                { id: 'p_ct4', subject: 'pattern', subjectLabel: '🔍 หารูปแบบ', question: 'ราคาขายผลไม้: ส้ม 10🪙, แอปเปิ้ล 20🪙, แตงโม 30🪙 ผลไม้ชนิดถัดไปน่าจะราคาเท่าใด?', options: ['40🪙 (เพิ่มทีละ 10)', '35🪙', '25🪙', '50🪙'], correctIndex: 0, hint: 'ตัวเลขเพิ่มขึ้นครั้งละ 10 เหรียญ', active: true },
+                { id: 'p_ct5', subject: 'abstraction', subjectLabel: '🎯 คิดเชิงนามธรรม', question: 'การใช้สัญลักษณ์รูป 💧 หยดน้ำ บนหัวแปลงผัก เพื่อแทนความหมายว่า "ต้องรดน้ำ" คือทักษะใด?', options: ['การคิดเชิงนามธรรม (Abstraction)', 'การเดาคำตอบ', 'การระบายสี', 'การคำนวณเงิน'], correctIndex: 0, hint: 'การสรุปใจความสำคัญแล้วแทนด้วยสัญลักษณ์ง่ายๆ คือ Abstraction', active: true },
+                { id: 'p_ct6', subject: 'abstraction', subjectLabel: '🎯 คิดเชิงนามธรรม', question: 'ถ้าต้องการจำแนกชนิดของผักในฟาร์ม ข้อมูลใด "สำคัญที่สุด"?', options: ['ชื่อชนิดและลักษณะของพืช', 'ชื่อคนขายปุ๋ย', 'สีของรองเท้าคนปลูก', 'เวลาที่พระอาทิตย์ขึ้น'], correctIndex: 0, hint: 'เลือกเฉพาะข้อมูลสำคัญที่ใช้จำแนกชนิดพืช', active: true },
+                { id: 'p_ct7', subject: 'algorithm', subjectLabel: '⚙️ อัลกอริทึม & ดีบัก', question: 'ถ้าต้องการเขียนคำสั่งให้ตัวละครเดินไปเก็บผักที่แปลง (ห่างไป 3 ก้าวข้างหน้า) ต้องใช้คำสั่งใด?', options: ['เดินหน้า 3 ก้าว', 'เลี้ยวซ้าย 3 ครั้ง', 'ถอยหลัง 3 ก้าว', 'กระโดดอยู่กับที่'], correctIndex: 0, hint: 'อัลกอริทึมที่ตรงและสั้นที่สุดในการไปข้างหน้า', active: true },
+                { id: 'p_ct8', subject: 'algorithm', subjectLabel: '⚙️ อัลกอริทึม & ดีบัก', question: 'ถ้าโปรแกรมคำนวณเงินในเกมผิดพลาด ทำให้เงินผู้เล่นลดลงแทนที่จะเพิ่มขึ้น ควรทำสิ่งใดเป็นอันดับแรก?', options: ['ตรวจสอบโค้ดเพื่อหาจุดผิด (Debugging)', 'ลบเกมทิ้งทันที', 'ปิดหน้าจอนอน', 'ซื้อคอมพิวเตอร์ใหม่'], correctIndex: 0, hint: 'การ Debug คือการหาข้อผิดพลาดและแก้ไขให้ถูกต้อง', active: true }
             ]
         }
     ];
@@ -2029,18 +2031,28 @@
         const curIsland = ISLAND_CONFIGS[gameState.currentIsland]?.name || 'เกาะที่ 1';
         const quests = (gameState.quests[gameState.currentIsland] || []).map(q => `${q.title} (${q.done ? 'สำเร็จแล้ว' : 'ยังไม่เสร็จ'})`).join(', ');
 
-        const systemPrompt = `You are AERO, a kind, wise, and enthusiastic magical guardian & learning tutor on Coastal Farm Island (เกม 3D เกาะฟาร์มอัจฉริยะ).
-Current Player Info:
-- Name: ${p.name || 'นักผจญภัย'}
-- Gold: ${p.money} 🪙
-- Current Island: ${curIsland}
-- Active Quests: ${quests}
-- Unlocked Islands: ${gameState.unlockedIslands.length} เกาะ
+        const activeQuestionsSummary = teacherQuestions.filter(q => q.active).map((q, idx) => {
+            return `[ข้อ ${idx+1} มิติ ${q.subjectLabel || q.subject}]: โจทย์ "${q.question}" | เฉลย "${q.options[q.correctIndex]}" | คำใบ้ "${q.hint}"`;
+        }).join('\n');
 
-Instructions:
-- Always reply in friendly, polite, encouraging Thai (ภาษาไทยน่ารัก สุภาพ เป็นกันเอง มีอิโมจิ 🧙‍♂️✨🌱💧).
-- Give smart, helpful hints about farming (carrot 4s, corn 8s, strawberry 10s, watermelon 14s, pineapple 18s), quest guidance, math/science quiz explanations, or island secrets.
-- Keep responses concise and easy for students to read (around 2-4 sentences).`;
+        const curQuiz = window.currentActiveQuizItem ? `โจทย์ข้อสอบปัจจุบันที่เด็กกำลังทำอยู่: "${window.currentActiveQuizItem.question}" (มิติ: ${window.currentActiveQuizItem.subjectLabel}, เฉลย: ${window.currentActiveQuizItem.options[window.currentActiveQuizItem.correctIndex]}, คำใบ้: ${window.currentActiveQuizItem.hint})` : 'ไม่มีข้อสอบเปิดอยู่ขณะนี้';
+
+        const systemPrompt = `You are AERO, a kind, magical AI tutor specializing in Computational Thinking (ทักษะการคิดเชิงคำนวณ) for Grade 3 elementary students (เด็ก ป.3 อายุ 8-9 ขวบ) in Coastal Farm Island 3D Game.
+
+Current Player Context:
+- Name: ${p.name || 'น้องนักเรียน'}
+- Coins: ${p.money} 🪙
+- Current Island: ${curIsland}
+- Quests Progress: ${quests}
+- Active Exam Question Right Now: ${curQuiz}
+
+Active Teacher Exam Knowledge Base (คลังข้อสอบการคิดเชิงคำนวณ ป.3):
+${activeQuestionsSummary}
+
+Tutoring Principles:
+1. Always reply in friendly, polite, encouraging Thai (ภาษาไทยน่ารัก สุภาพ เป็นกันเอง มีอิโมจิ 🧙‍♂️✨🌱💧).
+2. When students ask about exam questions or ask for hints, act as a Socratic Tutor: Explain the concept step-by-step, give helpful clues based on the 4 CT pillars (Decomposition, Pattern Recognition, Abstraction, Algorithm & Debug), DO NOT spoil the direct letter choice, but guide them to answer correctly by themselves!
+3. Keep answers concise (2-4 sentences) and easy for Grade 3 children to read.`;
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AERO_AI_CONFIG.model}:generateContent?key=${AERO_AI_CONFIG.apiKey}`;
 
@@ -2077,38 +2089,46 @@ Instructions:
     window.getAeroLocalFallback = function(userPrompt) {
         const query = userPrompt.toLowerCase();
         const p = gameState.player;
+        const curQ = window.currentActiveQuizItem;
 
-        if (query.includes('เควสต์') || query.includes('ภารกิจ') || query.includes('hint') || query.includes('ใบ้')) {
-            const qList = gameState.quests[gameState.currentIsland] || [];
-            const unDone = qList.filter(q => !q.done);
-            if (unDone.length > 0) {
-                return `คำใบ้เควสต์ตอนนี้: "${unDone[0].title}" 💡 เดินไปทำภารกิจที่แปลงผักหรือบ่อน้ำ แล้วเจ้าจะได้รับเหรียญทองรางวัลตอบแทนนะ! ✨`;
+        // Check if student asks about the current active quiz question or general quiz
+        if (curQ && (query.includes('ข้อนี้') || query.includes('โจทย์') || query.includes('ตอบ') || query.includes('ใบ้') || query.includes('ควิซ') || query.includes('ช่วย'))) {
+            if (curQ.subject === 'decomposition') {
+                return `สำหรับข้อ "${curQ.question}" 💡 การแยกย่อยปัญหา (Decomposition) คือการแบ่งงานชิ้นใหญ่ออกเป็นงานย่อยๆ ลองดูในตัวเลือกสิว่าข้อไหนมีขั้นตอนย่อยที่ครบถ้วนนะจ๊ะ! ✨`;
+            } else if (curQ.subject === 'pattern') {
+                return `สำหรับข้อ "${curQ.question}" 🔍 การหารูปแบบ (Pattern) คือการสังเกตสิ่งที่มีการสลับหรือเพิ่มขึ้นซ้ำๆ เช่น ตัวเลขหรือพืชที่เรียงต่อกัน ลองนับระยะห่างดูนะ! 🥕🌽`;
+            } else if (curQ.subject === 'abstraction') {
+                return `สำหรับข้อ "${curQ.question}" 🎯 การคิดเชิงนามธรรม (Abstraction) คือการเลือกเฉพาะข้อมูลที่จำเป็น และตัดสิ่งที่ไม่เกี่ยวข้องออกไปจ้า! 🗺️`;
             } else {
-                return `ยินดีด้วยนะ! เจ้าทำเควสต์ของเกาะนี้ครบหมดแล้ว 🎉 ถ้ามีเงินครบ 250🪙 เดินไปที่ท่าเรือแล้วออกเรือไปเกาะที่ 2 ได้เลย! ⛵`;
+                return `สำหรับข้อ "${curQ.question}" ⚙️ อัลกอริทึมคือขั้นตอนที่ต้องทำจากจุดเริ่มต้นไปจนถึงผลลัพธ์ ลองคิดดูสิว่าต้องทำสิ่งใดก่อน-หลังนะจ๊ะ! 💡`;
             }
         }
 
+        if (query.includes('แยก') || query.includes('decomposition')) {
+            return `การแยกย่อยปัญหา (Decomposition) คือการแบ่งปัญหาหรือชิ้นส่วนใหญ่ๆ ออกเป็นส่วนย่อยๆ เช่น การแบ่งหุ่นยนต์เป็นแขน ล้อ ถังน้ำ เพื่อให้ทำความเข้าใจและแก้ปัญหาได้ง่ายขึ้นจ้า! 🧩✨`;
+        }
+
+        if (query.includes('รูปแบบ') || query.includes('pattern') || query.includes('อนุกรม')) {
+            return `การหารูปแบบ (Pattern Recognition) คือการมองหาความสัมพันธ์ที่เกิดขึ้นซ้ำๆ เช่น พืชโต 4 ➔ 8 ➔ 12 วินาที ซึ่งเพิ่มขึ้นทีละ 4 วินาทีเท่าๆ กันจ้า! 🔍🌱`;
+        }
+
+        if (query.includes('นามธรรม') || query.includes('abstraction') || query.includes('คัดกรอง')) {
+            return `การคิดเชิงนามธรรม (Abstraction) คือการเลือกดูเฉพาะข้อมูลที่จำเป็นในการแก้ปัญหา และตัดรายละเอียดที่ไม่สำคัญ (เช่น สีของก้อนเมฆบนแผนที่) ออกไปจ้า! 🎯🗺️`;
+        }
+
+        if (query.includes('อัลกอริทึม') || query.includes('algorithm') || query.includes('ขั้นตอน') || query.includes('debug') || query.includes('ดีบัก')) {
+            return `อัลกอริทึม (Algorithm) คือการวางลำดับขั้นตอน 1, 2, 3 ให้ชัดเจน และถ้าโปรแกรมผิดพลาด การหาจุดผิดแล้วแก้ไข เรียกว่าการ Debug จ้า! ⚙️🐞`;
+        }
+
+        if (query.includes('เควสต์') || query.includes('ภารกิจ') || query.includes('เรือ') || query.includes('เกาะ 2')) {
+            return `การปลดล็อกเรือไปเกาะที่ 2: ใช้ทักษะการแยกย่อยปัญหา (1) ปลูกและเก็บผักให้ครบ 6 ชิ้น (2) ตอบควิซ 1 ครั้ง (3) สะสมเงินให้ครบ 250🪙 แล้วเดินไปที่ท่าเรือได้เลย! ⛵🌴`;
+        }
+
         if (query.includes('เงิน') || query.includes('ขาย') || query.includes('รวย')) {
-            return `วิธีหาเงินให้เร็วที่สุดคือ: ปลูกผักโตไวแล้วนำไปขายที่ร้านค้าริมตลาด 🛒 และอย่าลืมมาตอบควิซที่บ่อน้ำเพื่อรับบัฟน้ำเร่งโต 1.6x นะจ๊ะ! 💧🪙`;
+            return `วิธีหาเงินให้เร็วที่สุด: ปลูกผักโตไวแล้วนำไปขายที่ร้านค้า และตอบควิซการคิดเชิงคำนวณที่บ่อน้ำเพื่อรับบัฟน้ำเร่งโต 1.6x นะจ๊ะ! 💧🪙`;
         }
 
-        if (query.includes('ผัก') || query.includes('ปลูก') || query.includes('ผลไม้')) {
-            return `ในเกาะนี้มีพืชให้ปลูกมากมายเลย! เช่น แครอท 🥕 (โตไว 4วิ), ข้าวโพด 🌽 (8วิ), แตงโม 🍉 (14วิ) และเกาะที่ 2 จะมีสับปะรด 🍍 และแก้วมังกร 🐉 ปลูกแล้วรอเก็บเกี่ยวไปขายนะ! 🌱`;
-        }
-
-        if (query.includes('เรือ') || query.includes('เกาะ 2') || query.includes('เกาะที่ 2')) {
-            return `การปลดล็อกเรือข้ามฟากไปเกาะผลไม้ (เกาะ 2): เจ้าต้องทำเควสต์เกาะ 1 ให้ครบและสะสมเงินให้ได้ 250 🪙 จากนั้นเดินไปที่สะพานท่าเรือด้านหน้าได้เลย! ⛵🌴`;
-        }
-
-        if (query.includes('สังเคราะห์') || query.includes('แสง') || query.includes('วิทย์') || query.includes('npk')) {
-            return `ความรู้วิทยาศาสตร์: พืชสังเคราะห์ด้วยแสงโดยใช้ **คลอโรฟิลล์ (สารสีเขียว)** ดูดกลืนแสงแดดร่วมกับก๊าซ CO2 และน้ำ เพื่อสร้างน้ำตาลและคายออกซิเจน (O2) ออกมา! 🌿☀️`;
-        }
-
-        if (query.includes('คณิต') || query.includes('บวก') || query.includes('คูณ') || query.includes('เลข')) {
-            return `สูตรคณิตง่ายๆ: ผลผลิตรวม = (จำนวนแปลง) × (จำนวนต้นต่อแปลง) เช่น 6 แปลง แปลงละ 8 ต้น จะได้ 6 × 8 = 48 ชิ้นจ้า! 🧮✨`;
-        }
-
-        return `ข้าเข้าใจแล้วจ้า ${p.name || 'นักผจญภัย'}! 🧙‍♂️ เจ้าสามารถสำรวจเกาะ ปลูกผัก ทำเควสต์ และตอบปริศนาบทเรียนเพื่อรับรางวัลได้เสมอ มีอะไรสงสัยถามข้าได้ตลอดเวลานะ! 🌴✨`;
+        return `ข้าเข้าใจแล้วจ้า ${p.name || 'น้องนักเรียน'}! 🧙‍♂️ เจ้าสามารถถามคำใบ้การคิดเชิงคำนวณ (แยกย่อยปัญหา, หารูปแบบ, คิดเชิงนามธรรม, อัลกอริทึม) หรือการทำฟาร์มกับข้าได้ตลอดเวลาเลยนะ! 🌴✨`;
     };
 
     // Dynamic Notification & NPC Dialogue Handlers
@@ -3320,19 +3340,26 @@ Instructions:
             }
         };
 
-        // Quiz System (Powered by Teacher Question Bank & Math Fallback)
+        // Quiz System (Powered by Teacher Question Bank & AI Scaffolding)
+        window.currentActiveQuizItem = null;
+        window.quizHintLevel = 0;
+
         window.openQuiz = function() {
             try { window.sfx.click(); } catch(e){}
             window.triggerTutorialStep(3);
+            window.quizHintLevel = 0;
+            const hintBox = document.getElementById('quiz-ai-hint-box');
+            if (hintBox) hintBox.style.display = 'none';
 
             const activeTeacherQs = teacherQuestions.filter(q => q.active);
 
             if (activeTeacherQs.length > 0) {
                 // Draw a random active question from Teacher's Question Bank
                 const q = activeTeacherQs[Math.floor(Math.random() * activeTeacherQs.length)];
+                window.currentActiveQuizItem = q;
                 const correctText = q.options[q.correctIndex];
 
-                quizQuestion.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px;"><span class="subject-chip active" style="font-size:0.75rem; padding:2px 8px;">${q.subjectLabel || '💡 คำถาม'}</span></div><span>${q.question}</span>`;
+                quizQuestion.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px;"><span class="subject-chip active" style="font-size:0.75rem; padding:2px 10px;">${q.subjectLabel || '🧩 การคิดเชิงคำนวณ'}</span></div><span>${q.question}</span>`;
                 quizOptions.innerHTML = '';
 
                 // Shuffle options
@@ -3348,7 +3375,7 @@ Instructions:
                             gameState.robot.buffActive = true;
                             gameState.robot.buffTimer = 16;
                             try { window.sfx.correct(); } catch(e){}
-                            showToast(q.hint ? `ถูกต้อง! 💡 ${q.hint}` : 'ถูกต้อง! บัฟรดน้ำทำงาน 💧✨');
+                            showToast(q.hint ? `ถูกต้องยอดเยี่ยม! 💡 ${q.hint}` : 'ถูกต้อง! บัฟรดน้ำทำงาน 💧✨');
                             if (!gameState.quests[1][1].done) {
                                 gameState.quests[1][1].done = true;
                                 gameState.player.money += gameState.quests[1][1].reward;
@@ -3358,67 +3385,109 @@ Instructions:
                             if (window.savePlayerProfileToCloud) window.savePlayerProfileToCloud();
                         } else {
                             b.classList.add('wrong');
-                            // Highlight the correct answer
                             document.querySelectorAll('.quiz-option-btn').forEach(otherBtn => {
                                 if (otherBtn.innerText === correctText) otherBtn.classList.add('correct');
                             });
                             gameState.robot.broken = true;
                             gameState.robot.brokenTimer = 8;
                             try { window.sfx.error(); } catch(e){}
-                            showToast(q.hint ? `ตอบผิด! 💡 เฉลย: ${q.hint}` : 'ตอบผิด! หุ่นยนต์รวนเลย 💥');
+                            showToast(q.hint ? `ตอบผิดจ้า! 💡 เฉลย: ${q.hint}` : 'ตอบผิด! หุ่นยนต์รวนเลย 💥');
                         }
-                        setTimeout(() => { quizModal.style.display = 'none'; updateUI(); }, 1200);
+                        setTimeout(() => { quizModal.style.display = 'none'; updateUI(); }, 1400);
                     };
                     quizOptions.appendChild(b);
                 });
 
             } else {
-                // Fallback to Procedural Math Generator
-                const ops = ['+', '-', '*'];
-                const op = ops[Math.floor(Math.random() * ops.length)];
-                let n1 = Math.floor(Math.random()*20)+5, n2 = Math.floor(Math.random()*15)+3, ans = op==='+'?n1+n2:(op==='-'?n1+20-n2:n1*n2);
-                if(op==='-') n1 = n1+20;
-                gameState.robot.currentAnswer = ans;
-
-                quizQuestion.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px;"><span class="subject-chip active" style="font-size:0.75rem; padding:2px 8px;">🧮 คณิต</span></div><span>${n1} ${op} ${n2} = ?</span>`;
+                const fallbackQ = DEFAULT_TEACHER_QUESTIONS[0];
+                window.currentActiveQuizItem = fallbackQ;
+                quizQuestion.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px;"><span class="subject-chip active" style="font-size:0.75rem; padding:2px 10px;">${fallbackQ.subjectLabel}</span></div><span>${fallbackQ.question}</span>`;
                 quizOptions.innerHTML = '';
-                const opts = [ans];
-                while(opts.length < 4) {
-                    const w = ans + Math.floor(Math.random()*12) - 6;
-                    if(w !== ans && w >= 0 && !opts.includes(w)) opts.push(w);
-                }
-                opts.sort(() => Math.random() - 0.5);
-
-                opts.forEach(opt => {
+                fallbackQ.options.forEach((opt, idx) => {
                     const b = document.createElement('button');
                     b.className = 'quiz-option-btn';
                     b.innerText = opt;
                     b.onclick = () => {
-                        if (opt === ans) {
+                        if (idx === fallbackQ.correctIndex) {
                             b.classList.add('correct');
                             gameState.robot.buffActive = true;
-                            gameState.robot.buffTimer = 14;
+                            gameState.robot.buffTimer = 16;
                             try { window.sfx.correct(); } catch(e){}
-                            showToast('ถูกต้อง! บัฟรดน้ำทำงาน 💧');
+                            showToast('ถูกต้องยอดเยี่ยม! 💧✨');
                             if (!gameState.quests[1][1].done) {
                                 gameState.quests[1][1].done = true;
                                 gameState.player.money += gameState.quests[1][1].reward;
                             }
-                            if (window.savePlayerProfileToCloud) window.savePlayerProfileToCloud();
                         } else {
                             b.classList.add('wrong');
-                            gameState.robot.broken = true;
-                            gameState.robot.brokenTimer = 10;
                             try { window.sfx.error(); } catch(e){}
-                            showToast('ตอบผิด! หุ่นยนต์รวนเลย 💥');
+                            showToast(`ตอบผิดจ้า! 💡 ${fallbackQ.hint}`);
                         }
-                        setTimeout(() => { quizModal.style.display = 'none'; updateUI(); }, 800);
+                        setTimeout(() => { quizModal.style.display = 'none'; updateUI(); }, 1400);
                     };
                     quizOptions.appendChild(b);
                 });
             }
 
             quizModal.style.display = 'flex';
+        };
+
+        window.requestQuizAIHint = function() {
+            try { window.sfx.click(); } catch(e){}
+            const q = window.currentActiveQuizItem;
+            if (!q) return;
+
+            gameState.player.hintCount = (gameState.player.hintCount || 0) + 1;
+            window.quizHintLevel = Math.min(3, (window.quizHintLevel || 0) + 1);
+
+            const hintBox = document.getElementById('quiz-ai-hint-box');
+            const hintLevelEl = document.getElementById('quiz-ai-hint-level');
+            const hintTextEl = document.getElementById('quiz-ai-hint-text');
+
+            if (!hintBox || !hintTextEl) return;
+            hintBox.style.display = 'block';
+
+            const correctOpt = q.options[q.correctIndex];
+            const incorrectOpts = q.options.filter((o, idx) => idx !== q.correctIndex && o && o !== '-');
+
+            if (window.quizHintLevel === 1) {
+                if (hintLevelEl) hintLevelEl.innerText = '💡 คำใบ้ระดับ 1: ชวนคิด';
+                let conceptHint = '';
+                if (q.subject === 'decomposition') conceptHint = 'การแยกย่อยปัญหา คือการแบ่งเป้าหมายใหญ่ออกเป็นชิ้นส่วนหรือภารกิจย่อยๆ ที่ต้องทำทีละอย่างนะจ๊ะ 🌱';
+                else if (q.subject === 'pattern') conceptHint = 'ลองสังเกตรูปแบบการเปลี่ยนแปลงหรือการเพิ่มขึ้นของตัวเลข/สิ่งของที่เกิดขึ้นซ้ำๆ สิ 🔍';
+                else if (q.subject === 'abstraction') conceptHint = 'การคิดเชิงนามธรรม คือการเลือกเฉพาะข้อมูลที่จำเป็น และตัดสิ่งที่ไม่สำคัญออกไปนะ 🎯';
+                else conceptHint = 'อัลกอริทึมคือการจัดลำดับขั้นตอนจากจุดเริ่มต้นไปจนสำเร็จอย่างเป็นขั้นเป็นตอนจ้า ⚙️';
+                hintTextEl.innerHTML = conceptHint;
+
+            } else if (window.quizHintLevel === 2) {
+                if (hintLevelEl) hintLevelEl.innerText = '✂️ คำใบ้ระดับ 2: ตัดตัวเลือก';
+                // Disable one incorrect option button in the UI
+                const buttons = document.querySelectorAll('.quiz-option-btn');
+                let eliminated = [];
+                buttons.forEach(btn => {
+                    if (incorrectOpts.includes(btn.innerText) && eliminated.length < 2) {
+                        btn.style.opacity = '0.35';
+                        btn.style.textDecoration = 'line-through';
+                        btn.style.pointerEvents = 'none';
+                        eliminated.push(`"${btn.innerText}"`);
+                    }
+                });
+                hintTextEl.innerHTML = `ข้าช่วยตัดตัวเลือกที่ไม่ใช่ออกให้แล้ว: ${eliminated.join(' และ ')} ลองเลือกจากข้อที่เหลือดูนะ! ✨`;
+
+            } else {
+                if (hintLevelEl) hintLevelEl.innerText = '🎯 คำใบ้ระดับ 3: คำใบ้สรุป';
+                hintTextEl.innerHTML = `💡 คำใบ้จากคุณครู: <strong>${q.hint || 'คำตอบที่ถูกต้องคือข้อที่สมเหตุสมผลที่สุดจ้า!'}</strong>`;
+            }
+        };
+
+        window.openNPCChatFromQuiz = function() {
+            const q = window.currentActiveQuizItem;
+            quizModal.style.display = 'none';
+            if (q) {
+                window.openNPCChat(`เจ้ากำลังทำข้อสอบเรื่อง "${q.question}" อยู่ใช่ไหม? สงสัยส่วนประกอบหรืออยากให้ข้าช่วยอธิบายตรงไหน ถามได้เลยนะจ๊ะ! 🧙‍♂️✨`);
+            } else {
+                window.openNPCChat();
+            }
         };
 
         // Ferry Sailing System
