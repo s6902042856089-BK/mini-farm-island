@@ -319,7 +319,7 @@
                     </div>
                 </div>
 
-                <div class="hud-pill" id="hud-auth-status" style="display: none; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.95); gap: 8px;">
+                <div class="hud-pill" id="hud-auth-status" style="display: none; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.95); gap: 8px; width: fit-content; max-width: 320px;">
                     <span>👤</span>
                     <span id="hud-player-name" style="font-weight: 600; color: #2c3e50;">น้องมะนาว</span>
                     <span style="color: #27ae60; font-size: 0.75rem; background: #e8f8f5; padding: 2px 6px; border-radius: 8px;">☁️ Cloud</span>
@@ -327,36 +327,40 @@
                 </div>
             </div>
 
-            <div class="quest-card">
-                <div class="quest-header">🎯 ภารกิจประจำเกาะ</div>
-                <div id="quest-list"></div>
-            </div>
-        </div>
-
-        <!-- 6. ACTION TUTORIAL CHECKLIST WIDGET -->
-        <div id="tutorial-hud-widget">
-            <div class="tut-header">
-                <div class="tut-title">
-                    <span>🧭</span>
-                    <span>ฝึกฝนการผจญภัย (Tutorial)</span>
+            <!-- UNIFIED RIGHT PANEL (Zero Overlap!) -->
+            <div class="hud-right-panel">
+                <!-- 6. ACTION TUTORIAL CHECKLIST WIDGET -->
+                <div id="tutorial-hud-widget">
+                    <div class="tut-header">
+                        <div class="tut-title">
+                            <span>🧭</span>
+                            <span>ฝึกฝนการผจญภัย (Tutorial)</span>
+                        </div>
+                        <span class="tut-badge" id="tut-progress-badge">0/4</span>
+                    </div>
+                    <div class="tut-item" id="tut-step-1">
+                        <div class="tut-checkbox">✓</div>
+                        <span>1. เดินสำรวจเกาะ (WASD / ลากจอ)</span>
+                    </div>
+                    <div class="tut-item" id="tut-step-2">
+                        <div class="tut-checkbox">✓</div>
+                        <span>2. หมุนมองรอบตัว (ลากเมาส์ / จอ)</span>
+                    </div>
+                    <div class="tut-item" id="tut-step-3">
+                        <div class="tut-checkbox">✓</div>
+                        <span>3. ทักทายผู้ดูแล (กด E ที่บ่อน้ำ)</span>
+                    </div>
+                    <div class="tut-item" id="tut-step-4">
+                        <div class="tut-checkbox">✓</div>
+                        <span>4. สัมผัสผืนดิน (รดน้ำหรือเก็บผลผลิต 1 แปลง)</span>
+                    </div>
                 </div>
-                <span class="tut-badge" id="tut-progress-badge">0/4</span>
-            </div>
-            <div class="tut-item" id="tut-step-1">
-                <div class="tut-checkbox">✓</div>
-                <span>1. เดินสำรวจเกาะ (WASD / ลากจอ)</span>
-            </div>
-            <div class="tut-item" id="tut-step-2">
-                <div class="tut-checkbox">✓</div>
-                <span>2. หมุนมองรอบตัว (ลากเมาส์ / จอ)</span>
-            </div>
-            <div class="tut-item" id="tut-step-3">
-                <div class="tut-checkbox">✓</div>
-                <span>3. ทักทายผู้ดูแล (กด E ที่บ่อน้ำ)</span>
-            </div>
-            <div class="tut-item" id="tut-step-4">
-                <div class="tut-checkbox">✓</div>
-                <span>4. สัมผัสผืนดิน (รดน้ำหรือเก็บผลผลิต 1 แปลง)</span>
+
+                <!-- Main Island Quests Card -->
+                <div class="quest-card" id="main-quest-card">
+                    <div class="quest-header">🎯 ภารกิจประจำเกาะ</div>
+                    <div id="quest-list"></div>
+                </div>
             </div>
         </div>
 
