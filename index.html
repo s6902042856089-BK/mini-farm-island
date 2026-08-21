@@ -196,17 +196,27 @@
             <h1 class="game-title">Mini Farm Island</h1>
             <p class="game-subtitle">การผจญภัยและเรียนรู้แห่งหมู่เกาะอัจฉริยะ บันทึกความก้าวหน้าและเล่นต่อได้ทุกอุปกรณ์</p>
             
+            <button class="google-auth-btn" id="btn-landing-google" style="margin-bottom: 12px;" onclick="window.startGoogleLogin()">
+                <svg width="20" height="20" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.59.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+                <span>เข้าสู่ระบบ / ลงทะเบียนด้วย Google</span>
+            </button>
+
             <button class="btn-primary" id="btn-start-game" onclick="window.onStartAdventureClick()">
                 🎮 เริ่มการผจญภัย (Start Adventure)
+            </button>
+
+            <button class="btn-secondary" style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: #2c3e50; font-weight: 700; border: none; margin-bottom: 10px;" onclick="window.openLeaderboard()">
+                <span style="font-size: 1.2rem;">🏆</span> ทำเนียบจัดอันดับผู้เล่น (Leaderboard)
             </button>
 
             <button class="btn-secondary" onclick="window.openCharacterStudio()">
                 🧙‍♂️ ปรับแต่งตัวละคร 360° (Studio)
             </button>
 
-            <div id="title-logged-in-info" style="display: none; margin-top: 14px; font-size: 0.9rem; color: #2c3e50; background: rgba(255,255,255,0.8); padding: 8px 16px; border-radius: 16px;">
+            <div id="title-logged-in-info" style="display: none; margin-top: 14px; font-size: 0.9rem; color: #2c3e50; background: rgba(255,255,255,0.85); padding: 10px 16px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                <span id="title-user-avatar-badge" style="vertical-align: middle; margin-right: 6px;">👤</span>
                 <span>ยินดีต้อนรับกลับ: <strong id="title-user-name" style="color: #2980b9;">Explorer</strong></span>
-                <a href="javascript:void(0)" onclick="window.signOutUser()" style="color: #e74c3c; margin-left: 8px; font-weight: 600; text-decoration: underline;">ออกจากระบบ</a>
+                <a href="javascript:void(0)" onclick="window.signOutUser()" style="color: #e74c3c; margin-left: 10px; font-weight: 600; text-decoration: underline;">ออกจากระบบ</a>
             </div>
         </div>
     </div>
@@ -302,6 +312,10 @@
                     <div class="hud-pill" onclick="window.openCharacterStudio()" title="เปลี่ยนตัวละคร 3D">
                         <span class="hud-icon">🧙‍♂️</span>
                         <span id="current-char-name">Knight</span>
+                    </div>
+                    <div class="hud-pill" onclick="window.openLeaderboard()" title="ดูทำเนียบจัดอันดับผู้เล่น (Leaderboard)" style="background: linear-gradient(135deg, rgba(254, 240, 138, 0.9), rgba(253, 224, 71, 0.9)); border-color: #facc15;">
+                        <span class="hud-icon">🏆</span>
+                        <span style="font-weight: 700; color: #713f12;">อันดับ</span>
                     </div>
                 </div>
 
@@ -413,6 +427,42 @@
             </div>
 
             <button class="btn-close" onclick="document.getElementById('map-modal').style.display='none'">ปิดแผนที่</button>
+        </div>
+    </div>
+
+    <!-- 7. GLOBAL LEADERBOARD RANKING MODAL -->
+    <div class="modal-overlay" id="leaderboard-modal">
+        <div class="modal-content" style="max-width: 620px; width: 94%; padding: 24px;">
+            <div style="text-align: center; margin-bottom: 16px;">
+                <div style="font-size: 2.8rem; margin-bottom: 4px;">🏆</div>
+                <h2 style="font-size: 1.6rem; color: #1e293b; font-weight: 800; margin-bottom: 4px;">ทำเนียบจัดอันดับ (Leaderboard)</h2>
+                <p style="font-size: 0.88rem; color: #64748b;">การจัดอันดับผู้เล่นที่ยิ่งใหญ่ที่สุดแห่งหมู่เกาะ Mini Farm Island</p>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="lb-tab-container">
+                <button class="lb-tab active" id="lb-tab-wealth" onclick="window.switchLeaderboardTab('wealth')">💰 เศรษฐีฟาร์ม</button>
+                <button class="lb-tab" id="lb-tab-islands" onclick="window.switchLeaderboardTab('islands')">⛵ นักบุกเบิกเกาะ</button>
+                <button class="lb-tab" id="lb-tab-crops" onclick="window.switchLeaderboardTab('crops')">🌾 นักเก็บเกี่ยว</button>
+            </div>
+
+            <!-- Rankings Table / List -->
+            <div class="lb-list-container" id="lb-list-container">
+                <!-- Dynamically populated rows -->
+            </div>
+
+            <!-- Current User Ranking Footer -->
+            <div class="lb-my-rank-card" id="lb-my-rank-card">
+                <div class="lb-rank-num" id="my-lb-rank">#--</div>
+                <div class="lb-player-avatar" id="my-lb-avatar">🧙‍♂️</div>
+                <div class="lb-player-info">
+                    <div class="lb-player-name" id="my-lb-name">น้องมะนาว (คุณ)</div>
+                    <div class="lb-player-sub" id="my-lb-sub">อันดับปัจจุบันของคุณ</div>
+                </div>
+                <div class="lb-player-score" id="my-lb-score">100 🪙</div>
+            </div>
+
+            <button class="btn-close" style="margin-top: 16px; width: 100%;" onclick="document.getElementById('leaderboard-modal').style.display='none'">ปิดหน้าต่าง</button>
         </div>
     </div>
 
@@ -624,15 +674,23 @@
         
         gameState.player.name = finalName;
         localStorage.setItem('coastal_player_name', finalName);
+        localStorage.setItem('coastal_player_name_custom', 'true');
         localStorage.setItem('coastal_character', gameState.selectedCharacter);
 
         const hudName = document.getElementById('hud-player-name');
         if (hudName) hudName.innerText = finalName;
+        const titleName = document.getElementById('title-user-name');
+        if (titleName) titleName.innerText = finalName;
         const currentNameEl = document.getElementById('current-char-name');
         if (currentNameEl) currentNameEl.innerText = CHARACTERS[gameState.selectedCharacter].shortName;
 
         if (window.load3DCharacter) {
             window.load3DCharacter(gameState.selectedCharacter);
+        }
+
+        // Trigger Cloud Save
+        if (window.savePlayerProfileToCloud) {
+            window.savePlayerProfileToCloud();
         }
 
         // Close Studio ➔ Open AI Story Cutscene
@@ -809,8 +867,72 @@
         }, 400);
     };
 
+    // ==========================================================================
+    // SUPABASE AUTH & CLOUD SAVE PERSISTENCE
+    // ==========================================================================
+    const SUPABASE_URL = 'https://acwtvjyavxpuuhkeqlln.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA';
+    let currentUser = null;
+
+    window.initSupabaseAuth = function() {
+        if (window.supabase) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized');
+
+                supabaseClient.auth.getSession().then(({ data }) => {
+                    if (data?.session?.user) {
+                        onUserAuthenticated(data.session.user);
+                    }
+                });
+
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (session?.user) {
+                        onUserAuthenticated(session.user);
+                    }
+                });
+            } catch(e) {
+                console.warn('Supabase init error:', e);
+            }
+        }
+    };
+
+    async function onUserAuthenticated(user) {
+        currentUser = user;
+        const meta = user.user_metadata || {};
+        const googleName = meta.full_name || meta.name || user.email?.split('@')[0] || 'Explorer';
+        const avatarUrl = meta.avatar_url;
+
+        if (!localStorage.getItem('coastal_player_name_custom') && googleName) {
+            gameState.player.name = googleName;
+            localStorage.setItem('coastal_player_name', googleName);
+        }
+
+        const titleLogged = document.getElementById('title-logged-in-info');
+        const titleName = document.getElementById('title-user-name');
+        const titleAvatar = document.getElementById('title-user-avatar-badge');
+        const landingGoogleBtn = document.getElementById('btn-landing-google');
+
+        if (titleLogged) titleLogged.style.display = 'block';
+        if (titleName) titleName.innerText = gameState.player.name;
+        if (titleAvatar && avatarUrl) {
+            titleAvatar.innerHTML = `<img src="${avatarUrl}" style="width:22px;height:22px;border-radius:50%;vertical-align:middle;">`;
+        }
+        if (landingGoogleBtn) landingGoogleBtn.style.display = 'none';
+
+        const hudAuth = document.getElementById('hud-auth-status');
+        const hudName = document.getElementById('hud-player-name');
+        if (hudAuth) hudAuth.style.display = 'flex';
+        if (hudName) hudName.innerText = gameState.player.name;
+
+        await loadCloudSave(user.id);
+    }
+
     window.startGoogleLogin = async function() {
         try { if(window.initAudio) window.initAudio(); } catch(e){}
+        if (!supabaseClient && window.supabase) {
+            window.initSupabaseAuth();
+        }
         if (supabaseClient) {
             try {
                 await supabaseClient.auth.signInWithOAuth({
@@ -818,15 +940,213 @@
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
             } catch(e) { alert('Google Login: ' + e.message); }
+        } else {
+            showToast('⚠️ กำลังเชื่อมต่อระบบ Cloud กรุณาลองใหม่อีกครั้ง');
         }
     };
 
     window.signOutUser = async function() {
         try { if(window.initAudio) window.initAudio(); } catch(e){}
         if (supabaseClient) { try { await supabaseClient.auth.signOut(); } catch(e){} }
+        localStorage.removeItem('coastal_player_name_custom');
         window.location.hash = '';
         window.location.href = window.location.origin + window.location.pathname;
     };
+
+    window.savePlayerProfileToCloud = async function() {
+        localStorage.setItem('coastal_player_name', gameState.player.name);
+        localStorage.setItem('coastal_character', gameState.selectedCharacter);
+        localStorage.setItem('coastal_money', gameState.player.money);
+        localStorage.setItem('coastal_unlocked_islands', JSON.stringify(gameState.unlockedIslands));
+        const totalHarvests = (gameState.player.is1HarvestCount || 0) + (gameState.player.is2HarvestCount || 0);
+        localStorage.setItem('coastal_harvest_count', totalHarvests);
+
+        if (supabaseClient && currentUser) {
+            try {
+                const profileData = {
+                    id: currentUser.id,
+                    email: currentUser.email,
+                    player_name: gameState.player.name,
+                    character_class: gameState.selectedCharacter,
+                    money: gameState.player.money,
+                    unlocked_islands: gameState.unlockedIslands,
+                    islands_count: gameState.unlockedIslands.length,
+                    total_harvests: totalHarvests,
+                    avatar_url: currentUser.user_metadata?.avatar_url || null,
+                    updated_at: new Date().toISOString()
+                };
+                await supabaseClient.from('profiles').upsert(profileData);
+            } catch(e) {
+                console.warn('Cloud save fallback to localStorage:', e);
+            }
+        }
+    };
+
+    async function loadCloudSave(userId) {
+        if (!supabaseClient || !userId) return;
+        try {
+            const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+            if (data && !error) {
+                if (data.player_name) gameState.player.name = data.player_name;
+                if (data.character_class && CHARACTERS[data.character_class]) {
+                    gameState.selectedCharacter = data.character_class;
+                    if (window.load3DCharacter) window.load3DCharacter(data.character_class);
+                }
+                if (typeof data.money === 'number') gameState.player.money = Math.max(gameState.player.money, data.money);
+                if (Array.isArray(data.unlocked_islands)) gameState.unlockedIslands = data.unlocked_islands;
+                if (typeof data.total_harvests === 'number') gameState.player.is1HarvestCount = data.total_harvests;
+                
+                const moneyEl = document.getElementById('money-display');
+                if (moneyEl) moneyEl.innerText = `${gameState.player.money} 🪙`;
+                const nameEl = document.getElementById('hud-player-name');
+                if (nameEl) nameEl.innerText = gameState.player.name;
+
+                showToast(`ยินดีต้อนรับกลับ ${gameState.player.name}! โหลดข้อมูลจาก Cloud สำเร็จ ☁️✨`);
+            }
+        } catch(e) {}
+    }
+
+    // Auto-save interval every 30s
+    setInterval(() => {
+        if (gameState.mode === 'exploring') {
+            window.savePlayerProfileToCloud();
+        }
+    }, 30000);
+
+    // ==========================================================================
+    // LEADERBOARD RANKING ENGINE
+    // ==========================================================================
+    let currentLeaderboardTab = 'wealth';
+
+    const SEED_LEADERBOARD = [
+        { name: "Captain_Aria", avatar: "🏹", char: "Ranger", money: 3450, islands: 2, harvests: 48 },
+        { name: "GrandMage_Arthas", avatar: "🧙‍♂️", char: "Mage", money: 2890, islands: 2, harvests: 36 },
+        { name: "Sir_Galahad", avatar: "🛡️", char: "Knight", money: 2150, islands: 2, harvests: 28 },
+        { name: "ShadowNinja", avatar: "🥷", char: "Rogue_Hooded", money: 1720, islands: 1, harvests: 22 },
+        { name: "WildBarbarian", avatar: "🪓", char: "Barbarian", money: 1400, islands: 1, harvests: 18 },
+        { name: "SunnyFarmer", avatar: "🌱", char: "Ranger", money: 980, islands: 1, harvests: 15 },
+        { name: "IslandDreamer", avatar: "🌴", char: "Rogue", money: 650, islands: 1, harvests: 9 }
+    ];
+
+    window.openLeaderboard = async function() {
+        try { window.sfx.click(); } catch(e){}
+        const modal = document.getElementById('leaderboard-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        await window.renderLeaderboard(currentLeaderboardTab);
+    };
+
+    window.switchLeaderboardTab = function(tab) {
+        try { window.sfx.click(); } catch(e){}
+        currentLeaderboardTab = tab;
+        document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById(`lb-tab-${tab}`);
+        if (activeBtn) activeBtn.classList.add('active');
+        window.renderLeaderboard(tab);
+    };
+
+    window.renderLeaderboard = async function(category = 'wealth') {
+        const listEl = document.getElementById('lb-list-container');
+        if (!listEl) return;
+        listEl.innerHTML = '<div style="text-align:center; padding: 20px; color: #94a3b8;">กำลังดึงข้อมูลอันดับล่าสุด... ⏳</div>';
+
+        const myTotalHarvests = (gameState.player.is1HarvestCount || 0) + (gameState.player.is2HarvestCount || 0);
+        const myEntry = {
+            id: currentUser?.id || 'local_user',
+            name: gameState.player.name + ' (คุณ)',
+            avatar: CHARACTERS[gameState.selectedCharacter]?.shortName?.split(' ')[1] || '🧙‍♂️',
+            char: gameState.selectedCharacter,
+            money: gameState.player.money,
+            islands: gameState.unlockedIslands.length,
+            harvests: myTotalHarvests,
+            isMe: true
+        };
+
+        let players = [...SEED_LEADERBOARD];
+
+        if (supabaseClient) {
+            try {
+                const { data } = await supabaseClient.from('profiles').select('*').limit(20);
+                if (data && data.length > 0) {
+                    const cloudEntries = data.filter(d => d.id !== currentUser?.id).map(d => ({
+                        name: d.player_name || 'Explorer',
+                        avatar: CHARACTERS[d.character_class]?.shortName?.split(' ')[1] || '🧙‍♂️',
+                        char: d.character_class || 'Knight',
+                        money: d.money || 100,
+                        islands: d.islands_count || d.unlocked_islands?.length || 1,
+                        harvests: d.total_harvests || 0
+                    }));
+                    players = [...cloudEntries, ...SEED_LEADERBOARD];
+                }
+            } catch(e) {}
+        }
+
+        players.push(myEntry);
+
+        if (category === 'wealth') {
+            players.sort((a, b) => b.money - a.money);
+        } else if (category === 'islands') {
+            players.sort((a, b) => b.islands === a.islands ? b.money - a.money : b.islands - a.islands);
+        } else if (category === 'crops') {
+            players.sort((a, b) => b.harvests === a.harvests ? b.money - a.money : b.harvests - a.harvests);
+        }
+
+        listEl.innerHTML = '';
+        let myRank = -1;
+
+        players.slice(0, 10).forEach((p, idx) => {
+            const rank = idx + 1;
+            if (p.isMe) myRank = rank;
+
+            let rankBadge = `#${rank}`;
+            let rowClass = 'lb-row';
+            if (rank === 1) { rankBadge = '🥇'; rowClass += ' top-1'; }
+            else if (rank === 2) { rankBadge = '🥈'; rowClass += ' top-2'; }
+            else if (rank === 3) { rankBadge = '🥉'; rowClass += ' top-3'; }
+
+            let scoreDisplay = '';
+            if (category === 'wealth') scoreDisplay = `${p.money.toLocaleString()} 🪙`;
+            else if (category === 'islands') scoreDisplay = `${p.islands} เกาะ 🏝️`;
+            else if (category === 'crops') scoreDisplay = `${p.harvests} ชิ้น 🌾`;
+
+            const row = document.createElement('div');
+            row.className = rowClass;
+            if (p.isMe) row.style.border = '2px solid #3b82f6';
+            row.innerHTML = `
+                <div class="lb-rank-num">${rankBadge}</div>
+                <div class="lb-player-avatar">${p.avatar}</div>
+                <div class="lb-player-info">
+                    <div class="lb-player-name">${p.name}</div>
+                    <div class="lb-player-sub">${p.char} • ${p.islands} เกาะ • ${p.harvests} ผลผลิต</div>
+                </div>
+                <div class="lb-player-score">${scoreDisplay}</div>
+            `;
+            listEl.appendChild(row);
+        });
+
+        if (myRank === -1) {
+            myRank = players.findIndex(p => p.isMe) + 1;
+        }
+
+        const myRankEl = document.getElementById('my-lb-rank');
+        const myAvatarEl = document.getElementById('my-lb-avatar');
+        const myNameEl = document.getElementById('my-lb-name');
+        const myScoreEl = document.getElementById('my-lb-score');
+        const mySubEl = document.getElementById('my-lb-sub');
+
+        if (myRankEl) myRankEl.innerText = `#${myRank > 0 ? myRank : '-'}`;
+        if (myAvatarEl) myAvatarEl.innerText = myEntry.avatar;
+        if (myNameEl) myNameEl.innerText = `${gameState.player.name} (คุณ)`;
+        if (mySubEl) mySubEl.innerText = `คลาส ${myEntry.char} • สำรวจ ${myEntry.islands} เกาะ`;
+        if (myScoreEl) {
+            if (category === 'wealth') myScoreEl.innerText = `${gameState.player.money.toLocaleString()} 🪙`;
+            else if (category === 'islands') myScoreEl.innerText = `${gameState.unlockedIslands.length} เกาะ 🏝️`;
+            else if (category === 'crops') myScoreEl.innerText = `${myTotalHarvests} ชิ้น 🌾`;
+        }
+    };
+
+    // Initialize Supabase on load
+    window.initSupabaseAuth();
 
     // Dynamic Notification & NPC Dialogue Handlers
     let bannerHideTimer = null;
@@ -1696,34 +2016,6 @@
         });
         window.addEventListener('touchend', () => { isDraggingCam = false; });
 
-        // Supabase Session Init
-        if (window.supabase) {
-            try {
-                supabaseClient = window.supabase.createClient('https://acwtvjyavxpuuhkeqlln.supabase.co', 'sb_publishable_35sQvmZqYLxKEf5hajnxRw__Q-FdhrA');
-                supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                    if (session?.user) onLoggedIn(session.user);
-                });
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    if (session?.user) onLoggedIn(session.user);
-                });
-            } catch(e) {}
-        }
-
-        function onLoggedIn(user) {
-            const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Explorer';
-            gameState.player.name = name;
-            localStorage.setItem('coastal_player_name', name);
-            const nameEl = document.getElementById('hud-player-name');
-            if (nameEl) nameEl.innerText = name;
-            const authStatus = document.getElementById('hud-auth-status');
-            if (authStatus) authStatus.style.display = 'flex';
-            const titleInfo = document.getElementById('title-logged-in-info');
-            const titleName = document.getElementById('title-user-name');
-            if (titleInfo && titleName) { titleName.innerText = name; titleInfo.style.display = 'block'; }
-            const googleBtn = document.getElementById('btn-google-login');
-            if (googleBtn) googleBtn.style.display = 'none';
-        }
-
         // Market System
         window.openMarket = function() {
             try { window.sfx.click(); } catch(e){}
@@ -1773,6 +2065,7 @@
                 showToast(`ขายผลผลิตได้รับ +${total} 🪙 ✨`);
                 updateUI();
                 marketModal.style.display = 'none';
+                if (window.savePlayerProfileToCloud) window.savePlayerProfileToCloud();
             }
         };
 
@@ -1810,6 +2103,7 @@
                             gameState.quests[1][1].done = true;
                             gameState.player.money += gameState.quests[1][1].reward;
                         }
+                        if (window.savePlayerProfileToCloud) window.savePlayerProfileToCloud();
                     } else {
                         b.classList.add('wrong');
                         gameState.robot.broken = true;
@@ -1844,6 +2138,7 @@
                 sailingTargetPos.set(0, 0.4, 14.5);
             }
             updateUI();
+            if (window.savePlayerProfileToCloud) window.savePlayerProfileToCloud();
         }
 
         function showToast(txt) {
@@ -1957,6 +2252,7 @@
                     }
                 }
                 updateUI();
+                if (window.savePlayerProfileToCloud) window.savePlayerProfileToCloud();
             } else if (activeTarget.type === 'robot') {
                 window.openQuiz();
             } else if (activeTarget.type === 'market') {
