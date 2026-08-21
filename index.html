@@ -1316,7 +1316,8 @@
             if (hudAuth) hudAuth.style.display = 'flex';
             if (hudName) hudName.innerText = gameState.player.name;
 
-            updateUI();
+            if (typeof updateUI === 'function') updateUI();
+            else if (typeof window.updateUI === 'function') window.updateUI();
             showToast(`ยินดีต้อนรับกลับ ${gameState.player.name}! ข้อมูลถูกโหลดแล้ว 🌴✨`);
 
         } else {
@@ -3210,6 +3211,7 @@ Tutoring Principles:
                 });
             }
         }
+        window.updateUI = updateUI;
 
         function renderSeedSelector() {
             if (!seedSelector) return;
